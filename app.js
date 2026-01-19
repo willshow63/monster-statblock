@@ -305,113 +305,46 @@ function createPrintClone() {
     var element = document.querySelector(".stat-block");
     var clone = element.cloneNode(true);
     
-    // Create an iframe to isolate from viewport constraints
-    var iframe = document.createElement('iframe');
-    iframe.style.cssText = `
+    // Create wrapper div
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = `
         position: absolute;
-        left: -9999px;
+        left: 0;
         top: 0;
-        width: 900px;
-        height: 2000px;
-        border: none;
-        visibility: visible;
+        width: 850px;
+        background: white;
+        z-index: -1;
+        opacity: 0;
+        pointer-events: none;
     `;
-    document.body.appendChild(iframe);
     
-    var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    iframeDoc.open();
-    iframeDoc.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { 
-                    font-family: 'Times New Roman', serif;
-                    font-size: 14px;
-                    line-height: 1.4;
-                    background: white;
-                    width: 900px;
-                    overflow: visible;
-                }
-                .stat-block {
-                    display: block !important;
-                    width: 800px !important;
-                    max-width: none !important;
-                    min-width: 800px !important;
-                    column-count: 2 !important;
-                    column-gap: 40px !important;
-                    column-rule: 1px solid #184e4f !important;
-                    font-size: 14px !important;
-                    padding: 20px !important;
-                    background: #f5f5f5 !important;
-                    border-top: 4px solid #184e4f !important;
-                    border-bottom: 4px solid #184e4f !important;
-                    box-shadow: none !important;
-                    box-sizing: border-box !important;
-                    overflow: visible !important;
-                }
-                .monster-name {
-                    font-family: 'Times New Roman', serif;
-                    font-size: 2em;
-                    font-variant: small-caps;
-                    font-weight: bold;
-                    color: #184e4f;
-                    margin: 0 0 0 0;
-                    letter-spacing: 1px;
-                }
-                .monster-type { font-style: italic; margin: 0 0 10px 0; }
-                .divider {
-                    height: 4px;
-                    background: linear-gradient(to right, #184e4f, #184e4f 60%, transparent);
-                    margin: 10px 0;
-                    border: none;
-                }
-                .stat-label { font-weight: bold; }
-                .basic-stats p, .secondary-stats p { margin: 2px 0; }
-                .abilities {
-                    display: flex;
-                    justify-content: space-between;
-                    text-align: center;
-                    margin: 10px 0;
-                    color: #184e4f;
-                }
-                .ability { flex: 1; }
-                .ability-name { font-weight: bold; text-transform: uppercase; font-size: 0.9em; }
-                .ability-score { font-size: 1em; }
-                .section-header {
-                    font-size: 1.4em;
-                    font-variant: small-caps;
-                    color: #184e4f;
-                    border-bottom: 2px solid #184e4f;
-                    margin: 15px 0 5px 0;
-                    padding-bottom: 2px;
-                    break-after: avoid;
-                }
-                .feature, .action { margin: 10px 0; break-inside: avoid; }
-                .feature-name, .action-name { font-weight: bold; font-style: italic; }
-                .attack-type { font-style: italic; }
-                .legendary-description { margin-bottom: 10px; }
-                .legendary-action { margin: 5px 0; }
-                .legendary-action-name { font-weight: bold; }
-                .villain-action { margin: 5px 0; }
-                .villain-action-round { font-weight: bold; font-style: italic; }
-                .villain-action-name { font-weight: bold; font-style: italic; }
-            </style>
-        </head>
-        <body></body>
-        </html>
-    `);
-    iframeDoc.close();
+    // Force desktop two-column layout
+    clone.style.cssText = `
+        display: block !important;
+        width: 800px !important;
+        max-width: none !important;
+        min-width: 800px !important;
+        column-count: 2 !important;
+        column-gap: 40px !important;
+        column-rule: 1px solid #184e4f !important;
+        font-size: 14px !important;
+        padding: 20px !important;
+        background: #f5f5f5 !important;
+        border-top: 4px solid #184e4f !important;
+        border-bottom: 4px solid #184e4f !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    `;
     
-    // Append clone to iframe body
-    iframeDoc.body.appendChild(clone);
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
     
     // Force reflow
     void clone.offsetWidth;
     void clone.offsetHeight;
     
-    return { clone: clone, container: iframe, iframeDoc: iframeDoc };
+    return { clone: clone, container: wrapper };
 }
 
 // Print PDF - WORKS ON BOTH MOBILE AND DESKTOP
@@ -424,21 +357,24 @@ function printStatBlock() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
     
-    // Delay to ensure iframe content is fully rendered
+    // Give time for layout
     setTimeout(function() {
+        var cloneHeight = printElements.clone.scrollHeight;
+        
         var opt = {
             margin: [0.5, 0.5, 0.5, 0.5],
             filename: filename,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { 
                 scale: 2, 
-                useCORS: true, 
-                width: 800,
-                height: printElements.clone.scrollHeight,
-                scrollX: 0,
-                scrollY: 0,
+                useCORS: true,
                 logging: false,
-                foreignObjectRendering: false
+                windowWidth: 1200,
+                windowHeight: cloneHeight + 100,
+                x: 0,
+                y: 0,
+                width: 800,
+                height: cloneHeight
             },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
@@ -450,7 +386,7 @@ function printStatBlock() {
             document.body.removeChild(printElements.container);
             alert("Error generating PDF. Please try again.");
         });
-    }, 100);
+    }, 150);
 }
 
 // Print PNG - WORKS ON BOTH MOBILE AND DESKTOP
@@ -463,17 +399,20 @@ function printPNG() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
     
-    // Delay to ensure iframe content is fully rendered
+    // Give time for layout
     setTimeout(function() {
+        var cloneHeight = printElements.clone.scrollHeight;
+        
         html2canvas(printElements.clone, { 
             scale: 2, 
-            useCORS: true, 
-            width: 800,
-            height: printElements.clone.scrollHeight,
-            scrollX: 0,
-            scrollY: 0,
+            useCORS: true,
             logging: false,
-            foreignObjectRendering: false
+            windowWidth: 1200,
+            windowHeight: cloneHeight + 100,
+            x: 0,
+            y: 0,
+            width: 800,
+            height: cloneHeight
         }).then(function(canvas) {
             document.body.removeChild(printElements.container);
             
@@ -486,7 +425,7 @@ function printPNG() {
             document.body.removeChild(printElements.container);
             alert("Error generating PNG. Please try again.");
         });
-    }, 100);
+    }, 150);
 }
 
 // Export JSON
