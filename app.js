@@ -300,30 +300,27 @@ function deleteMonster(docId, name) {
         });
 }
 
-// Create a consistent clone for printing - FIXED for mobile
+// Create a consistent clone for printing - WORKS ON BOTH MOBILE AND DESKTOP
 function createPrintClone() {
     var element = document.querySelector(".stat-block");
     var clone = element.cloneNode(true);
     
-    // Create a fixed-size container that will render consistently
+    // Create an absolutely positioned container off-screen
     var wrapper = document.createElement('div');
     wrapper.style.cssText = `
-        position: fixed;
-        left: 0;
+        position: absolute;
+        left: -9999px;
         top: 0;
-        width: 800px;
-        height: auto;
-        z-index: -9999;
-        visibility: hidden;
-        pointer-events: none;
-        background: white;
+        width: 850px;
         overflow: visible;
+        background: white;
     `;
     
     // Force desktop two-column layout regardless of screen size
     clone.style.cssText = `
+        display: block !important;
         width: 800px !important;
-        max-width: 800px !important;
+        max-width: none !important;
         min-width: 800px !important;
         column-count: 2 !important;
         column-gap: 40px !important;
@@ -337,6 +334,7 @@ function createPrintClone() {
         box-sizing: border-box !important;
         transform: none !important;
         margin: 0 !important;
+        overflow: visible !important;
     `;
     
     // Remove any responsive styles from child elements
@@ -349,10 +347,14 @@ function createPrintClone() {
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
     
+    // Force reflow to ensure layout is calculated
+    void clone.offsetWidth;
+    void clone.offsetHeight;
+    
     return { clone: clone, container: wrapper };
 }
 
-// Print PDF - FIXED for mobile
+// Print PDF - WORKS ON BOTH MOBILE AND DESKTOP
 function printStatBlock() {
     if (!currentMonster) {
         alert("Please load a monster first.");
@@ -362,35 +364,42 @@ function printStatBlock() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
     
-    // Force a reflow to ensure styles are applied
-    printElements.clone.offsetHeight;
-    
-    var opt = {
-        margin: [0.5, 0.5, 0.5, 0.5],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            width: 800,
-            windowWidth: 800,
-            scrollX: 0,
-            scrollY: 0,
-            logging: false
-        },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    
-    html2pdf().set(opt).from(printElements.clone).save().then(function() {
-        document.body.removeChild(printElements.container);
-    }).catch(function(error) {
-        console.error("PDF generation error:", error);
-        document.body.removeChild(printElements.container);
-        alert("Error generating PDF. Please try again.");
-    });
+    // Small delay to ensure CSS columns are fully rendered
+    setTimeout(function() {
+        var opt = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true, 
+                width: 800,
+                height: printElements.clone.scrollHeight,
+                scrollX: 0,
+                scrollY: 0,
+                logging: false,
+                onclone: function(clonedDoc) {
+                    var clonedElement = clonedDoc.querySelector('.stat-block');
+                    if (clonedElement) {
+                        clonedElement.style.width = '800px';
+                        clonedElement.style.columnCount = '2';
+                    }
+                }
+            },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+        
+        html2pdf().set(opt).from(printElements.clone).save().then(function() {
+            document.body.removeChild(printElements.container);
+        }).catch(function(error) {
+            console.error("PDF generation error:", error);
+            document.body.removeChild(printElements.container);
+            alert("Error generating PDF. Please try again.");
+        });
+    }, 50);
 }
 
-// Print PNG - FIXED for mobile
+// Print PNG - WORKS ON BOTH MOBILE AND DESKTOP
 function printPNG() {
     if (!currentMonster) {
         alert("Please load a monster first.");
@@ -400,29 +409,36 @@ function printPNG() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
     
-    // Force a reflow to ensure styles are applied
-    printElements.clone.offsetHeight;
-    
-    html2canvas(printElements.clone, { 
-        scale: 2, 
-        useCORS: true, 
-        width: 800,
-        windowWidth: 800,
-        scrollX: 0,
-        scrollY: 0,
-        logging: false
-    }).then(function(canvas) {
-        document.body.removeChild(printElements.container);
-        
-        var link = document.createElement('a');
-        link.download = filename;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    }).catch(function(error) {
-        console.error("PNG generation error:", error);
-        document.body.removeChild(printElements.container);
-        alert("Error generating PNG. Please try again.");
-    });
+    // Small delay to ensure CSS columns are fully rendered
+    setTimeout(function() {
+        html2canvas(printElements.clone, { 
+            scale: 2, 
+            useCORS: true, 
+            width: 800,
+            height: printElements.clone.scrollHeight,
+            scrollX: 0,
+            scrollY: 0,
+            logging: false,
+            onclone: function(clonedDoc) {
+                var clonedElement = clonedDoc.querySelector('.stat-block');
+                if (clonedElement) {
+                    clonedElement.style.width = '800px';
+                    clonedElement.style.columnCount = '2';
+                }
+            }
+        }).then(function(canvas) {
+            document.body.removeChild(printElements.container);
+            
+            var link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }).catch(function(error) {
+            console.error("PNG generation error:", error);
+            document.body.removeChild(printElements.container);
+            alert("Error generating PNG. Please try again.");
+        });
+    }, 50);
 }
 
 // Export JSON
