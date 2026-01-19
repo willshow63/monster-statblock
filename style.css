@@ -18,25 +18,14 @@ body {
 
 .header-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 15px;
-}
-
-.header-spacer {
-    width: 200px;
-}
-
-.controls h1 {
-    color: #184e4f;
-    margin: 0;
-    text-align: center;
 }
 
 .auth-area {
     display: flex;
     align-items: center;
-    width: 200px;
 }
 
 #login-btn {
@@ -82,7 +71,7 @@ body {
     display: none;
 }
 
-.upload-btn, .print-btn {
+.upload-btn, .print-btn, .export-btn {
     background: #184e4f;
     color: white;
     padding: 8px 15px;
@@ -92,7 +81,7 @@ body {
     border-radius: 4px;
 }
 
-.upload-btn:hover, .print-btn:hover {
+.upload-btn:hover, .print-btn:hover, .export-btn:hover {
     background: #0d3536;
 }
 
@@ -338,10 +327,6 @@ body {
         flex-direction: column;
         text-align: center;
         gap: 10px;
-    }
-    
-    .header-spacer {
-        display: none;
     }
     
     .auth-area {

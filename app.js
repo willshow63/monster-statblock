@@ -159,6 +159,28 @@ function printStatBlock() {
     html2pdf().set(opt).from(element).save();
 }
 
+// Export JSON
+function exportJSON() {
+    if (!currentMonster) {
+        alert("Please load a monster first.");
+        return;
+    }
+    
+    var dataStr = JSON.stringify(currentMonster, null, 2);
+    var blob = new Blob([dataStr], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    
+    var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".json";
+    
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 function getMod(score) {
     var mod = Math.floor((score - 10) / 2);
     if (mod >= 0) {
@@ -177,6 +199,7 @@ function renderStatBlock(monster) {
     html += '<label for="json-upload" class="upload-btn">Upload Monster JSON</label>';
     html += '<input type="file" id="json-upload" accept=".json" />';
     html += '<button class="print-btn" onclick="printStatBlock()">Print Stat Block</button>';
+    html += '<button class="export-btn" onclick="exportJSON()">Export JSON</button>';
     if (currentUser) {
         html += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save Monster</button>';
     }
