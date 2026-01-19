@@ -300,14 +300,31 @@ function deleteMonster(docId, name) {
         });
 }
 
-// Create a consistent clone for printing
+// Create a consistent clone for printing - FIXED for mobile
 function createPrintClone() {
     var element = document.querySelector(".stat-block");
     var clone = element.cloneNode(true);
     
+    // Create a fixed-size container that will render consistently
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = `
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 800px;
+        height: auto;
+        z-index: -9999;
+        visibility: hidden;
+        pointer-events: none;
+        background: white;
+        overflow: visible;
+    `;
+    
     // Force desktop two-column layout regardless of screen size
     clone.style.cssText = `
         width: 800px !important;
+        max-width: 800px !important;
+        min-width: 800px !important;
         column-count: 2 !important;
         column-gap: 40px !important;
         column-rule: 1px solid #184e4f !important;
@@ -317,18 +334,25 @@ function createPrintClone() {
         border-top: 4px solid #184e4f !important;
         border-bottom: 4px solid #184e4f !important;
         box-shadow: none !important;
+        box-sizing: border-box !important;
+        transform: none !important;
+        margin: 0 !important;
     `;
     
-    // Create a hidden container
-    var container = document.createElement('div');
-    container.style.cssText = 'position: absolute; left: -9999px; top: 0;';
-    container.appendChild(clone);
-    document.body.appendChild(container);
+    // Remove any responsive styles from child elements
+    var allElements = clone.querySelectorAll('*');
+    allElements.forEach(function(el) {
+        el.style.maxWidth = 'none';
+        el.style.transform = 'none';
+    });
     
-    return { clone: clone, container: container };
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+    
+    return { clone: clone, container: wrapper };
 }
 
-// Print PDF
+// Print PDF - FIXED for mobile
 function printStatBlock() {
     if (!currentMonster) {
         alert("Please load a monster first.");
@@ -338,20 +362,35 @@ function printStatBlock() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
     
+    // Force a reflow to ensure styles are applied
+    printElements.clone.offsetHeight;
+    
     var opt = {
         margin: [0.5, 0.5, 0.5, 0.5],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, width: 800 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            width: 800,
+            windowWidth: 800,
+            scrollX: 0,
+            scrollY: 0,
+            logging: false
+        },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
     
     html2pdf().set(opt).from(printElements.clone).save().then(function() {
         document.body.removeChild(printElements.container);
+    }).catch(function(error) {
+        console.error("PDF generation error:", error);
+        document.body.removeChild(printElements.container);
+        alert("Error generating PDF. Please try again.");
     });
 }
 
-// Print PNG
+// Print PNG - FIXED for mobile
 function printPNG() {
     if (!currentMonster) {
         alert("Please load a monster first.");
@@ -361,13 +400,28 @@ function printPNG() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
     
-    html2canvas(printElements.clone, { scale: 2, useCORS: true, width: 800 }).then(function(canvas) {
+    // Force a reflow to ensure styles are applied
+    printElements.clone.offsetHeight;
+    
+    html2canvas(printElements.clone, { 
+        scale: 2, 
+        useCORS: true, 
+        width: 800,
+        windowWidth: 800,
+        scrollX: 0,
+        scrollY: 0,
+        logging: false
+    }).then(function(canvas) {
         document.body.removeChild(printElements.container);
         
         var link = document.createElement('a');
         link.download = filename;
         link.href = canvas.toDataURL('image/png');
         link.click();
+    }).catch(function(error) {
+        console.error("PNG generation error:", error);
+        document.body.removeChild(printElements.container);
+        alert("Error generating PNG. Please try again.");
     });
 }
 
@@ -406,15 +460,15 @@ function renderStatBlock(monster) {
     var container = document.getElementById("stat-block-container");
     var html = '';
     
-    // Button row
+    // Button row - now with responsive wrapper
     html += '<div class="button-row">';
-    html += '<label for="json-upload" class="upload-btn">Upload Monster JSON</label>';
+    html += '<label for="json-upload" class="upload-btn">Upload JSON</label>';
     html += '<input type="file" id="json-upload" accept=".json" />';
-    html += '<button class="print-btn" onclick="printStatBlock()">Print to PDF</button>';
-    html += '<button class="print-btn" onclick="printPNG()">Print to PNG</button>';
-    html += '<button class="export-btn" onclick="exportJSON()">Export JSON</button>';
+    html += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
+    html += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+    html += '<button class="export-btn" onclick="exportJSON()">Export</button>';
     if (currentUser) {
-        html += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save Monster</button>';
+        html += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save</button>';
     }
     html += '</div>';
     
