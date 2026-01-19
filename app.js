@@ -48,15 +48,6 @@ document.getElementById("logout-btn").addEventListener("click", function() {
     auth.signOut();
 });
 
-// Print button
-document.getElementById("print-btn").addEventListener("click", function() {
-    if (!currentMonster) {
-        alert("Please load a monster first.");
-        return;
-    }
-    window.print();
-});
-
 // Load Saved Monsters
 function loadSavedMonsters() {
     if (!currentUser) return;
@@ -146,6 +137,28 @@ function deleteMonster(docId, name) {
         });
 }
 
+// Print PDF
+function printStatBlock() {
+    if (!currentMonster) {
+        alert("Please load a monster first.");
+        return;
+    }
+    
+    var element = document.querySelector(".stat-block");
+    var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
+    
+    var opt = {
+        margin: 0.5,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+        pagebreak: { mode: 'avoid-all' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+}
+
 function getMod(score) {
     var mod = Math.floor((score - 10) / 2);
     if (mod >= 0) {
@@ -159,10 +172,15 @@ function renderStatBlock(monster) {
     var container = document.getElementById("stat-block-container");
     var html = '';
     
-    // Save button (only if logged in)
+    // Button row
+    html += '<div class="button-row">';
+    html += '<label for="json-upload" class="upload-btn">Upload Monster JSON</label>';
+    html += '<input type="file" id="json-upload" accept=".json" />';
+    html += '<button class="print-btn" onclick="printStatBlock()">Print Stat Block</button>';
     if (currentUser) {
-        html += '<div class="save-btn-container"><button class="save-btn" onclick="saveMonster(currentMonster)">Save Monster</button></div>';
+        html += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save Monster</button>';
     }
+    html += '</div>';
     
     html += '<div class="stat-block">';
     
@@ -309,10 +327,12 @@ function renderStatBlock(monster) {
     html += '</div>';
     
     container.innerHTML = html;
+    
+    // Re-attach file upload listener since we recreated the element
+    document.getElementById("json-upload").addEventListener("change", handleFileUpload);
 }
 
-// Event Listeners
-document.getElementById("json-upload").addEventListener("change", function(e) {
+function handleFileUpload(e) {
     var file = e.target.files[0];
     if (file) {
         var reader = new FileReader();
@@ -327,4 +347,4 @@ document.getElementById("json-upload").addEventListener("change", function(e) {
         };
         reader.readAsText(file);
     }
-});
+}

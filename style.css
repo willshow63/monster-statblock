@@ -12,18 +12,31 @@ body {
 }
 
 .controls {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto 20px auto;
-    text-align: center;
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.header-spacer {
+    width: 200px;
 }
 
 .controls h1 {
     color: #184e4f;
-    margin-bottom: 20px;
+    margin: 0;
+    text-align: center;
 }
 
 .auth-area {
-    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    width: 200px;
 }
 
 #login-btn {
@@ -43,7 +56,6 @@ body {
 #user-info {
     display: flex;
     gap: 10px;
-    justify-content: center;
     align-items: center;
 }
 
@@ -66,34 +78,22 @@ body {
     background: #444;
 }
 
-.upload-area {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
 #json-upload {
     display: none;
 }
 
-.upload-btn, #print-btn {
+.upload-btn, .print-btn {
     background: #184e4f;
     color: white;
-    padding: 10px 20px;
+    padding: 8px 15px;
     border: none;
     cursor: pointer;
     font-size: 14px;
     border-radius: 4px;
 }
 
-.upload-btn:hover, #print-btn:hover {
+.upload-btn:hover, .print-btn:hover {
     background: #0d3536;
-}
-
-#print-btn:disabled {
-    background: #95a5a6;
-    cursor: not-allowed;
 }
 
 /* Main Content Layout */
@@ -186,9 +186,11 @@ body {
     max-width: 450px;
 }
 
-/* Save Button */
-.save-btn-container {
-    text-align: right;
+/* Button Row */
+.button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
@@ -332,6 +334,20 @@ body {
 
 /* Responsive */
 @media (max-width: 900px) {
+    .header-row {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .header-spacer {
+        display: none;
+    }
+    
+    .auth-area {
+        width: auto;
+    }
+    
     .main-content {
         flex-direction: column;
     }
@@ -352,7 +368,7 @@ body {
         margin: 0;
     }
     
-    .controls, .saved-monsters, .save-btn-container {
+    .controls, .saved-monsters, .button-row {
         display: none !important;
     }
     
