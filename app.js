@@ -16,111 +16,6 @@ var db = firebase.firestore();
 var currentUser = null;
 var currentMonster = null;
 
-// Sample Ancient Red Dragon data
-var sampleMonster = {
-    name: "Ancient Red Dragon",
-    size: "Gargantuan",
-    type: "Dragon",
-    alignment: "Chaotic Evil",
-    ac: 22,
-    acType: "natural armor",
-    hp: 546,
-    hpFormula: "28d20 + 252",
-    speed: "40 ft., climb 40ft., fly 80 ft.",
-    abilities: {
-        str: 30,
-        dex: 10,
-        con: 29,
-        int: 18,
-        wis: 15,
-        cha: 23
-    },
-    savingThrows: "Dex +7, Con +16, Wis +9, Cha +13",
-    skills: "Perception +16, Stealth +7",
-    damageImmunities: "Fire",
-    senses: "blindsight 60 ft., darkvision 120 ft., passive Perception 26",
-    languages: "Common, Draconic",
-    cr: "24",
-    xp: "62,000",
-    features: [
-        {
-            name: "Legendary Resistance (3/Day)",
-            text: "If the dragon fails a saving throw, it can choose to succeed instead."
-        }
-    ],
-    actions: [
-        {
-            name: "Multiattack",
-            text: "The dragon can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws."
-        },
-        {
-            name: "Bite",
-            attackType: "Melee Weapon Attack",
-            toHit: "+17 to hit",
-            reach: "reach 15 ft.",
-            target: "one target",
-            damage: "21 (2d10 + 10) piercing damage plus 14 (4d6) fire damage."
-        },
-        {
-            name: "Claws",
-            attackType: "Melee Weapon Attack",
-            toHit: "+17 to hit",
-            reach: "reach 10 ft.",
-            target: "one target",
-            damage: "17 (2d6 + 10) slashing damage."
-        },
-        {
-            name: "Tail",
-            attackType: "Melee Weapon Attack",
-            toHit: "+17 to hit",
-            reach: "reach 20 ft.",
-            target: "one creature",
-            damage: "19 (2d8 + 10) bludgeoning damage."
-        },
-        {
-            name: "Frightful Presence",
-            text: "Each creature of the dragon's choice that is within 120 feet of the dragon and aware of it must succeed on a DC 21 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the dragon's Frightful Presence for the next 24 hours."
-        },
-        {
-            name: "Fire Breath (Recharge 5-6)",
-            text: "The dragon exhales fire in a 90-foot cone. Each creature in that area must make a DC 24 Dexterity saving throw, taking 91 (26d6) fire damage on a failed save, or half as much damage on a successful one."
-        }
-    ],
-    legendaryActionsPerRound: 3,
-    legendaryActionsDescription: "The Ancient Red Dragon can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The Ancient Red Dragon regains spent legendary actions at the start of its turn.",
-    legendaryActions: [
-        {
-            name: "Detect",
-            text: "The dragon makes a Wisdom (Perception) check."
-        },
-        {
-            name: "Tail Attack",
-            text: "The dragon makes a tail attack."
-        },
-        {
-            name: "Wing Attack (Costs 2 Actions)",
-            text: "The dragon beats its wings. Each creature within 15 feet of the dragon must succeed on a DC 25 Dexterity saving throw or take 17 (2d6+10) bludgeoning damage and be knocked prone. The dragon can then fly up to half its flying speed."
-        }
-    ],
-    villainActions: [
-        {
-            round: 1,
-            name: "Burrow",
-            text: "The ankheg burrows into the ground using its burrowing speed."
-        },
-        {
-            round: 2,
-            name: "Pull Under",
-            text: "If the ankheg is directly under a large or smaller creature, they must make a DC 13 strength saving throw or be pulled into the tunnel."
-        },
-        {
-            round: 3,
-            name: "Acid Expulsion",
-            text: "The ankheg swells up before blasting its acid blood from the many holes poked in it throughout the battle. Each creature within 30 feet of the ankheg must succeed on a DC 13 Dexterity saving throw or take acid damage equal to half of the ankheg's missing hit points."
-        }
-    ]
-};
-
 // Auth State Listener
 auth.onAuthStateChanged(function(user) {
     if (user) {
@@ -151,6 +46,15 @@ document.getElementById("login-btn").addEventListener("click", function() {
 // Logout
 document.getElementById("logout-btn").addEventListener("click", function() {
     auth.signOut();
+});
+
+// Print button
+document.getElementById("print-btn").addEventListener("click", function() {
+    if (!currentMonster) {
+        alert("Please load a monster first.");
+        return;
+    }
+    window.print();
 });
 
 // Load Saved Monsters
@@ -423,9 +327,4 @@ document.getElementById("json-upload").addEventListener("change", function(e) {
         };
         reader.readAsText(file);
     }
-});
-
-document.getElementById("sample-btn").addEventListener("click", function() {
-    currentMonster = sampleMonster;
-    renderStatBlock(sampleMonster);
 });
