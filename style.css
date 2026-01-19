@@ -1,0 +1,355 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Times New Roman', serif;
+    background: #ffffff;
+    margin: 0;
+    padding: 20px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.controls {
+    max-width: 900px;
+    margin: 0 auto 20px auto;
+    text-align: center;
+}
+
+.controls h1 {
+    color: #184e4f;
+    margin-bottom: 20px;
+}
+
+.auth-area {
+    margin-bottom: 15px;
+}
+
+#login-btn {
+    background: #4285f4;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+#login-btn:hover {
+    background: #3367d6;
+}
+
+#user-info {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+#user-name {
+    font-weight: bold;
+    color: #184e4f;
+}
+
+#logout-btn {
+    background: #666;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+#logout-btn:hover {
+    background: #444;
+}
+
+.upload-area {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#json-upload {
+    display: none;
+}
+
+.upload-btn, #sample-btn {
+    background: #184e4f;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.upload-btn:hover, #sample-btn:hover {
+    background: #0d3536;
+}
+
+/* Main Content Layout */
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 20px;
+}
+
+/* Saved Monsters Sidebar */
+.saved-monsters {
+    width: 250px;
+    flex-shrink: 0;
+}
+
+.saved-monsters h2 {
+    color: #184e4f;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    font-variant: small-caps;
+}
+
+#monster-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#monster-list li {
+    padding: 8px 10px;
+    background: #f5f5f5;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid #184e4f;
+}
+
+#monster-list li:hover {
+    background: #e8e8e8;
+}
+
+#monster-list li .monster-name-btn {
+    flex-grow: 1;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    font-family: 'Times New Roman', serif;
+}
+
+#monster-list li .delete-btn {
+    background: #c0392b;
+    color: white;
+    border: none;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+#monster-list li .delete-btn:hover {
+    background: #a93226;
+}
+
+/* Stat Block Container */
+#stat-block-container {
+    flex-grow: 1;
+    max-width: 900px;
+}
+
+.stat-block {
+    background: #f5f5f5;
+    padding: 20px;
+    column-count: 2;
+    column-gap: 40px;
+    column-rule: 1px solid #184e4f;
+    border-top: 4px solid #184e4f;
+    border-bottom: 4px solid #184e4f;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.stat-block.single-column {
+    column-count: 1;
+    max-width: 450px;
+}
+
+/* Save Button */
+.save-btn-container {
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+.save-btn {
+    background: #2a7a7c;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.save-btn:hover {
+    background: #1e5a5b;
+}
+
+.save-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+/* Header */
+.monster-name {
+    font-family: 'Times New Roman', serif;
+    font-size: 2em;
+    font-variant: small-caps;
+    font-weight: bold;
+    color: #184e4f;
+    margin: 0 0 0 0;
+    letter-spacing: 1px;
+}
+
+.monster-type {
+    font-style: italic;
+    margin: 0 0 10px 0;
+}
+
+/* Dividers */
+.divider {
+    height: 4px;
+    background: linear-gradient(to right, #184e4f, #184e4f 60%, transparent);
+    margin: 10px 0;
+    border: none;
+}
+
+/* Basic Stats */
+.basic-stats p {
+    margin: 2px 0;
+}
+
+.stat-label {
+    font-weight: bold;
+}
+
+/* Ability Scores */
+.abilities {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    margin: 10px 0;
+    color: #184e4f;
+}
+
+.ability {
+    flex: 1;
+}
+
+.ability-name {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+.ability-score {
+    font-size: 1em;
+}
+
+/* Secondary Stats */
+.secondary-stats p {
+    margin: 2px 0;
+}
+
+/* Section Headers */
+.section-header {
+    font-size: 1.4em;
+    font-variant: small-caps;
+    color: #184e4f;
+    border-bottom: 2px solid #184e4f;
+    margin: 15px 0 5px 0;
+    padding-bottom: 2px;
+    break-after: avoid;
+}
+
+/* Features and Actions */
+.feature, .action {
+    margin: 10px 0;
+    break-inside: avoid;
+}
+
+.feature-name, .action-name {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.attack-type {
+    font-style: italic;
+}
+
+.feature-text, .action-text {
+    display: inline;
+}
+
+/* Legendary Actions */
+.legendary-description {
+    margin-bottom: 10px;
+}
+
+.legendary-action {
+    margin: 5px 0;
+}
+
+.legendary-action-name {
+    font-weight: bold;
+}
+
+/* Villain Actions */
+.villain-action {
+    margin: 5px 0;
+}
+
+.villain-action-round {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.villain-action-name {
+    font-weight: bold;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .saved-monsters {
+        width: 100%;
+    }
+    
+    .stat-block {
+        column-count: 1;
+    }
+}
+
+@media print {
+    .controls, .saved-monsters, .save-btn-container {
+        display: none;
+    }
+    
+    body {
+        background: white;
+    }
+    
+    .stat-block {
+        box-shadow: none;
+    }
+}

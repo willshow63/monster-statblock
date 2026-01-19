@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D&D 5e Monster Stat Block Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="controls">
+        <h1>Monster Stat Block Generator</h1>
+        <div class="auth-area">
+            <button id="login-btn">Sign in with Google</button>
+            <div id="user-info" style="display:none;">
+                <span id="user-name"></span>
+                <button id="logout-btn">Sign Out</button>
+            </div>
+        </div>
+        <div class="upload-area">
+            <label for="json-upload" class="upload-btn">Upload Monster JSON</label>
+            <input type="file" id="json-upload" accept=".json" />
+            <button id="sample-btn">Load Sample (Ancient Red Dragon)</button>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="saved-monsters" id="saved-monsters" style="display:none;">
+            <h2>Saved Monsters</h2>
+            <ul id="monster-list"></ul>
+        </div>
+        <div id="stat-block-container"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
