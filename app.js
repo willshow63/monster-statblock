@@ -76,7 +76,6 @@ function createGroup(name) {
 function deleteGroup(groupId) {
     if (!confirm("Delete this group? Monsters will be moved to ungrouped.")) return;
     
-    // First, update all monsters in this group to have no group
     db.collection("users").doc(currentUser.uid).collection("monsters")
         .where("groupId", "==", groupId)
         .get()
@@ -88,7 +87,6 @@ function deleteGroup(groupId) {
             return batch.commit();
         })
         .then(function() {
-            // Then delete the group
             return db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete();
         })
         .then(function() {
@@ -118,7 +116,6 @@ function toggleGroup(groupId) {
 function loadGroupsAndMonsters() {
     if (!currentUser) return;
     
-    // Load groups first
     db.collection("users").doc(currentUser.uid).collection("groups")
         .orderBy("name")
         .get()
@@ -128,7 +125,6 @@ function loadGroupsAndMonsters() {
                 groups.push({ id: doc.id, ...doc.data() });
             });
             
-            // Then load monsters
             return db.collection("users").doc(currentUser.uid).collection("monsters")
                 .orderBy("name")
                 .get();
@@ -151,7 +147,6 @@ function renderMonsterList() {
     var container = document.getElementById("monster-list");
     var html = '';
     
-    // Render groups
     groups.forEach(function(group) {
         var groupMonsters = monsters.filter(function(m) { return m.groupId === group.id; });
         
@@ -170,7 +165,6 @@ function renderMonsterList() {
         html += '</div></div>';
     });
     
-    // Render ungrouped monsters
     var ungroupedMonsters = monsters.filter(function(m) { return !m.groupId; });
     
     html += '<div class="ungrouped-section">';
@@ -185,7 +179,6 @@ function renderMonsterList() {
     
     container.innerHTML = html;
     
-    // Setup drag and drop
     setupDragAndDrop();
 }
 
@@ -307,6 +300,34 @@ function deleteMonster(docId, name) {
         });
 }
 
+// Create a consistent clone for printing
+function createPrintClone() {
+    var element = document.querySelector(".stat-block");
+    var clone = element.cloneNode(true);
+    
+    // Force desktop two-column layout regardless of screen size
+    clone.style.cssText = `
+        width: 800px !important;
+        column-count: 2 !important;
+        column-gap: 40px !important;
+        column-rule: 1px solid #184e4f !important;
+        font-size: 14px !important;
+        padding: 20px !important;
+        background: #f5f5f5 !important;
+        border-top: 4px solid #184e4f !important;
+        border-bottom: 4px solid #184e4f !important;
+        box-shadow: none !important;
+    `;
+    
+    // Create a hidden container
+    var container = document.createElement('div');
+    container.style.cssText = 'position: absolute; left: -9999px; top: 0;';
+    container.appendChild(clone);
+    document.body.appendChild(container);
+    
+    return { clone: clone, container: container };
+}
+
 // Print PDF
 function printStatBlock() {
     if (!currentMonster) {
@@ -314,18 +335,40 @@ function printStatBlock() {
         return;
     }
     
-    var element = document.querySelector(".stat-block");
+    var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
     
     var opt = {
-        margin: [0.75, 0.75, 0.75, 0.75],
+        margin: [0.5, 0.5, 0.5, 0.5],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, width: 800 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
     
-    html2pdf().set(opt).from(element).save();
+    html2pdf().set(opt).from(printElements.clone).save().then(function() {
+        document.body.removeChild(printElements.container);
+    });
+}
+
+// Print PNG
+function printPNG() {
+    if (!currentMonster) {
+        alert("Please load a monster first.");
+        return;
+    }
+    
+    var printElements = createPrintClone();
+    var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
+    
+    html2canvas(printElements.clone, { scale: 2, useCORS: true, width: 800 }).then(function(canvas) {
+        document.body.removeChild(printElements.container);
+        
+        var link = document.createElement('a');
+        link.download = filename;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
 }
 
 // Export JSON
@@ -367,7 +410,8 @@ function renderStatBlock(monster) {
     html += '<div class="button-row">';
     html += '<label for="json-upload" class="upload-btn">Upload Monster JSON</label>';
     html += '<input type="file" id="json-upload" accept=".json" />';
-    html += '<button class="print-btn" onclick="printStatBlock()">Print Stat Block</button>';
+    html += '<button class="print-btn" onclick="printStatBlock()">Print to PDF</button>';
+    html += '<button class="print-btn" onclick="printPNG()">Print to PNG</button>';
     html += '<button class="export-btn" onclick="exportJSON()">Export JSON</button>';
     if (currentUser) {
         html += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save Monster</button>';
