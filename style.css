@@ -95,7 +95,7 @@ body {
 
 /* Saved Monsters Sidebar */
 .saved-monsters {
-    width: 250px;
+    width: 280px;
     flex-shrink: 0;
 }
 
@@ -106,29 +106,110 @@ body {
     font-variant: small-caps;
 }
 
+.new-group-btn {
+    background: #184e4f;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.new-group-btn:hover {
+    background: #0d3536;
+}
+
 #monster-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-#monster-list li {
+/* Groups */
+.monster-group {
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: #184e4f;
+    color: white;
+    cursor: pointer;
+}
+
+.group-header:hover {
+    background: #0d3536;
+}
+
+.group-name {
+    font-weight: bold;
+    flex-grow: 1;
+}
+
+.group-toggle {
+    margin-right: 8px;
+    font-size: 10px;
+}
+
+.group-delete {
+    background: #c0392b;
+    color: white;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.group-delete:hover {
+    background: #a93226;
+}
+
+.group-monsters {
+    padding: 5px;
+    background: #f9f9f9;
+}
+
+.group-monsters.collapsed {
+    display: none;
+}
+
+.group-monsters.drag-over {
+    background: #e0f0e0;
+    border: 2px dashed #184e4f;
+}
+
+/* Monster Items */
+.monster-item {
     padding: 8px 10px;
     background: #f5f5f5;
     margin-bottom: 5px;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: grab;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-left: 3px solid #184e4f;
 }
 
-#monster-list li:hover {
+.monster-item:hover {
     background: #e8e8e8;
 }
 
-#monster-list li .monster-name-btn {
+.monster-item.dragging {
+    opacity: 0.5;
+}
+
+.monster-item .monster-name-btn {
     flex-grow: 1;
     text-align: left;
     background: none;
@@ -139,7 +220,7 @@ body {
     font-family: 'Times New Roman', serif;
 }
 
-#monster-list li .delete-btn {
+.monster-item .delete-btn {
     background: #c0392b;
     color: white;
     border: none;
@@ -149,8 +230,31 @@ body {
     font-size: 11px;
 }
 
-#monster-list li .delete-btn:hover {
+.monster-item .delete-btn:hover {
     background: #a93226;
+}
+
+/* Ungrouped section */
+.ungrouped-section {
+    margin-top: 10px;
+}
+
+.ungrouped-header {
+    font-weight: bold;
+    color: #184e4f;
+    padding: 5px 0;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.ungrouped-monsters {
+    min-height: 20px;
+}
+
+.ungrouped-monsters.drag-over {
+    background: #e0f0e0;
+    border: 2px dashed #184e4f;
+    border-radius: 4px;
 }
 
 /* Stat Block Container */

@@ -15,6 +15,8 @@ var db = firebase.firestore();
 
 var currentUser = null;
 var currentMonster = null;
+var groups = [];
+var monsters = [];
 
 // Auth State Listener
 auth.onAuthStateChanged(function(user) {
@@ -24,7 +26,7 @@ auth.onAuthStateChanged(function(user) {
         document.getElementById("user-info").style.display = "flex";
         document.getElementById("user-name").textContent = user.displayName;
         document.getElementById("saved-monsters").style.display = "block";
-        loadSavedMonsters();
+        loadGroupsAndMonsters();
     } else {
         currentUser = null;
         document.getElementById("login-btn").style.display = "inline-block";
@@ -48,43 +50,208 @@ document.getElementById("logout-btn").addEventListener("click", function() {
     auth.signOut();
 });
 
-// Load Saved Monsters
-function loadSavedMonsters() {
+// New Group Button
+document.getElementById("new-group-btn").addEventListener("click", function() {
+    var groupName = prompt("Enter group name:");
+    if (groupName && groupName.trim()) {
+        createGroup(groupName.trim());
+    }
+});
+
+// Create Group
+function createGroup(name) {
     if (!currentUser) return;
     
-    db.collection("users").doc(currentUser.uid).collection("monsters")
-        .orderBy("name")
-        .get()
-        .then(function(querySnapshot) {
-            var list = document.getElementById("monster-list");
-            list.innerHTML = "";
-            
-            querySnapshot.forEach(function(doc) {
-                var monster = doc.data();
-                var li = document.createElement("li");
-                
-                var nameBtn = document.createElement("button");
-                nameBtn.className = "monster-name-btn";
-                nameBtn.textContent = monster.name;
-                nameBtn.onclick = function() {
-                    loadMonster(doc.id);
-                };
-                
-                var deleteBtn = document.createElement("button");
-                deleteBtn.className = "delete-btn";
-                deleteBtn.textContent = "X";
-                deleteBtn.onclick = function(e) {
-                    e.stopPropagation();
-                    deleteMonster(doc.id, monster.name);
-                };
-                
-                li.appendChild(nameBtn);
-                li.appendChild(deleteBtn);
-                list.appendChild(li);
-            });
+    db.collection("users").doc(currentUser.uid).collection("groups")
+        .add({ name: name, collapsed: false })
+        .then(function() {
+            loadGroupsAndMonsters();
         })
         .catch(function(error) {
-            console.error("Error loading monsters:", error);
+            console.error("Error creating group:", error);
+        });
+}
+
+// Delete Group
+function deleteGroup(groupId) {
+    if (!confirm("Delete this group? Monsters will be moved to ungrouped.")) return;
+    
+    // First, update all monsters in this group to have no group
+    db.collection("users").doc(currentUser.uid).collection("monsters")
+        .where("groupId", "==", groupId)
+        .get()
+        .then(function(querySnapshot) {
+            var batch = db.batch();
+            querySnapshot.forEach(function(doc) {
+                batch.update(doc.ref, { groupId: null });
+            });
+            return batch.commit();
+        })
+        .then(function() {
+            // Then delete the group
+            return db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete();
+        })
+        .then(function() {
+            loadGroupsAndMonsters();
+        })
+        .catch(function(error) {
+            console.error("Error deleting group:", error);
+        });
+}
+
+// Toggle Group Collapse
+function toggleGroup(groupId) {
+    var groupDiv = document.querySelector('[data-group-id="' + groupId + '"]');
+    var monstersDiv = groupDiv.querySelector('.group-monsters');
+    var toggle = groupDiv.querySelector('.group-toggle');
+    
+    if (monstersDiv.classList.contains('collapsed')) {
+        monstersDiv.classList.remove('collapsed');
+        toggle.textContent = '▼';
+    } else {
+        monstersDiv.classList.add('collapsed');
+        toggle.textContent = '►';
+    }
+}
+
+// Load Groups and Monsters
+function loadGroupsAndMonsters() {
+    if (!currentUser) return;
+    
+    // Load groups first
+    db.collection("users").doc(currentUser.uid).collection("groups")
+        .orderBy("name")
+        .get()
+        .then(function(groupSnapshot) {
+            groups = [];
+            groupSnapshot.forEach(function(doc) {
+                groups.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Then load monsters
+            return db.collection("users").doc(currentUser.uid).collection("monsters")
+                .orderBy("name")
+                .get();
+        })
+        .then(function(monsterSnapshot) {
+            monsters = [];
+            monsterSnapshot.forEach(function(doc) {
+                monsters.push({ id: doc.id, ...doc.data() });
+            });
+            
+            renderMonsterList();
+        })
+        .catch(function(error) {
+            console.error("Error loading data:", error);
+        });
+}
+
+// Render Monster List
+function renderMonsterList() {
+    var container = document.getElementById("monster-list");
+    var html = '';
+    
+    // Render groups
+    groups.forEach(function(group) {
+        var groupMonsters = monsters.filter(function(m) { return m.groupId === group.id; });
+        
+        html += '<div class="monster-group" data-group-id="' + group.id + '">';
+        html += '<div class="group-header" onclick="toggleGroup(\'' + group.id + '\')">';
+        html += '<span class="group-toggle">▼</span>';
+        html += '<span class="group-name">' + group.name + '</span>';
+        html += '<button class="group-delete" onclick="event.stopPropagation(); deleteGroup(\'' + group.id + '\')">X</button>';
+        html += '</div>';
+        html += '<div class="group-monsters" data-group-id="' + group.id + '">';
+        
+        groupMonsters.forEach(function(monster) {
+            html += renderMonsterItem(monster);
+        });
+        
+        html += '</div></div>';
+    });
+    
+    // Render ungrouped monsters
+    var ungroupedMonsters = monsters.filter(function(m) { return !m.groupId; });
+    
+    html += '<div class="ungrouped-section">';
+    html += '<div class="ungrouped-header">Ungrouped</div>';
+    html += '<div class="ungrouped-monsters" data-group-id="ungrouped">';
+    
+    ungroupedMonsters.forEach(function(monster) {
+        html += renderMonsterItem(monster);
+    });
+    
+    html += '</div></div>';
+    
+    container.innerHTML = html;
+    
+    // Setup drag and drop
+    setupDragAndDrop();
+}
+
+// Render Monster Item
+function renderMonsterItem(monster) {
+    var html = '<div class="monster-item" draggable="true" data-monster-id="' + monster.id + '">';
+    html += '<button class="monster-name-btn" onclick="loadMonster(\'' + monster.id + '\')">' + monster.name + '</button>';
+    html += '<button class="delete-btn" onclick="event.stopPropagation(); deleteMonster(\'' + monster.id + '\', \'' + monster.name.replace(/'/g, "\\'") + '\')">X</button>';
+    html += '</div>';
+    return html;
+}
+
+// Setup Drag and Drop
+function setupDragAndDrop() {
+    var monsterItems = document.querySelectorAll('.monster-item');
+    var dropZones = document.querySelectorAll('.group-monsters, .ungrouped-monsters');
+    
+    monsterItems.forEach(function(item) {
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', item.dataset.monsterId);
+            item.classList.add('dragging');
+        });
+        
+        item.addEventListener('dragend', function(e) {
+            item.classList.remove('dragging');
+            dropZones.forEach(function(zone) {
+                zone.classList.remove('drag-over');
+            });
+        });
+    });
+    
+    dropZones.forEach(function(zone) {
+        zone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            zone.classList.add('drag-over');
+        });
+        
+        zone.addEventListener('dragleave', function(e) {
+            zone.classList.remove('drag-over');
+        });
+        
+        zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            
+            var monsterId = e.dataTransfer.getData('text/plain');
+            var newGroupId = zone.dataset.groupId;
+            
+            if (newGroupId === 'ungrouped') {
+                newGroupId = null;
+            }
+            
+            moveMonsterToGroup(monsterId, newGroupId);
+        });
+    });
+}
+
+// Move Monster to Group
+function moveMonsterToGroup(monsterId, groupId) {
+    db.collection("users").doc(currentUser.uid).collection("monsters").doc(monsterId)
+        .update({ groupId: groupId })
+        .then(function() {
+            loadGroupsAndMonsters();
+        })
+        .catch(function(error) {
+            console.error("Error moving monster:", error);
         });
 }
 
@@ -111,11 +278,14 @@ function saveMonster(monster) {
         return;
     }
     
+    var monsterData = Object.assign({}, monster);
+    monsterData.groupId = null;
+    
     db.collection("users").doc(currentUser.uid).collection("monsters")
-        .add(monster)
+        .add(monsterData)
         .then(function() {
             alert("Monster saved!");
-            loadSavedMonsters();
+            loadGroupsAndMonsters();
         })
         .catch(function(error) {
             console.error("Error saving monster:", error);
@@ -130,7 +300,7 @@ function deleteMonster(docId, name) {
     db.collection("users").doc(currentUser.uid).collection("monsters").doc(docId)
         .delete()
         .then(function() {
-            loadSavedMonsters();
+            loadGroupsAndMonsters();
         })
         .catch(function(error) {
             console.error("Error deleting monster:", error);
@@ -157,6 +327,7 @@ function printStatBlock() {
     
     html2pdf().set(opt).from(element).save();
 }
+
 // Export JSON
 function exportJSON() {
     if (!currentMonster) {
