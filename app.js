@@ -305,25 +305,38 @@ function createPrintClone() {
     var element = document.querySelector(".stat-block");
     var clone = element.cloneNode(true);
     
+    // Store original viewport
+    var viewportMeta = document.querySelector('meta[name="viewport"]');
+    var originalViewport = viewportMeta ? viewportMeta.getAttribute('content') : null;
+    
+    // Temporarily set viewport to desktop width
+    if (viewportMeta) {
+        viewportMeta.setAttribute('content', 'width=1200');
+    } else {
+        viewportMeta = document.createElement('meta');
+        viewportMeta.name = 'viewport';
+        viewportMeta.content = 'width=1200';
+        document.head.appendChild(viewportMeta);
+    }
+    
     // Create wrapper div
     var wrapper = document.createElement('div');
     wrapper.style.cssText = `
         position: absolute;
         left: 0;
         top: 0;
-        width: 850px;
+        width: 1000px;
         background: white;
-        z-index: -1;
-        opacity: 0;
-        pointer-events: none;
+        z-index: 9999;
+        overflow: visible;
     `;
     
     // Force desktop two-column layout
     clone.style.cssText = `
         display: block !important;
-        width: 800px !important;
+        width: 850px !important;
         max-width: none !important;
-        min-width: 800px !important;
+        min-width: 850px !important;
         column-count: 2 !important;
         column-gap: 40px !important;
         column-rule: 1px solid #184e4f !important;
@@ -344,7 +357,22 @@ function createPrintClone() {
     void clone.offsetWidth;
     void clone.offsetHeight;
     
-    return { clone: clone, container: wrapper };
+    return { 
+        clone: clone, 
+        container: wrapper, 
+        viewportMeta: viewportMeta,
+        originalViewport: originalViewport 
+    };
+}
+
+// Restore viewport after print
+function cleanupPrintClone(printElements) {
+    document.body.removeChild(printElements.container);
+    
+    // Restore original viewport
+    if (printElements.originalViewport) {
+        printElements.viewportMeta.setAttribute('content', printElements.originalViewport);
+    }
 }
 
 // Print PDF - WORKS ON BOTH MOBILE AND DESKTOP
@@ -357,8 +385,11 @@ function printStatBlock() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
     
-    // Give time for layout
+    // Give time for viewport change and layout
     setTimeout(function() {
+        // Force another reflow after viewport change
+        void printElements.clone.offsetWidth;
+        
         var cloneHeight = printElements.clone.scrollHeight;
         
         var opt = {
@@ -369,24 +400,22 @@ function printStatBlock() {
                 scale: 2, 
                 useCORS: true,
                 logging: false,
-                windowWidth: 1200,
-                windowHeight: cloneHeight + 100,
-                x: 0,
-                y: 0,
-                width: 800,
-                height: cloneHeight
+                width: 850,
+                height: cloneHeight,
+                scrollX: 0,
+                scrollY: 0
             },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
         
         html2pdf().set(opt).from(printElements.clone).save().then(function() {
-            document.body.removeChild(printElements.container);
+            cleanupPrintClone(printElements);
         }).catch(function(error) {
             console.error("PDF generation error:", error);
-            document.body.removeChild(printElements.container);
+            cleanupPrintClone(printElements);
             alert("Error generating PDF. Please try again.");
         });
-    }, 150);
+    }, 300);
 }
 
 // Print PNG - WORKS ON BOTH MOBILE AND DESKTOP
@@ -399,22 +428,23 @@ function printPNG() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
     
-    // Give time for layout
+    // Give time for viewport change and layout
     setTimeout(function() {
+        // Force another reflow after viewport change
+        void printElements.clone.offsetWidth;
+        
         var cloneHeight = printElements.clone.scrollHeight;
         
         html2canvas(printElements.clone, { 
             scale: 2, 
             useCORS: true,
             logging: false,
-            windowWidth: 1200,
-            windowHeight: cloneHeight + 100,
-            x: 0,
-            y: 0,
-            width: 800,
-            height: cloneHeight
+            width: 850,
+            height: cloneHeight,
+            scrollX: 0,
+            scrollY: 0
         }).then(function(canvas) {
-            document.body.removeChild(printElements.container);
+            cleanupPrintClone(printElements);
             
             var link = document.createElement('a');
             link.download = filename;
@@ -422,10 +452,10 @@ function printPNG() {
             link.click();
         }).catch(function(error) {
             console.error("PNG generation error:", error);
-            document.body.removeChild(printElements.container);
+            cleanupPrintClone(printElements);
             alert("Error generating PNG. Please try again.");
         });
-    }, 150);
+    }, 300);
 }
 
 // Export JSON
