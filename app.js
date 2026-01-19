@@ -148,24 +148,15 @@ function printStatBlock() {
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
     
     var opt = {
-        margin: [0.5, 0.5, 0.5, 0.5],
+        margin: [0.75, 0.75, 0.75, 0.75],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 1.5, letterRendering: true },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak: { mode: 'avoid-all' }
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
     
-    // Clone the element and scale it down for PDF
-    var clone = element.cloneNode(true);
-    clone.style.fontSize = '10px';
-    clone.style.width = '7.5in';
-    clone.style.padding = '15px';
-    clone.style.columnGap = '30px';
-    
-    html2pdf().set(opt).from(clone).save();
+    html2pdf().set(opt).from(element).save();
 }
-
 // Export JSON
 function exportJSON() {
     if (!currentMonster) {
