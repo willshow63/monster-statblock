@@ -305,53 +305,113 @@ function createPrintClone() {
     var element = document.querySelector(".stat-block");
     var clone = element.cloneNode(true);
     
-    // Create an absolutely positioned container off-screen
-    var wrapper = document.createElement('div');
-    wrapper.style.cssText = `
+    // Create an iframe to isolate from viewport constraints
+    var iframe = document.createElement('iframe');
+    iframe.style.cssText = `
         position: absolute;
         left: -9999px;
         top: 0;
-        width: 850px;
-        overflow: visible;
-        background: white;
+        width: 900px;
+        height: 2000px;
+        border: none;
+        visibility: visible;
     `;
+    document.body.appendChild(iframe);
     
-    // Force desktop two-column layout regardless of screen size
-    clone.style.cssText = `
-        display: block !important;
-        width: 800px !important;
-        max-width: none !important;
-        min-width: 800px !important;
-        column-count: 2 !important;
-        column-gap: 40px !important;
-        column-rule: 1px solid #184e4f !important;
-        font-size: 14px !important;
-        padding: 20px !important;
-        background: #f5f5f5 !important;
-        border-top: 4px solid #184e4f !important;
-        border-bottom: 4px solid #184e4f !important;
-        box-shadow: none !important;
-        box-sizing: border-box !important;
-        transform: none !important;
-        margin: 0 !important;
-        overflow: visible !important;
-    `;
+    var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                body { 
+                    font-family: 'Times New Roman', serif;
+                    font-size: 14px;
+                    line-height: 1.4;
+                    background: white;
+                    width: 900px;
+                    overflow: visible;
+                }
+                .stat-block {
+                    display: block !important;
+                    width: 800px !important;
+                    max-width: none !important;
+                    min-width: 800px !important;
+                    column-count: 2 !important;
+                    column-gap: 40px !important;
+                    column-rule: 1px solid #184e4f !important;
+                    font-size: 14px !important;
+                    padding: 20px !important;
+                    background: #f5f5f5 !important;
+                    border-top: 4px solid #184e4f !important;
+                    border-bottom: 4px solid #184e4f !important;
+                    box-shadow: none !important;
+                    box-sizing: border-box !important;
+                    overflow: visible !important;
+                }
+                .monster-name {
+                    font-family: 'Times New Roman', serif;
+                    font-size: 2em;
+                    font-variant: small-caps;
+                    font-weight: bold;
+                    color: #184e4f;
+                    margin: 0 0 0 0;
+                    letter-spacing: 1px;
+                }
+                .monster-type { font-style: italic; margin: 0 0 10px 0; }
+                .divider {
+                    height: 4px;
+                    background: linear-gradient(to right, #184e4f, #184e4f 60%, transparent);
+                    margin: 10px 0;
+                    border: none;
+                }
+                .stat-label { font-weight: bold; }
+                .basic-stats p, .secondary-stats p { margin: 2px 0; }
+                .abilities {
+                    display: flex;
+                    justify-content: space-between;
+                    text-align: center;
+                    margin: 10px 0;
+                    color: #184e4f;
+                }
+                .ability { flex: 1; }
+                .ability-name { font-weight: bold; text-transform: uppercase; font-size: 0.9em; }
+                .ability-score { font-size: 1em; }
+                .section-header {
+                    font-size: 1.4em;
+                    font-variant: small-caps;
+                    color: #184e4f;
+                    border-bottom: 2px solid #184e4f;
+                    margin: 15px 0 5px 0;
+                    padding-bottom: 2px;
+                    break-after: avoid;
+                }
+                .feature, .action { margin: 10px 0; break-inside: avoid; }
+                .feature-name, .action-name { font-weight: bold; font-style: italic; }
+                .attack-type { font-style: italic; }
+                .legendary-description { margin-bottom: 10px; }
+                .legendary-action { margin: 5px 0; }
+                .legendary-action-name { font-weight: bold; }
+                .villain-action { margin: 5px 0; }
+                .villain-action-round { font-weight: bold; font-style: italic; }
+                .villain-action-name { font-weight: bold; font-style: italic; }
+            </style>
+        </head>
+        <body></body>
+        </html>
+    `);
+    iframeDoc.close();
     
-    // Remove any responsive styles from child elements
-    var allElements = clone.querySelectorAll('*');
-    allElements.forEach(function(el) {
-        el.style.maxWidth = 'none';
-        el.style.transform = 'none';
-    });
+    // Append clone to iframe body
+    iframeDoc.body.appendChild(clone);
     
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
-    
-    // Force reflow to ensure layout is calculated
+    // Force reflow
     void clone.offsetWidth;
     void clone.offsetHeight;
     
-    return { clone: clone, container: wrapper };
+    return { clone: clone, container: iframe, iframeDoc: iframeDoc };
 }
 
 // Print PDF - WORKS ON BOTH MOBILE AND DESKTOP
@@ -364,7 +424,7 @@ function printStatBlock() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
     
-    // Small delay to ensure CSS columns are fully rendered
+    // Delay to ensure iframe content is fully rendered
     setTimeout(function() {
         var opt = {
             margin: [0.5, 0.5, 0.5, 0.5],
@@ -378,13 +438,7 @@ function printStatBlock() {
                 scrollX: 0,
                 scrollY: 0,
                 logging: false,
-                onclone: function(clonedDoc) {
-                    var clonedElement = clonedDoc.querySelector('.stat-block');
-                    if (clonedElement) {
-                        clonedElement.style.width = '800px';
-                        clonedElement.style.columnCount = '2';
-                    }
-                }
+                foreignObjectRendering: false
             },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
@@ -396,7 +450,7 @@ function printStatBlock() {
             document.body.removeChild(printElements.container);
             alert("Error generating PDF. Please try again.");
         });
-    }, 50);
+    }, 100);
 }
 
 // Print PNG - WORKS ON BOTH MOBILE AND DESKTOP
@@ -409,7 +463,7 @@ function printPNG() {
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
     
-    // Small delay to ensure CSS columns are fully rendered
+    // Delay to ensure iframe content is fully rendered
     setTimeout(function() {
         html2canvas(printElements.clone, { 
             scale: 2, 
@@ -419,13 +473,7 @@ function printPNG() {
             scrollX: 0,
             scrollY: 0,
             logging: false,
-            onclone: function(clonedDoc) {
-                var clonedElement = clonedDoc.querySelector('.stat-block');
-                if (clonedElement) {
-                    clonedElement.style.width = '800px';
-                    clonedElement.style.columnCount = '2';
-                }
-            }
+            foreignObjectRendering: false
         }).then(function(canvas) {
             document.body.removeChild(printElements.container);
             
@@ -438,7 +486,7 @@ function printPNG() {
             document.body.removeChild(printElements.container);
             alert("Error generating PNG. Please try again.");
         });
-    }, 50);
+    }, 100);
 }
 
 // Export JSON
