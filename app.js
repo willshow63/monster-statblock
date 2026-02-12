@@ -17,6 +17,10 @@ var currentUser = null;
 var currentMonster = null;
 var groups = [];
 var monsters = [];
+var expandedGroups = new Set(); // Track which groups are expanded (all start collapsed)
+
+// Attach the file upload listener once on page load
+document.getElementById("json-upload").addEventListener("change", handleFileUpload);
 
 // Auth State Listener
 auth.onAuthStateChanged(function(user) {
@@ -63,7 +67,7 @@ function createGroup(name) {
     if (!currentUser) return;
     
     db.collection("users").doc(currentUser.uid).collection("groups")
-        .add({ name: name, collapsed: false })
+        .add({ name: name })
         .then(function() {
             loadGroupsAndMonsters();
         })
@@ -75,6 +79,8 @@ function createGroup(name) {
 // Delete Group
 function deleteGroup(groupId) {
     if (!confirm("Delete this group? Monsters will be moved to ungrouped.")) return;
+    
+    expandedGroups.delete(groupId);
     
     db.collection("users").doc(currentUser.uid).collection("monsters")
         .where("groupId", "==", groupId)
@@ -99,11 +105,17 @@ function deleteGroup(groupId) {
 
 // Toggle Group Collapse
 function toggleGroup(groupId) {
-    var groupDiv = document.querySelector('[data-group-id="' + groupId + '"]');
+    if (expandedGroups.has(groupId)) {
+        expandedGroups.delete(groupId);
+    } else {
+        expandedGroups.add(groupId);
+    }
+    
+    var groupDiv = document.querySelector('.monster-group[data-group-id="' + groupId + '"]');
     var monstersDiv = groupDiv.querySelector('.group-monsters');
     var toggle = groupDiv.querySelector('.group-toggle');
     
-    if (monstersDiv.classList.contains('collapsed')) {
+    if (expandedGroups.has(groupId)) {
         monstersDiv.classList.remove('collapsed');
         toggle.textContent = '▼';
     } else {
@@ -142,21 +154,22 @@ function loadGroupsAndMonsters() {
         });
 }
 
-// Render Monster List
+// Render Monster List - groups start collapsed, respects expandedGroups state
 function renderMonsterList() {
     var container = document.getElementById("monster-list");
     var html = '';
     
     groups.forEach(function(group) {
         var groupMonsters = monsters.filter(function(m) { return m.groupId === group.id; });
+        var isExpanded = expandedGroups.has(group.id);
         
         html += '<div class="monster-group" data-group-id="' + group.id + '">';
         html += '<div class="group-header" onclick="toggleGroup(\'' + group.id + '\')">';
-        html += '<span class="group-toggle">▼</span>';
+        html += '<span class="group-toggle">' + (isExpanded ? '▼' : '►') + '</span>';
         html += '<span class="group-name">' + group.name + '</span>';
         html += '<button class="group-delete" onclick="event.stopPropagation(); deleteGroup(\'' + group.id + '\')">X</button>';
         html += '</div>';
-        html += '<div class="group-monsters" data-group-id="' + group.id + '">';
+        html += '<div class="group-monsters' + (isExpanded ? '' : ' collapsed') + '" data-group-id="' + group.id + '">';
         
         groupMonsters.forEach(function(monster) {
             html += renderMonsterItem(monster);
@@ -305,11 +318,9 @@ function createPrintClone() {
     var element = document.querySelector(".stat-block");
     var clone = element.cloneNode(true);
     
-    // Store original viewport
     var viewportMeta = document.querySelector('meta[name="viewport"]');
     var originalViewport = viewportMeta ? viewportMeta.getAttribute('content') : null;
     
-    // Temporarily set viewport to desktop width
     if (viewportMeta) {
         viewportMeta.setAttribute('content', 'width=1200');
     } else {
@@ -319,92 +330,51 @@ function createPrintClone() {
         document.head.appendChild(viewportMeta);
     }
     
-    // Create wrapper div
     var wrapper = document.createElement('div');
-    wrapper.style.cssText = `
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 1000px;
-        background: white;
-        z-index: 9999;
-        overflow: visible;
-    `;
+    wrapper.style.cssText = 'position:absolute;left:0;top:0;width:1000px;background:white;z-index:9999;overflow:visible;';
     
-    // Force desktop two-column layout
-    clone.style.cssText = `
-        display: block !important;
-        width: 850px !important;
-        max-width: none !important;
-        min-width: 850px !important;
-        column-count: 2 !important;
-        column-gap: 40px !important;
-        column-rule: 1px solid #184e4f !important;
-        font-size: 14px !important;
-        padding: 20px !important;
-        background: #f5f5f5 !important;
-        border-top: 4px solid #184e4f !important;
-        border-bottom: 4px solid #184e4f !important;
-        box-shadow: none !important;
-        box-sizing: border-box !important;
-        overflow: visible !important;
-    `;
+    // Force the two-column flex layout at print width
+    clone.style.cssText = 'display:flex!important;width:850px!important;max-width:none!important;min-width:850px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid #184e4f!important;border-bottom:4px solid #184e4f!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+    
+    // Style columns within the clone
+    var cols = clone.querySelectorAll('.stat-col');
+    if (cols.length === 2) {
+        cols[0].style.cssText = 'flex:1;min-width:0;border-right:1px solid #184e4f;padding-right:20px;';
+        cols[1].style.cssText = 'flex:1;min-width:0;padding-left:0;';
+    }
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
     
-    // Force reflow
     void clone.offsetWidth;
     void clone.offsetHeight;
     
-    return { 
-        clone: clone, 
-        container: wrapper, 
-        viewportMeta: viewportMeta,
-        originalViewport: originalViewport 
-    };
+    return { clone: clone, container: wrapper, viewportMeta: viewportMeta, originalViewport: originalViewport };
 }
 
-// Restore viewport after print
 function cleanupPrintClone(printElements) {
     document.body.removeChild(printElements.container);
-    
-    // Restore original viewport
     if (printElements.originalViewport) {
         printElements.viewportMeta.setAttribute('content', printElements.originalViewport);
     }
 }
 
-// Print PDF - WORKS ON BOTH MOBILE AND DESKTOP
+// Print PDF
 function printStatBlock() {
-    if (!currentMonster) {
-        alert("Please load a monster first.");
-        return;
-    }
+    if (!currentMonster) { alert("Please load a monster first."); return; }
     
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
     
-    // Give time for viewport change and layout
     setTimeout(function() {
-        // Force another reflow after viewport change
         void printElements.clone.offsetWidth;
-        
         var cloneHeight = printElements.clone.scrollHeight;
         
         var opt = {
             margin: [0.5, 0.5, 0.5, 0.5],
             filename: filename,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true,
-                logging: false,
-                width: 850,
-                height: cloneHeight,
-                scrollX: 0,
-                scrollY: 0
-            },
+            html2canvas: { scale: 2, useCORS: true, logging: false, width: 850, height: cloneHeight, scrollX: 0, scrollY: 0 },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
         
@@ -418,34 +388,20 @@ function printStatBlock() {
     }, 300);
 }
 
-// Print PNG - WORKS ON BOTH MOBILE AND DESKTOP
+// Print PNG
 function printPNG() {
-    if (!currentMonster) {
-        alert("Please load a monster first.");
-        return;
-    }
+    if (!currentMonster) { alert("Please load a monster first."); return; }
     
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
     
-    // Give time for viewport change and layout
     setTimeout(function() {
-        // Force another reflow after viewport change
         void printElements.clone.offsetWidth;
-        
         var cloneHeight = printElements.clone.scrollHeight;
         
-        html2canvas(printElements.clone, { 
-            scale: 2, 
-            useCORS: true,
-            logging: false,
-            width: 850,
-            height: cloneHeight,
-            scrollX: 0,
-            scrollY: 0
-        }).then(function(canvas) {
+        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: 850, height: cloneHeight, scrollX: 0, scrollY: 0 })
+        .then(function(canvas) {
             cleanupPrintClone(printElements);
-            
             var link = document.createElement('a');
             link.download = filename;
             link.href = canvas.toDataURL('image/png');
@@ -460,17 +416,12 @@ function printPNG() {
 
 // Export JSON
 function exportJSON() {
-    if (!currentMonster) {
-        alert("Please load a monster first.");
-        return;
-    }
+    if (!currentMonster) { alert("Please load a monster first."); return; }
     
     var dataStr = JSON.stringify(currentMonster, null, 2);
     var blob = new Blob([dataStr], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
-    
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".json";
-    
     var a = document.createElement('a');
     a.href = url;
     a.download = filename;
@@ -482,65 +433,34 @@ function exportJSON() {
 
 function getMod(score) {
     var mod = Math.floor((score - 10) / 2);
-    if (mod >= 0) {
-        return "+" + mod;
-    } else {
-        return "" + mod;
-    }
+    return mod >= 0 ? "+" + mod : "" + mod;
 }
 
-function renderStatBlock(monster) {
-    var container = document.getElementById("stat-block-container");
+// ============================================================
+// SECTION BUILDERS - Each returns an HTML string for a section
+// ============================================================
+
+function buildHeaderSection(monster) {
     var html = '';
-    
-    // Button row - now with responsive wrapper
-    html += '<div class="button-row">';
-    html += '<label for="json-upload" class="upload-btn">Upload JSON</label>';
-    html += '<input type="file" id="json-upload" accept=".json" />';
-    html += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
-    html += '<button class="print-btn" onclick="printPNG()">PNG</button>';
-    html += '<button class="export-btn" onclick="exportJSON()">Export</button>';
-    if (currentUser) {
-        html += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save</button>';
-    }
-    html += '</div>';
-    
-    html += '<div class="stat-block">';
-    
-    // Name and Type
     html += '<h1 class="monster-name">' + monster.name + '</h1>';
     html += '<p class="monster-type">' + monster.size + ' ' + monster.type + ', ' + monster.alignment + '</p>';
-    
-    // Divider
     html += '<hr class="divider">';
-    
-    // Basic Stats
     html += '<div class="basic-stats">';
     html += '<p><span class="stat-label">Armor Class</span> ' + monster.ac + (monster.acType ? ' (' + monster.acType + ')' : '') + '</p>';
     html += '<p><span class="stat-label">Hit Points</span> ' + monster.hp + (monster.hpFormula ? ' (' + monster.hpFormula + ')' : '') + '</p>';
     html += '<p><span class="stat-label">Speed</span> ' + monster.speed + '</p>';
     html += '</div>';
-    
-    // Divider
     html += '<hr class="divider">';
-    
-    // Ability Scores
     html += '<div class="abilities">';
     var abilityNames = ["str", "dex", "con", "int", "wis", "cha"];
     for (var i = 0; i < abilityNames.length; i++) {
         var ability = abilityNames[i];
         var score = monster.abilities[ability];
-        html += '<div class="ability">';
-        html += '<div class="ability-name">' + ability.toUpperCase() + '</div>';
-        html += '<div class="ability-score">' + score + ' (' + getMod(score) + ')</div>';
-        html += '</div>';
+        html += '<div class="ability"><div class="ability-name">' + ability.toUpperCase() + '</div>';
+        html += '<div class="ability-score">' + score + ' (' + getMod(score) + ')</div></div>';
     }
     html += '</div>';
-    
-    // Divider
     html += '<hr class="divider">';
-    
-    // Secondary Stats
     html += '<div class="secondary-stats">';
     if (monster.savingThrows) html += '<p><span class="stat-label">Saving Throws</span> ' + monster.savingThrows + '</p>';
     if (monster.skills) html += '<p><span class="stat-label">Skills</span> ' + monster.skills + '</p>';
@@ -552,116 +472,247 @@ function renderStatBlock(monster) {
     if (monster.languages) html += '<p><span class="stat-label">Languages</span> ' + monster.languages + '</p>';
     html += '<p><span class="stat-label">Challenge Rating</span> ' + monster.cr + (monster.xp ? ' (' + monster.xp + ' XP)' : '') + '</p>';
     html += '</div>';
-    
-    // Features
-    if (monster.features && monster.features.length > 0) {
-        html += '<hr class="divider">';
-        for (var i = 0; i < monster.features.length; i++) {
-            var feature = monster.features[i];
-            html += '<div class="feature">';
-            html += '<span class="feature-name">' + feature.name + '.</span> ';
-            html += '<span class="feature-text">' + feature.text + '</span>';
-            html += '</div>';
-        }
-    }
-    
-    // Actions
-    if (monster.actions && monster.actions.length > 0) {
-        html += '<h2 class="section-header">Actions</h2>';
-        for (var i = 0; i < monster.actions.length; i++) {
-            var action = monster.actions[i];
-            html += '<div class="action">';
-            html += '<span class="action-name">' + action.name + '.</span> ';
-            if (action.attackType) {
-                html += '<span class="attack-type">' + action.attackType + ':</span> ' + action.toHit + ', ' + action.reach + ', ' + action.target + '. ';
-                html += '<span class="hit-label"><em>Hit:</em></span> ' + action.damage;
-            } else {
-                html += '<span class="action-text">' + action.text + '</span>';
-            }
-            html += '</div>';
-        }
-    }
-    
-    // Bonus Actions
-    if (monster.bonusActions && monster.bonusActions.length > 0) {
-        html += '<h2 class="section-header">Bonus Actions</h2>';
-        for (var i = 0; i < monster.bonusActions.length; i++) {
-            var action = monster.bonusActions[i];
-            html += '<div class="action">';
-            html += '<span class="action-name">' + action.name + '.</span> ';
-            html += '<span class="action-text">' + action.text + '</span>';
-            html += '</div>';
-        }
-    }
-    
-    // Reactions
-    if (monster.reactions && monster.reactions.length > 0) {
-        html += '<h2 class="section-header">Reactions</h2>';
-        for (var i = 0; i < monster.reactions.length; i++) {
-            var reaction = monster.reactions[i];
-            html += '<div class="action">';
-            html += '<span class="action-name">' + reaction.name + '.</span> ';
-            html += '<span class="action-text">' + reaction.text + '</span>';
-            html += '</div>';
-        }
-    }
-    
-    // Legendary Actions
-    if (monster.legendaryActions && monster.legendaryActions.length > 0) {
-        html += '<h2 class="section-header">Legendary Actions</h2>';
-        if (monster.legendaryActionsDescription) {
-            html += '<p class="legendary-description">' + monster.legendaryActionsDescription + '</p>';
-        }
-        for (var i = 0; i < monster.legendaryActions.length; i++) {
-            var action = monster.legendaryActions[i];
-            html += '<div class="legendary-action">';
-            html += '<span class="legendary-action-name">' + action.name + '.</span> ';
-            html += action.text;
-            html += '</div>';
-        }
-    }
-    
-    // Lair Actions
-    if (monster.lairActions && monster.lairActions.length > 0) {
-        html += '<h2 class="section-header">Lair Actions</h2>';
-        if (monster.lairActionsDescription) {
-            html += '<p>' + monster.lairActionsDescription + '</p>';
-        }
-        html += '<ul>';
-        for (var i = 0; i < monster.lairActions.length; i++) {
-            html += '<li>' + monster.lairActions[i] + '</li>';
-        }
-        html += '</ul>';
-    }
+    return html;
+}
 
-    // Villain Actions
-    if (monster.villainActions && monster.villainActions.length > 0) {
-        html += '<h2 class="section-header">Villain Actions</h2>';
-        for (var i = 0; i < monster.villainActions.length; i++) {
-            var action = monster.villainActions[i];
-            html += '<div class="villain-action">';
-            html += '<span class="villain-action-round">(Round ' + action.round + ')</span> ';
-            html += '<span class="villain-action-name">' + action.name + '.</span> ';
-            html += action.text;
-            html += '</div>';
+function buildFeaturesSection(monster) {
+    if (!monster.features || monster.features.length === 0) return '';
+    var html = '<hr class="divider">';
+    for (var i = 0; i < monster.features.length; i++) {
+        var feature = monster.features[i];
+        html += '<div class="feature"><span class="feature-name">' + feature.name + '.</span> ';
+        html += '<span class="feature-text">' + feature.text + '</span></div>';
+    }
+    return html;
+}
+
+function buildActionsSection(monster) {
+    if (!monster.actions || monster.actions.length === 0) return '';
+    var html = '<div class="stat-section"><h2 class="section-header">Actions</h2>';
+    for (var i = 0; i < monster.actions.length; i++) {
+        var action = monster.actions[i];
+        html += '<div class="action"><span class="action-name">' + action.name + '.</span> ';
+        if (action.attackType) {
+            html += '<span class="attack-type">' + action.attackType + ':</span> ' + action.toHit + ', ' + action.reach + ', ' + action.target + '. ';
+            html += '<span class="hit-label"><em>Hit:</em></span> ' + action.damage;
+        } else {
+            html += '<span class="action-text">' + action.text + '</span>';
+        }
+        html += '</div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function buildBonusActionsSection(monster) {
+    if (!monster.bonusActions || monster.bonusActions.length === 0) return '';
+    var html = '<div class="stat-section"><h2 class="section-header">Bonus Actions</h2>';
+    for (var i = 0; i < monster.bonusActions.length; i++) {
+        var action = monster.bonusActions[i];
+        html += '<div class="action"><span class="action-name">' + action.name + '.</span> ';
+        html += '<span class="action-text">' + action.text + '</span></div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function buildReactionsSection(monster) {
+    if (!monster.reactions || monster.reactions.length === 0) return '';
+    var html = '<div class="stat-section"><h2 class="section-header">Reactions</h2>';
+    for (var i = 0; i < monster.reactions.length; i++) {
+        var reaction = monster.reactions[i];
+        html += '<div class="action"><span class="action-name">' + reaction.name + '.</span> ';
+        html += '<span class="action-text">' + reaction.text + '</span></div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function buildLegendaryActionsSection(monster) {
+    if (!monster.legendaryActions || monster.legendaryActions.length === 0) return '';
+    var html = '<div class="stat-section"><h2 class="section-header">Legendary Actions</h2>';
+    if (monster.legendaryActionsDescription) {
+        html += '<p class="legendary-description">' + monster.legendaryActionsDescription + '</p>';
+    }
+    for (var i = 0; i < monster.legendaryActions.length; i++) {
+        var action = monster.legendaryActions[i];
+        html += '<div class="legendary-action"><span class="legendary-action-name">' + action.name + '.</span> ' + action.text + '</div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function buildLairActionsSection(monster) {
+    if (!monster.lairActions || monster.lairActions.length === 0) return '';
+    var html = '<div class="stat-section"><h2 class="section-header">Lair Actions</h2>';
+    if (monster.lairActionsDescription) {
+        html += '<p>' + monster.lairActionsDescription + '</p>';
+    }
+    html += '<ul>';
+    for (var i = 0; i < monster.lairActions.length; i++) {
+        html += '<li>' + monster.lairActions[i] + '</li>';
+    }
+    html += '</ul></div>';
+    return html;
+}
+
+function buildVillainActionsSection(monster) {
+    if (!monster.villainActions || monster.villainActions.length === 0) return '';
+    var html = '<div class="stat-section"><h2 class="section-header">Villain Actions</h2>';
+    for (var i = 0; i < monster.villainActions.length; i++) {
+        var action = monster.villainActions[i];
+        html += '<div class="villain-action"><span class="villain-action-round">(Round ' + action.round + ')</span> ';
+        html += '<span class="villain-action-name">' + action.name + '.</span> ' + action.text + '</div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+// ============================================================
+// COLUMN LAYOUT ENGINE
+// ============================================================
+
+// Measure the rendered height of an HTML string inside a single-column stat block
+function measureSectionHeight(htmlString, containerWidth) {
+    var measurer = document.createElement('div');
+    measurer.style.cssText = 'position:absolute;visibility:hidden;width:' + containerWidth + 'px;font-family:Times New Roman,serif;font-size:14px;line-height:1.4;padding:0;margin:0;';
+    measurer.className = 'stat-block-measure';
+    measurer.innerHTML = htmlString;
+    document.body.appendChild(measurer);
+    var height = measurer.offsetHeight;
+    document.body.removeChild(measurer);
+    return height;
+}
+
+function renderStatBlock(monster) {
+    var container = document.getElementById("stat-block-container");
+    
+    // Button row (no upload btn - that's in the header now)
+    var buttonsHtml = '<div class="button-row">';
+    buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
+    buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+    buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
+    if (currentUser) {
+        buttonsHtml += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save</button>';
+    }
+    buttonsHtml += '</div>';
+    
+    // Build all sections
+    var headerHtml = buildHeaderSection(monster);
+    var featuresHtml = buildFeaturesSection(monster);
+    var actionsHtml = buildActionsSection(monster);
+    var bonusActionsHtml = buildBonusActionsSection(monster);
+    var reactionsHtml = buildReactionsSection(monster);
+    var legendaryHtml = buildLegendaryActionsSection(monster);
+    var lairHtml = buildLairActionsSection(monster);
+    var villainHtml = buildVillainActionsSection(monster);
+    
+    // Collect sections in order: header+features always in col1,
+    // then the remaining sections get distributed
+    var col1Fixed = headerHtml + featuresHtml; // Always column 1
+    
+    var sections = [];
+    if (actionsHtml) sections.push(actionsHtml);
+    if (bonusActionsHtml) sections.push(bonusActionsHtml);
+    if (reactionsHtml) sections.push(reactionsHtml);
+    if (legendaryHtml) sections.push(legendaryHtml);
+    if (lairHtml) sections.push(lairHtml);
+    if (villainHtml) sections.push(villainHtml);
+    
+    // Measure total content height at single-column width (~380px per column)
+    var colWidth = 380;
+    var col1FixedHeight = measureSectionHeight(col1Fixed, colWidth);
+    
+    var sectionHeights = [];
+    var totalSectionsHeight = 0;
+    for (var i = 0; i < sections.length; i++) {
+        var h = measureSectionHeight(sections[i], colWidth);
+        sectionHeights.push(h);
+        totalSectionsHeight += h;
+    }
+    
+    var totalHeight = col1FixedHeight + totalSectionsHeight;
+    
+    // Decide: single column if total content is short enough
+    // Threshold: if everything fits in ~700px, single column is fine
+    var SINGLE_COL_THRESHOLD = 700;
+    
+    if (totalHeight <= SINGLE_COL_THRESHOLD) {
+        // Single column layout
+        var html = buttonsHtml + '<div class="stat-block single-column"><div class="stat-col">';
+        html += col1Fixed;
+        for (var i = 0; i < sections.length; i++) {
+            html += sections[i];
+        }
+        html += '</div></div>';
+        container.innerHTML = html;
+        return;
+    }
+    
+    // Two-column layout: distribute sections to balance columns
+    // Col 1 starts with header+features (mandatory)
+    // Then we add sections to col1 until adding the next one would
+    // make col1 taller than the ideal midpoint
+    var idealMidpoint = totalHeight / 2;
+    
+    var col1Height = col1FixedHeight;
+    var col1Sections = [];
+    var col2Sections = [];
+    var splitFound = false;
+    
+    for (var i = 0; i < sections.length; i++) {
+        if (splitFound) {
+            col2Sections.push(sections[i]);
+        } else {
+            // Would adding this section make col1 overshoot the midpoint?
+            var heightIfAdded = col1Height + sectionHeights[i];
+            var remainingHeight = totalSectionsHeight;
+            for (var j = 0; j <= i; j++) remainingHeight -= sectionHeights[j];
+            
+            // If adding this section gets us closer to balanced, add it
+            // But if col1 is already past midpoint, stop
+            if (col1Height >= idealMidpoint) {
+                splitFound = true;
+                col2Sections.push(sections[i]);
+            } else if (heightIfAdded <= idealMidpoint * 1.15) {
+                // Allow col1 to be up to 15% over midpoint to keep sections together
+                col1Sections.push(sections[i]);
+                col1Height = heightIfAdded;
+            } else {
+                splitFound = true;
+                col2Sections.push(sections[i]);
+            }
         }
     }
     
+    // If nothing went to col2 (all sections fit better in col1), 
+    // that's fine - col2 will just be shorter
+    
+    // Build the two-column HTML
+    var html = buttonsHtml + '<div class="stat-block two-column">';
+    html += '<div class="stat-col stat-col-1">';
+    html += col1Fixed;
+    for (var i = 0; i < col1Sections.length; i++) {
+        html += col1Sections[i];
+    }
+    html += '</div>';
+    html += '<div class="stat-col stat-col-2">';
+    for (var i = 0; i < col2Sections.length; i++) {
+        html += col2Sections[i];
+    }
+    html += '</div>';
     html += '</div>';
     
     container.innerHTML = html;
-    
-    // Re-attach file upload listener since we recreated the element
-    document.getElementById("json-upload").addEventListener("change", handleFileUpload);
 }
 
 function handleFileUpload(e) {
     var file = e.target.files[0];
     if (file) {
         var reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function(event) {
             try {
-                var monster = JSON.parse(e.target.result);
+                var monster = JSON.parse(event.target.result);
                 currentMonster = monster;
                 renderStatBlock(monster);
             } catch (err) {
@@ -670,4 +721,6 @@ function handleFileUpload(e) {
         };
         reader.readAsText(file);
     }
+    // Reset the input so the same file can be re-uploaded
+    e.target.value = '';
 }

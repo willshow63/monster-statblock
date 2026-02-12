@@ -18,12 +18,17 @@ body {
 
 .header-row {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
 }
 
 .auth-area {
+    display: flex;
+    align-items: center;
+}
+
+.upload-area {
     display: flex;
     align-items: center;
 }
@@ -201,13 +206,8 @@ body {
     border-left: 3px solid #184e4f;
 }
 
-.monster-item:hover {
-    background: #e8e8e8;
-}
-
-.monster-item.dragging {
-    opacity: 0.5;
-}
+.monster-item:hover { background: #e8e8e8; }
+.monster-item.dragging { opacity: 0.5; }
 
 .monster-item .monster-name-btn {
     flex-grow: 1;
@@ -230,14 +230,10 @@ body {
     font-size: 11px;
 }
 
-.monster-item .delete-btn:hover {
-    background: #a93226;
-}
+.monster-item .delete-btn:hover { background: #a93226; }
 
 /* Ungrouped section */
-.ungrouped-section {
-    margin-top: 10px;
-}
+.ungrouped-section { margin-top: 10px; }
 
 .ungrouped-header {
     font-weight: bold;
@@ -247,9 +243,7 @@ body {
     text-transform: uppercase;
 }
 
-.ungrouped-monsters {
-    min-height: 20px;
-}
+.ungrouped-monsters { min-height: 20px; }
 
 .ungrouped-monsters.drag-over {
     background: #e0f0e0;
@@ -257,29 +251,52 @@ body {
     border-radius: 4px;
 }
 
-/* Stat Block Container */
+/* ============================================
+   STAT BLOCK - JS-driven two-column layout
+   ============================================ */
+
 #stat-block-container {
     flex-grow: 1;
     max-width: 900px;
 }
 
+/* Base stat block - shared styles */
 .stat-block {
     background: #f5f5f5;
     padding: 20px;
-    column-count: 2;
-    column-gap: 40px;
-    column-rule: 1px solid #184e4f;
     border-top: 4px solid #184e4f;
     border-bottom: 4px solid #184e4f;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
+/* Two-column layout via flexbox */
+.stat-block.two-column {
+    display: flex;
+    gap: 40px;
+}
+
+.stat-block.two-column .stat-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-block.two-column .stat-col-1 {
+    border-right: 1px solid #184e4f;
+    padding-right: 20px;
+}
+
+/* Single-column layout */
 .stat-block.single-column {
-    column-count: 1;
+    display: block;
     max-width: 450px;
 }
 
-/* Button Row - UPDATED FOR MOBILE RESPONSIVENESS */
+/* Section wrapper - keeps header + content together */
+.stat-section {
+    break-inside: avoid;
+}
+
+/* Button Row */
 .button-row {
     display: flex;
     flex-wrap: wrap;
@@ -298,14 +315,8 @@ body {
     border-radius: 4px;
 }
 
-.save-btn:hover {
-    background: #1e5a5b;
-}
-
-.save-btn:disabled {
-    background: #95a5a6;
-    cursor: not-allowed;
-}
+.save-btn:hover { background: #1e5a5b; }
+.save-btn:disabled { background: #95a5a6; cursor: not-allowed; }
 
 /* Header */
 .monster-name {
@@ -332,13 +343,8 @@ body {
 }
 
 /* Basic Stats */
-.basic-stats p {
-    margin: 2px 0;
-}
-
-.stat-label {
-    font-weight: bold;
-}
+.basic-stats p { margin: 2px 0; }
+.stat-label { font-weight: bold; }
 
 /* Ability Scores */
 .abilities {
@@ -349,9 +355,7 @@ body {
     color: #184e4f;
 }
 
-.ability {
-    flex: 1;
-}
+.ability { flex: 1; }
 
 .ability-name {
     font-weight: bold;
@@ -359,14 +363,10 @@ body {
     font-size: 0.9em;
 }
 
-.ability-score {
-    font-size: 1em;
-}
+.ability-score { font-size: 1em; }
 
 /* Secondary Stats */
-.secondary-stats p {
-    margin: 2px 0;
-}
+.secondary-stats p { margin: 2px 0; }
 
 /* Section Headers */
 .section-header {
@@ -376,55 +376,28 @@ body {
     border-bottom: 2px solid #184e4f;
     margin: 15px 0 5px 0;
     padding-bottom: 2px;
-    break-after: avoid;
 }
 
 /* Features and Actions */
-.feature, .action {
-    margin: 10px 0;
-    break-inside: avoid;
-}
+.feature, .action { margin: 10px 0; }
 
 .feature-name, .action-name {
     font-weight: bold;
     font-style: italic;
 }
 
-.attack-type {
-    font-style: italic;
-}
-
-.feature-text, .action-text {
-    display: inline;
-}
+.attack-type { font-style: italic; }
+.feature-text, .action-text { display: inline; }
 
 /* Legendary Actions */
-.legendary-description {
-    margin-bottom: 10px;
-}
-
-.legendary-action {
-    margin: 5px 0;
-}
-
-.legendary-action-name {
-    font-weight: bold;
-}
+.legendary-description { margin-bottom: 10px; }
+.legendary-action { margin: 5px 0; }
+.legendary-action-name { font-weight: bold; }
 
 /* Villain Actions */
-.villain-action {
-    margin: 5px 0;
-}
-
-.villain-action-round {
-    font-weight: bold;
-    font-style: italic;
-}
-
-.villain-action-name {
-    font-weight: bold;
-    font-style: italic;
-}
+.villain-action { margin: 5px 0; }
+.villain-action-round { font-weight: bold; font-style: italic; }
+.villain-action-name { font-weight: bold; font-style: italic; }
 
 /* Responsive */
 @media (max-width: 900px) {
@@ -434,24 +407,22 @@ body {
         gap: 10px;
     }
     
-    .auth-area {
-        width: auto;
-    }
+    .auth-area { width: auto; }
     
-    .main-content {
+    .main-content { flex-direction: column; }
+    .saved-monsters { width: 100%; }
+    
+    .stat-block.two-column {
         flex-direction: column;
+        gap: 0;
     }
     
-    .saved-monsters {
-        width: 100%;
-    }
-    
-    .stat-block {
-        column-count: 1;
+    .stat-block.two-column .stat-col-1 {
+        border-right: none;
+        padding-right: 0;
     }
 }
 
-/* Mobile button row adjustments */
 @media (max-width: 600px) {
     .button-row {
         justify-content: center;
@@ -466,9 +437,7 @@ body {
 }
 
 @media (max-width: 400px) {
-    .button-row {
-        gap: 4px;
-    }
+    .button-row { gap: 4px; }
     
     .button-row button,
     .button-row .upload-btn {
@@ -478,23 +447,11 @@ body {
 }
 
 @media print {
-    body {
-        background: white;
-        padding: 0;
-        margin: 0;
-    }
+    body { background: white; padding: 0; margin: 0; }
     
-    .controls, .saved-monsters, .button-row {
-        display: none !important;
-    }
-    
-    .main-content {
-        display: block;
-    }
-    
-    #stat-block-container {
-        max-width: 100%;
-    }
+    .controls, .saved-monsters, .button-row { display: none !important; }
+    .main-content { display: block; }
+    #stat-block-container { max-width: 100%; }
     
     .stat-block {
         box-shadow: none;
@@ -503,33 +460,27 @@ body {
         border-bottom: 4px solid #184e4f;
         font-size: 11px;
         padding: 10px;
-        column-gap: 30px;
     }
     
-    .monster-name {
-        font-size: 1.6em;
-    }
+    .stat-block.two-column { gap: 30px; }
+    
+    .monster-name { font-size: 1.6em; }
     
     .section-header {
         font-size: 1.2em;
         margin: 10px 0 3px 0;
     }
     
-    .feature, .action, .legendary-action, .villain-action {
-        margin: 5px 0;
-    }
+    .feature, .action, .legendary-action, .villain-action { margin: 5px 0; }
+    .divider { margin: 5px 0; height: 3px; }
+    .abilities { margin: 5px 0; }
     
-    .divider {
-        margin: 5px 0;
-        height: 3px;
-    }
-    
-    .abilities {
-        margin: 5px 0;
-    }
-    
-    @page {
-        size: letter;
-        margin: 0.5in;
-    }
+    @page { size: letter; margin: 0.5in; }
+}
+
+/* Hidden measurer - used by JS to calculate section heights */
+.stat-block-measure {
+    position: absolute !important;
+    visibility: hidden !important;
+    pointer-events: none;
 }
