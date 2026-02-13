@@ -20,6 +20,37 @@ var groups = [];
 var monsters = [];
 var expandedGroups = new Set(); // Track which groups are expanded (all start collapsed)
 
+// Custom modal functions
+function showModal(message, buttons) {
+    var overlay = document.getElementById('custom-modal');
+    var msgEl = document.getElementById('modal-message');
+    var btnRow = document.getElementById('modal-buttons');
+    msgEl.textContent = message;
+    btnRow.innerHTML = '';
+    buttons.forEach(function(btn) {
+        var b = document.createElement('button');
+        b.textContent = btn.text;
+        b.className = 'modal-btn ' + (btn.className || '');
+        b.addEventListener('click', function() {
+            overlay.style.display = 'none';
+            if (btn.onClick) btn.onClick();
+        });
+        btnRow.appendChild(b);
+    });
+    overlay.style.display = 'flex';
+}
+
+function showAlert(message) {
+    showModal(message, [{ text: 'OK', className: 'modal-btn-confirm' }]);
+}
+
+function showConfirm(message, onConfirm) {
+    showModal(message, [
+        { text: 'Cancel', className: 'modal-btn-cancel' },
+        { text: 'OK', className: 'modal-btn-confirm', onClick: onConfirm }
+    ]);
+}
+
 // Attach the file upload listener once on page load
 document.getElementById("json-upload").addEventListener("change", handleFileUpload);
 
@@ -55,7 +86,7 @@ document.getElementById("login-btn").addEventListener("click", function() {
     var provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch(function(error) {
         console.error("Login error:", error);
-        alert("Login failed: " + error.message);
+        showAlert("Login failed: " + error.message);
     });
 });
 
@@ -88,29 +119,29 @@ function createGroup(name) {
 
 // Delete Group
 function deleteGroup(groupId) {
-    if (!confirm("Delete this group? Monsters will be moved to ungrouped.")) return;
-    
-    expandedGroups.delete(groupId);
-    
-    db.collection("users").doc(currentUser.uid).collection("monsters")
-        .where("groupId", "==", groupId)
-        .get()
-        .then(function(querySnapshot) {
-            var batch = db.batch();
-            querySnapshot.forEach(function(doc) {
-                batch.update(doc.ref, { groupId: null });
+    showConfirm("Delete this group? Monsters will be moved to ungrouped.", function() {
+        expandedGroups.delete(groupId);
+        
+        db.collection("users").doc(currentUser.uid).collection("monsters")
+            .where("groupId", "==", groupId)
+            .get()
+            .then(function(querySnapshot) {
+                var batch = db.batch();
+                querySnapshot.forEach(function(doc) {
+                    batch.update(doc.ref, { groupId: null });
+                });
+                return batch.commit();
+            })
+            .then(function() {
+                return db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete();
+            })
+            .then(function() {
+                loadGroupsAndMonsters();
+            })
+            .catch(function(error) {
+                console.error("Error deleting group:", error);
             });
-            return batch.commit();
-        })
-        .then(function() {
-            return db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete();
-        })
-        .then(function() {
-            loadGroupsAndMonsters();
-        })
-        .catch(function(error) {
-            console.error("Error deleting group:", error);
-        });
+    });
 }
 
 // Toggle Group Collapse
@@ -319,7 +350,7 @@ function loadMonster(docId) {
 // Save Monster
 function saveMonster(monster) {
     if (!currentUser) {
-        alert("Please sign in to save monsters.");
+        showAlert("Please sign in to save monsters.");
         return;
     }
     
@@ -328,28 +359,30 @@ function saveMonster(monster) {
     
     db.collection("users").doc(currentUser.uid).collection("monsters")
         .add(monsterData)
-        .then(function() {
-            alert("Monster saved!");
+        .then(function(docRef) {
+            currentMonsterDocId = docRef.id;
+            localStorage.setItem('lastMonsterDocId', docRef.id);
+            showAlert(monsterData.name + " saved!");
             loadGroupsAndMonsters();
         })
         .catch(function(error) {
             console.error("Error saving monster:", error);
-            alert("Error saving monster: " + error.message);
+            showAlert("Error saving monster: " + error.message);
         });
 }
 
 // Delete Monster
 function deleteMonster(docId, name) {
-    if (!confirm("Delete " + name + "?")) return;
-    
-    db.collection("users").doc(currentUser.uid).collection("monsters").doc(docId)
-        .delete()
-        .then(function() {
-            loadGroupsAndMonsters();
-        })
-        .catch(function(error) {
-            console.error("Error deleting monster:", error);
-        });
+    showConfirm("Delete " + name + "?", function() {
+        db.collection("users").doc(currentUser.uid).collection("monsters").doc(docId)
+            .delete()
+            .then(function() {
+                loadGroupsAndMonsters();
+            })
+            .catch(function(error) {
+                console.error("Error deleting monster:", error);
+            });
+    });
 }
 
 // Create a consistent clone for printing - WORKS ON BOTH MOBILE AND DESKTOP
@@ -393,7 +426,7 @@ function cleanupPrintClone(printElements) {
 
 // Print PDF
 function printStatBlock() {
-    if (!currentMonster) { alert("Please load a monster first."); return; }
+    if (!currentMonster) { showAlert("Please load a monster first."); return; }
     
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
@@ -415,14 +448,14 @@ function printStatBlock() {
         }).catch(function(error) {
             console.error("PDF generation error:", error);
             cleanupPrintClone(printElements);
-            alert("Error generating PDF. Please try again.");
+            showAlert("Error generating PDF. Please try again.");
         });
     }, 300);
 }
 
 // Print PNG
 function printPNG() {
-    if (!currentMonster) { alert("Please load a monster first."); return; }
+    if (!currentMonster) { showAlert("Please load a monster first."); return; }
     
     var printElements = createPrintClone();
     var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
@@ -441,14 +474,14 @@ function printPNG() {
         }).catch(function(error) {
             console.error("PNG generation error:", error);
             cleanupPrintClone(printElements);
-            alert("Error generating PNG. Please try again.");
+            showAlert("Error generating PNG. Please try again.");
         });
     }, 300);
 }
 
 // Export JSON
 function exportJSON() {
-    if (!currentMonster) { alert("Please load a monster first."); return; }
+    if (!currentMonster) { showAlert("Please load a monster first."); return; }
     
     var dataStr = JSON.stringify(currentMonster, null, 2);
     var blob = new Blob([dataStr], { type: 'application/json' });
@@ -624,9 +657,6 @@ function renderStatBlock(monster) {
     buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
     buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
     buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
-    if (currentUser) {
-        buttonsHtml += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save</button>';
-    }
     buttonsHtml += '</div>';
     
     // Build all sections as arrays of individual items
@@ -793,13 +823,13 @@ function handleRestoreUpload(e) {
     if (!file) return;
     
     if (!currentUser) {
-        alert("Please sign in to restore monsters.");
+        showAlert("Please sign in to overwrite monsters.");
         e.target.value = '';
         return;
     }
     
     if (!currentMonsterDocId) {
-        alert("No saved monster is currently open. Load a monster first, then restore.");
+        showAlert("No saved monster is currently open. Load a monster first, then overwrite.");
         e.target.value = '';
         return;
     }
@@ -809,30 +839,30 @@ function handleRestoreUpload(e) {
         try {
             var monsterData = JSON.parse(event.target.result);
             
-            if (!confirm("Replace \"" + (currentMonster.name || "current monster") + "\" with \"" + (monsterData.name || "uploaded data") + "\"?")) {
-                e.target.value = '';
-                return;
-            }
-            
-            // Preserve the groupId from the existing monster
-            monsterData.groupId = currentMonster.groupId || null;
-            
-            db.collection("users").doc(currentUser.uid).collection("monsters").doc(currentMonsterDocId)
-                .set(monsterData)
-                .then(function() {
-                    currentMonster = monsterData;
-                    renderStatBlock(monsterData);
-                    loadGroupsAndMonsters();
-                    alert("Monster restored successfully!");
-                })
-                .catch(function(error) {
-                    console.error("Error restoring monster:", error);
-                    alert("Error restoring: " + error.message);
-                });
+            showConfirm('Replace "' + (currentMonster.name || "current monster") + '" with "' + (monsterData.name || "uploaded data") + '"?', function() {
+                // Preserve the groupId from the existing monster
+                monsterData.groupId = currentMonster.groupId || null;
+                
+                db.collection("users").doc(currentUser.uid).collection("monsters").doc(currentMonsterDocId)
+                    .set(monsterData)
+                    .then(function() {
+                        currentMonster = monsterData;
+                        renderStatBlock(monsterData);
+                        loadGroupsAndMonsters();
+                        showAlert(monsterData.name + " overwritten successfully!");
+                    })
+                    .catch(function(error) {
+                        console.error("Error overwriting monster:", error);
+                        showAlert("Error overwriting: " + error.message);
+                    });
+            });
         } catch (err) {
-            alert("Invalid JSON file: " + err.message);
+            showAlert("Invalid JSON file: " + err.message);
         }
         e.target.value = '';
+    };
+    reader.readAsText(file);
+}
     };
     reader.readAsText(file);
 }
@@ -1020,12 +1050,16 @@ function handleFileUpload(e) {
                 var monster = JSON.parse(event.target.result);
                 currentMonster = monster;
                 renderStatBlock(monster);
+                
+                // Auto-save to Firestore if signed in
+                if (currentUser) {
+                    saveMonster(monster);
+                }
             } catch (err) {
-                alert("Error parsing JSON file: " + err.message);
+                showAlert("Error parsing JSON file: " + err.message);
             }
         };
         reader.readAsText(file);
     }
-    // Reset the input so the same file can be re-uploaded
     e.target.value = '';
 }
