@@ -690,20 +690,44 @@ function printStatBlock() {
             var col1H = cols[0].scrollHeight;
             var col2H = cols[1].scrollHeight;
             var maxColH = Math.max(col1H, col2H);
-            // Add padding (20px top + 20px bottom + 8px border)
             cloneHeight = Math.max(cloneHeight, maxColH + 48);
         }
         
-        var opt = {
-            margin: [0.5, 0.5, 0.5, 0.5],
-            filename: filename,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, width: 840, height: cloneHeight, scrollX: 0, scrollY: 0 },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-        
-        html2pdf().set(opt).from(printElements.clone).save().then(function() {
+        // Render to canvas first, then scale to fit one page
+        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: 840, height: cloneHeight, scrollX: 0, scrollY: 0 })
+        .then(function(canvas) {
             cleanupPrintClone(printElements);
+            
+            // Letter page in points: 612 x 792
+            // With 0.5in margins: usable area = 540 x 720 points (7.5 x 10 inches)
+            var pageW = 7.5; // inches usable
+            var pageH = 10;  // inches usable
+            var margin = 0.5; // inches
+            
+            var imgW = canvas.width;
+            var imgH = canvas.height;
+            var aspectRatio = imgW / imgH;
+            
+            // Start with full width
+            var fitW = pageW;
+            var fitH = fitW / aspectRatio;
+            
+            // If too tall, shrink to fit height
+            if (fitH > pageH) {
+                fitH = pageH;
+                fitW = fitH * aspectRatio;
+            }
+            
+            // Center horizontally on page
+            var xOffset = margin + (pageW - fitW) / 2;
+            var yOffset = margin + (pageH - fitH) / 2;
+            
+            var JsPDF = (typeof jspdf !== 'undefined' && jspdf.jsPDF) ? jspdf.jsPDF : (typeof jsPDF !== 'undefined' ? jsPDF : null);
+            if (!JsPDF) { showAlert("PDF library not loaded."); return; }
+            var pdf = new JsPDF({ unit: 'in', format: 'letter', orientation: 'portrait' });
+            var imgData = canvas.toDataURL('image/jpeg', 0.98);
+            pdf.addImage(imgData, 'JPEG', xOffset, yOffset, fitW, fitH);
+            pdf.save(filename);
         }).catch(function(error) {
             console.error("PDF generation error:", error);
             cleanupPrintClone(printElements);
