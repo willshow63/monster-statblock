@@ -1570,82 +1570,72 @@ function buildSummaryHtml(summary) {
         return html;
     }
     
-    // Desktop: CSS column flow, paginated to letter-page-sized blocks
-    // Render all content into a hidden measurer to get total height per page
-    var PAGE_HEIGHT = 1016;
+    // Desktop: paginated CSS-column pages of fixed height
+    var PAGE_CONTENT_HEIGHT = 980; // content area within each page
     var TITLE_HEIGHT = 50;
     
-    // First, render everything in a single lore-block to measure
+    // Create a hidden measurer that mimics a page's column layout
     var measurer = document.createElement('div');
-    measurer.style.cssText = 'position:absolute;visibility:hidden;width:840px;';
-    measurer.innerHTML = '<div class="lore-block" style="width:840px;padding:20px;font-family:Times New Roman,serif;font-size:14px;line-height:1.4;">'
-        + '<h1 class="lore-title">' + summaryName + '</h1>'
-        + '<div class="lore-columns" style="column-count:2;column-gap:40px;">'
-        + sections.join('')
-        + '</div></div>';
+    measurer.className = 'lore-block';
+    measurer.style.cssText = 'position:absolute;visibility:hidden;width:840px;padding:20px;';
     document.body.appendChild(measurer);
-    var totalHeight = measurer.firstChild.offsetHeight;
-    document.body.removeChild(measurer);
     
-    // If it fits on one page, just return it
-    if (totalHeight <= PAGE_HEIGHT) {
-        var html = '<div class="lore-block">';
-        html += '<h1 class="lore-title">' + summaryName + '</h1>';
-        html += '<div class="lore-columns">';
-        for (var i = 0; i < sections.length; i++) html += sections[i];
-        html += '</div></div>';
-        return html;
-    }
-    
-    // Multi-page: measure each section height individually
-    var colMeasurer = document.createElement('div');
-    colMeasurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:14px;line-height:1.4;';
-    document.body.appendChild(colMeasurer);
-    
-    var sectionData = [];
-    for (var i = 0; i < sections.length; i++) {
-        colMeasurer.innerHTML = sections[i];
-        sectionData.push({ html: sections[i], height: colMeasurer.offsetHeight });
-    }
-    document.body.removeChild(colMeasurer);
-    
-    // Distribute into pages — each page gets a CSS-column block with a max-height
-    // We estimate: each page has ~2 columns, so effective content height per page
-    // is PAGE_HEIGHT * 2 (both columns combined). We fill until we exceed that.
+    // Build pages by adding sections one at a time and checking if columns overflow
     var pages = [];
-    var remaining = sectionData.slice();
+    var currentPageSections = [];
     var pageNum = 0;
     
-    while (remaining.length > 0) {
-        var availHeight = PAGE_HEIGHT - (pageNum === 0 ? TITLE_HEIGHT : 0);
-        var twoColCapacity = availHeight * 2;
-        var pageSections = [];
-        var usedHeight = 0;
+    for (var i = 0; i < sections.length; i++) {
+        // Try adding this section to the current page
+        currentPageSections.push(sections[i]);
         
-        while (remaining.length > 0) {
-            var next = remaining[0];
-            if (usedHeight + next.height <= twoColCapacity || pageSections.length === 0) {
-                pageSections.push(next);
-                usedHeight += next.height;
-                remaining.shift();
-            } else {
-                break;
+        // Measure this page
+        var testHtml = '';
+        if (pageNum === 0) testHtml += '<h1 class="lore-title">' + summaryName + '</h1>';
+        var maxH = PAGE_CONTENT_HEIGHT - (pageNum === 0 ? TITLE_HEIGHT : 0);
+        testHtml += '<div class="lore-columns" style="column-fill:auto;height:' + maxH + 'px;">';
+        testHtml += currentPageSections.join('');
+        testHtml += '</div>';
+        measurer.innerHTML = testHtml;
+        
+        var colDiv = measurer.querySelector('.lore-columns');
+        // If scrollHeight > clientHeight, content overflows — doesn't fit
+        if (colDiv.scrollHeight > colDiv.clientHeight + 2) {
+            // This section doesn't fit — remove it and close this page
+            currentPageSections.pop();
+            
+            if (currentPageSections.length > 0) {
+                pages.push({ sections: currentPageSections, isFirst: pageNum === 0 });
+                pageNum++;
             }
+            // Start new page with this section
+            currentPageSections = [sections[i]];
         }
-        
-        pages.push({ sections: pageSections, isFirst: pageNum === 0 });
-        pageNum++;
     }
     
-    // Build HTML
+    // Push the last page
+    if (currentPageSections.length > 0) {
+        pages.push({ sections: currentPageSections, isFirst: pageNum === 0 });
+    }
+    
+    document.body.removeChild(measurer);
+    
+    // Build HTML — each page is a fixed-height block
     var html = '';
     for (var p = 0; p < pages.length; p++) {
         var page = pages[p];
-        html += '<div class="lore-block lore-page">';
+        var isLast = (p === pages.length - 1);
+        html += '<div class="lore-block lore-page' + (isLast ? ' lore-page-last' : '') + '">';
         if (page.isFirst) {
             html += '<h1 class="lore-title">' + summaryName + '</h1>';
         }
-        html += '<div class="lore-columns">';
+        var maxH = PAGE_CONTENT_HEIGHT - (page.isFirst ? TITLE_HEIGHT : 0);
+        // Last page: don't constrain height so it sizes naturally
+        if (isLast) {
+            html += '<div class="lore-columns">';
+        } else {
+            html += '<div class="lore-columns" style="column-fill:auto;height:' + maxH + 'px;">';
+        }
         for (var i = 0; i < page.sections.length; i++) html += page.sections[i].html;
         html += '</div></div>';
     }

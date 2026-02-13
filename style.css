@@ -932,7 +932,12 @@ body {
 }
 
 .lore-page {
+    min-height: 1016px;
     margin-bottom: 20px;
+}
+
+.lore-page-last {
+    min-height: 0;
 }
 
 .lore-page:last-child {
@@ -953,10 +958,6 @@ body {
     column-count: 2;
     column-gap: 40px;
     column-rule: 1px solid #184e4f;
-}
-
-.lore-section {
-    break-inside: avoid;
 }
 
 .lore-section-header {
