@@ -1166,113 +1166,173 @@ function switchTab(tab) {
 
 // ============ SUMMARY / LORE BLOCK ============
 function buildSummaryHtml(summary) {
-    var html = '<div class="lore-block">';
-    
-    // Header — use monster name as primary, summary can override
     var summaryName = summary.name || (currentMonster ? currentMonster.name : 'Creature');
-    html += '<h1 class="lore-title">' + summaryName + '</h1>';
     
-    // Two-column layout
-    html += '<div class="lore-columns">';
+    // Build each section as a discrete block
+    var sections = [];
     
-    // Column 1: Description, Legends & Lore, Encounters
-    html += '<div class="lore-col lore-col-1">';
-    
-    // Description / flavor text
+    // Description
     if (summary.description) {
-        html += '<div class="lore-description">' + summary.description + '</div>';
+        sections.push('<div class="lore-section"><div class="lore-description">' + summary.description + '</div></div>');
     }
     
     // Legends and Lore
     if (summary.legendsAndLore && summary.legendsAndLore.length > 0) {
-        html += '<h2 class="lore-section-header">Legends and Lore</h2>';
-        html += '<p class="lore-intro">With a History or Nature check, characters can learn the following:</p>';
+        var s = '<div class="lore-section"><h2 class="lore-section-header">Legends and Lore</h2>';
+        s += '<p class="lore-intro">With a History or Nature check, characters can learn the following:</p>';
         for (var i = 0; i < summary.legendsAndLore.length; i++) {
-            var lore = summary.legendsAndLore[i];
-            html += '<div class="lore-dc-entry"><strong>DC ' + lore.dc + '</strong> ' + lore.text + '</div>';
+            s += '<div class="lore-dc-entry"><strong>DC ' + summary.legendsAndLore[i].dc + '</strong> ' + summary.legendsAndLore[i].text + '</div>';
         }
+        s += '</div>';
+        sections.push(s);
     }
     
     // Encounters
     if (summary.encounters) {
-        html += '<h2 class="lore-section-header">' + summaryName + ' Encounters</h2>';
+        var s = '<div class="lore-section"><h2 class="lore-section-header">' + summaryName + ' Encounters</h2>';
         if (summary.encounters.description) {
-            html += '<p class="lore-encounters-desc">' + summary.encounters.description + '</p>';
+            s += '<p class="lore-encounters-desc">' + summary.encounters.description + '</p>';
         }
         if (summary.encounters.groups && summary.encounters.groups.length > 0) {
             for (var i = 0; i < summary.encounters.groups.length; i++) {
                 var enc = summary.encounters.groups[i];
-                html += '<div class="lore-encounter-group">';
-                html += '<div class="lore-encounter-cr"><strong>' + enc.cr + '</strong> ' + enc.creatures + '</div>';
+                s += '<div class="lore-encounter-group">';
+                s += '<div class="lore-encounter-cr"><strong>' + enc.cr + '</strong> ' + enc.creatures + '</div>';
                 if (enc.treasure) {
-                    html += '<div class="lore-encounter-treasure"><strong>Treasure</strong> ' + enc.treasure + '</div>';
+                    s += '<div class="lore-encounter-treasure"><strong>Treasure</strong> ' + enc.treasure + '</div>';
                 }
-                html += '</div>';
+                s += '</div>';
             }
         }
+        s += '</div>';
+        sections.push(s);
     }
-    
-    html += '</div>'; // end col 1
-    
-    // Column 2: Signs, Behavior, Names, Loot, Image
-    html += '<div class="lore-col lore-col-2">';
     
     // Signs
     if (summary.signs && summary.signs.length > 0) {
-        html += '<h2 class="lore-section-header">Signs</h2>';
-        html += '<table class="lore-table"><tbody>';
+        var s = '<div class="lore-section"><h2 class="lore-section-header">Signs</h2>';
+        s += '<table class="lore-table"><tbody>';
         for (var i = 0; i < summary.signs.length; i++) {
-            var sign = summary.signs[i];
-            html += '<tr><td class="lore-table-roll">' + sign.roll + '</td><td>' + sign.text + '</td></tr>';
+            s += '<tr><td class="lore-table-roll">' + summary.signs[i].roll + '</td><td>' + summary.signs[i].text + '</td></tr>';
         }
-        html += '</tbody></table>';
+        s += '</tbody></table></div>';
+        sections.push(s);
     }
     
     // Behavior
     if (summary.behavior && summary.behavior.length > 0) {
-        html += '<h2 class="lore-section-header">Behavior</h2>';
-        html += '<table class="lore-table"><tbody>';
+        var s = '<div class="lore-section"><h2 class="lore-section-header">Behavior</h2>';
+        s += '<table class="lore-table"><tbody>';
         for (var i = 0; i < summary.behavior.length; i++) {
-            var beh = summary.behavior[i];
-            html += '<tr><td class="lore-table-roll">' + beh.roll + '</td><td>' + beh.text + '</td></tr>';
+            s += '<tr><td class="lore-table-roll">' + summary.behavior[i].roll + '</td><td>' + summary.behavior[i].text + '</td></tr>';
         }
-        html += '</tbody></table>';
+        s += '</tbody></table></div>';
+        sections.push(s);
     }
     
     // Names
     if (summary.names) {
-        html += '<h2 class="lore-section-header">Names</h2>';
-        html += '<p class="lore-names">' + summary.names + '</p>';
+        sections.push('<div class="lore-section"><h2 class="lore-section-header">Names</h2><p class="lore-names">' + summary.names + '</p></div>');
     }
     
-    // Loot / Weapons, Armor & Items
+    // Loot
     if (summary.loot) {
-        html += '<h2 class="lore-section-header">' + (summary.loot.title || 'Weapons, Armor & Items') + '</h2>';
+        var s = '<div class="lore-section"><h2 class="lore-section-header">' + (summary.loot.title || 'Weapons, Armor & Items') + '</h2>';
         if (summary.loot.description) {
-            html += '<p class="lore-loot-desc">' + summary.loot.description + '</p>';
+            s += '<p class="lore-loot-desc">' + summary.loot.description + '</p>';
         }
         if (summary.loot.table && summary.loot.table.length > 0) {
-            html += '<table class="lore-table lore-loot-table">';
-            html += '<thead><tr><th>' + (summary.loot.dieType || 'd12') + '</th><th>Item(s)</th></tr></thead>';
-            html += '<tbody>';
+            s += '<table class="lore-table lore-loot-table">';
+            s += '<thead><tr><th>' + (summary.loot.dieType || 'd12') + '</th><th>Item(s)</th></tr></thead>';
+            s += '<tbody>';
             for (var i = 0; i < summary.loot.table.length; i++) {
-                var item = summary.loot.table[i];
-                html += '<tr><td class="lore-table-roll">' + item.roll + '</td><td>' + item.text + '</td></tr>';
+                s += '<tr><td class="lore-table-roll">' + summary.loot.table[i].roll + '</td><td>' + summary.loot.table[i].text + '</td></tr>';
             }
-            html += '</tbody></table>';
+            s += '</tbody></table>';
         }
+        s += '</div>';
+        sections.push(s);
     }
     
     // Image
     if (summary.image) {
-        html += '<div class="lore-image-frame">';
-        html += '<img src="' + summary.image + '" alt="' + (summary.name || 'Creature') + '" class="lore-image" />';
-        html += '</div>';
+        sections.push('<div class="lore-section"><div class="lore-image-frame"><img src="' + summary.image + '" alt="' + summaryName + '" class="lore-image" /></div></div>');
     }
     
-    html += '</div>'; // end col 2
-    html += '</div>'; // end lore-columns
-    html += '</div>'; // end lore-block
+    // Measure each section height to balance columns
+    var measurer = document.createElement('div');
+    measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:13.5px;line-height:1.5;padding:0;';
+    document.body.appendChild(measurer);
+    
+    var heights = [];
+    for (var i = 0; i < sections.length; i++) {
+        measurer.innerHTML = sections[i];
+        heights.push(measurer.offsetHeight);
+    }
+    document.body.removeChild(measurer);
+    
+    // Distribute sections: fill col1 first, move to col2 when col1 is taller
+    // Rule: col1 must be >= col2 height
+    var totalHeight = 0;
+    for (var i = 0; i < heights.length; i++) totalHeight += heights[i];
+    
+    var col1Sections = [];
+    var col2Sections = [];
+    var col1Height = 0;
+    var col2Height = 0;
+    var movedToCol2 = false;
+    
+    for (var i = 0; i < sections.length; i++) {
+        if (!movedToCol2) {
+            col1Sections.push(sections[i]);
+            col1Height += heights[i];
+            // Check if we should start filling col2
+            // Move to col2 if col1 has at least half the total and there are sections left
+            if (col1Height >= totalHeight / 2 && i < sections.length - 1) {
+                movedToCol2 = true;
+            }
+        } else {
+            col2Sections.push(sections[i]);
+            col2Height += heights[i];
+        }
+    }
+    
+    // Safety: if col2 ended up taller than col1, move last col2 section back to col1
+    while (col2Height > col1Height && col2Sections.length > 1) {
+        var moved = col2Sections.shift();
+        col1Sections.push(moved);
+        // Recalculate
+        col1Height = 0;
+        col2Height = 0;
+        for (var i = 0; i < col1Sections.length; i++) {
+            measurer = document.createElement('div');
+            measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:13.5px;line-height:1.5;';
+            measurer.innerHTML = col1Sections[i];
+            document.body.appendChild(measurer);
+            col1Height += measurer.offsetHeight;
+            document.body.removeChild(measurer);
+        }
+        for (var i = 0; i < col2Sections.length; i++) {
+            measurer = document.createElement('div');
+            measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:13.5px;line-height:1.5;';
+            measurer.innerHTML = col2Sections[i];
+            document.body.appendChild(measurer);
+            col2Height += measurer.offsetHeight;
+            document.body.removeChild(measurer);
+        }
+    }
+    
+    // Build HTML
+    var html = '<div class="lore-block">';
+    html += '<h1 class="lore-title">' + summaryName + '</h1>';
+    html += '<div class="lore-columns">';
+    html += '<div class="lore-col lore-col-1">';
+    for (var i = 0; i < col1Sections.length; i++) html += col1Sections[i];
+    html += '</div>';
+    html += '<div class="lore-col lore-col-2">';
+    for (var i = 0; i < col2Sections.length; i++) html += col2Sections[i];
+    html += '</div>';
+    html += '</div></div>';
     
     return html;
 }
