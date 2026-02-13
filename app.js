@@ -680,6 +680,7 @@ function renderStatBlock(monster) {
     // Col 1 starts with header+features (mandatory)
     // Walk sections in order, deciding for each whether col1 or col2
     // produces better overall balance
+    // Rule: col1 should never be shorter than col2
     var idealMidpoint = totalHeight / 2;
     
     var col1Height = col1FixedHeight;
@@ -693,24 +694,29 @@ function renderStatBlock(monster) {
         } else {
             var heightIfAdded = col1Height + sectionHeights[i];
             
-            // Calculate remaining height if we split here vs after adding
+            // Calculate col2 height for each split option
             var col2HeightIfSplitHere = 0;
             var col2HeightIfSplitAfter = 0;
             for (var j = i; j < sections.length; j++) col2HeightIfSplitHere += sectionHeights[j];
             for (var j = i + 1; j < sections.length; j++) col2HeightIfSplitAfter += sectionHeights[j];
             
-            // Which split produces more balanced columns?
-            var imbalanceIfSplitHere = Math.abs(col1Height - col2HeightIfSplitHere);
-            var imbalanceIfSplitAfter = Math.abs(heightIfAdded - col2HeightIfSplitAfter);
-            
-            if (imbalanceIfSplitAfter <= imbalanceIfSplitHere) {
-                // Adding this section to col1 produces better or equal balance
+            // Never let col1 be shorter than col2
+            if (col1Height < col2HeightIfSplitHere) {
+                // Col1 would be shorter than col2 if we split here — keep adding
                 col1Sections.push(sections[i]);
                 col1Height = heightIfAdded;
             } else {
-                // Splitting here is better
-                splitFound = true;
-                col2Sections.push(sections[i]);
+                // Col1 is already >= col2, pick whichever split is more balanced
+                var imbalanceIfSplitHere = Math.abs(col1Height - col2HeightIfSplitHere);
+                var imbalanceIfSplitAfter = Math.abs(heightIfAdded - col2HeightIfSplitAfter);
+                
+                if (imbalanceIfSplitAfter <= imbalanceIfSplitHere) {
+                    col1Sections.push(sections[i]);
+                    col1Height = heightIfAdded;
+                } else {
+                    splitFound = true;
+                    col2Sections.push(sections[i]);
+                }
             }
         }
     }
