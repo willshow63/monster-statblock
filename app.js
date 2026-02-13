@@ -863,9 +863,6 @@ function handleRestoreUpload(e) {
     };
     reader.readAsText(file);
 }
-    };
-    reader.readAsText(file);
-}
 
 function exportTemplate() {
     var template = {
