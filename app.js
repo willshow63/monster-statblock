@@ -893,53 +893,53 @@ function renderStatBlock(monster) {
         if (!entries || entries.length === 0) return;
         items.push({ html: '<h2 class="section-header">' + headerText + '</h2>', type: 'header', sectionId: sectionId });
         for (var i = 0; i < entries.length; i++) {
-            items.push({ html: buildItemFn(entries[i]), type: 'item', sectionId: sectionId });
+            items.push({ html: buildItemFn(entries[i], i), type: 'item', sectionId: sectionId });
         }
     }
     
     // Actions
-    addSection('actions', 'Actions', monster.actions, function(a) {
-        return buildActionItemHtml(a);
+    addSection('actions', 'Actions', monster.actions, function(a, idx) {
+        return buildActionItemHtml(a, idx);
     });
     
     // Bonus Actions
-    addSection('bonusActions', 'Bonus Actions', monster.bonusActions, function(a) {
-        return '<div class="action"><span class="action-name">' + a.name + '.</span> <span class="action-text">' + a.text + '</span></div>';
+    addSection('bonusActions', 'Bonus Actions', monster.bonusActions, function(a, idx) {
+        return '<div class="action" data-section="bonusActions" data-index="' + idx + '"><span class="action-name">' + a.name + '.</span> <span class="action-text">' + a.text + '</span></div>';
     });
     
     // Reactions
-    addSection('reactions', 'Reactions', monster.reactions, function(a) {
-        return '<div class="action"><span class="action-name">' + a.name + '.</span> <span class="action-text">' + a.text + '</span></div>';
+    addSection('reactions', 'Reactions', monster.reactions, function(a, idx) {
+        return '<div class="action" data-section="reactions" data-index="' + idx + '"><span class="action-name">' + a.name + '.</span> <span class="action-text">' + a.text + '</span></div>';
     });
     
     // Legendary Actions
     if (monster.legendaryActions && monster.legendaryActions.length > 0) {
         var legHeader = '<h2 class="section-header">Legendary Actions</h2>';
         if (monster.legendaryActionsDescription) {
-            legHeader += '<p class="legendary-description">' + monster.legendaryActionsDescription + '</p>';
+            legHeader += '<p class="legendary-description" data-field="legendaryActionsDescription">' + monster.legendaryActionsDescription + '</p>';
         }
         items.push({ html: legHeader, type: 'header', sectionId: 'legendary' });
         for (var i = 0; i < monster.legendaryActions.length; i++) {
             var la = monster.legendaryActions[i];
-            items.push({ html: '<div class="legendary-action"><span class="legendary-action-name">' + la.name + '.</span> ' + la.text + '</div>', type: 'item', sectionId: 'legendary' });
+            items.push({ html: '<div class="legendary-action" data-section="legendaryActions" data-index="' + i + '"><span class="legendary-action-name">' + la.name + '.</span> ' + la.text + '</div>', type: 'item', sectionId: 'legendary' });
         }
     }
     
     // Lair Actions (keep as one block since they're a list)
     if (monster.lairActions && monster.lairActions.length > 0) {
         var lairHtml = '<h2 class="section-header">Lair Actions</h2>';
-        if (monster.lairActionsDescription) lairHtml += '<p>' + monster.lairActionsDescription + '</p>';
+        if (monster.lairActionsDescription) lairHtml += '<p data-field="lairActionsDescription">' + monster.lairActionsDescription + '</p>';
         lairHtml += '<ul>';
         for (var i = 0; i < monster.lairActions.length; i++) {
-            lairHtml += '<li>' + monster.lairActions[i] + '</li>';
+            lairHtml += '<li data-section="lairActions" data-index="' + i + '">' + monster.lairActions[i] + '</li>';
         }
         lairHtml += '</ul>';
         items.push({ html: lairHtml, type: 'fixed', sectionId: 'lair' });
     }
     
     // Villain Actions
-    addSection('villainActions', 'Villain Actions', monster.villainActions, function(a) {
-        return '<div class="villain-action"><span class="villain-action-round">(Round ' + a.round + ')</span> <span class="villain-action-name">' + a.name + '.</span> ' + a.text + '</div>';
+    addSection('villainActions', 'Villain Actions', monster.villainActions, function(a, idx) {
+        return '<div class="villain-action" data-section="villainActions" data-index="' + idx + '"><span class="villain-action-round">(Round ' + a.round + ')</span> <span class="villain-action-name">' + a.name + '.</span> ' + a.text + '</div>';
     });
     
     // Measure all items
@@ -982,10 +982,6 @@ function renderStatBlock(monster) {
         for (var j = 0; j < split; j++) col1Height += heights[j];
         for (var j = split; j < items.length; j++) col2Height += heights[j];
         
-        // Rule: col2 must never be significantly longer than col1
-        // Col1 can be longer than col2 — that's fine
-        if (col2Height > col1Height * 1.05) continue;
-        
         // Rule: last item in col1 cannot be a section header (orphan)
         if (items[split - 1].type === 'header') continue;
         
@@ -1006,11 +1002,10 @@ function renderStatBlock(monster) {
             if (sectionItemsInCol1 < 2) continue;
         }
         
-        // Score: prefer balanced columns, but slightly favor col1 being taller
-        // We weight col2-longer scenarios as worse than col1-longer
+        // Score: prefer balanced columns, penalize col2 being taller more
         var imbalance;
         if (col2Height > col1Height) {
-            imbalance = (col2Height - col1Height) * 2; // penalize col2 being taller
+            imbalance = (col2Height - col1Height) * 1.5; // penalize col2 being taller
         } else {
             imbalance = col1Height - col2Height; // col1 taller is less bad
         }
