@@ -509,86 +509,84 @@ function buildFeaturesSection(monster) {
     return html;
 }
 
-function buildActionsSection(monster) {
-    if (!monster.actions || monster.actions.length === 0) return '';
-    var html = '<div class="stat-section"><h2 class="section-header">Actions</h2>';
-    for (var i = 0; i < monster.actions.length; i++) {
-        var action = monster.actions[i];
-        html += '<div class="action"><span class="action-name">' + action.name + '.</span> ';
-        if (action.attackType) {
-            html += '<span class="attack-type">' + action.attackType + ':</span> ' + action.toHit + ', ' + action.reach + ', ' + action.target + '. ';
-            html += '<span class="hit-label"><em>Hit:</em></span> ' + action.damage;
-        } else {
-            html += '<span class="action-text">' + action.text + '</span>';
-        }
-        html += '</div>';
+// MIN_FIRST_ITEM_HEIGHT not needed - logic is in renderStatBlock now
+
+function buildActionItemHtml(action) {
+    var html = '<div class="action"><span class="action-name">' + action.name + '.</span> ';
+    if (action.attackType) {
+        html += '<span class="attack-type">' + action.attackType + ':</span> ' + action.toHit + ', ' + action.reach + ', ' + action.target + '. ';
+        html += '<span class="hit-label"><em>Hit:</em></span> ' + action.damage;
+    } else {
+        html += '<span class="action-text">' + action.text + '</span>';
     }
     html += '</div>';
     return html;
+}
+
+function buildActionsSection(monster) {
+    if (!monster.actions || monster.actions.length === 0) return '';
+    var items = [];
+    for (var i = 0; i < monster.actions.length; i++) {
+        items.push(buildActionItemHtml(monster.actions[i]));
+    }
+    return buildSmartSection('<h2 class="section-header">Actions</h2>', items);
 }
 
 function buildBonusActionsSection(monster) {
     if (!monster.bonusActions || monster.bonusActions.length === 0) return '';
-    var html = '<div class="stat-section"><h2 class="section-header">Bonus Actions</h2>';
+    var items = [];
     for (var i = 0; i < monster.bonusActions.length; i++) {
         var action = monster.bonusActions[i];
-        html += '<div class="action"><span class="action-name">' + action.name + '.</span> ';
-        html += '<span class="action-text">' + action.text + '</span></div>';
+        items.push('<div class="action"><span class="action-name">' + action.name + '.</span> <span class="action-text">' + action.text + '</span></div>');
     }
-    html += '</div>';
-    return html;
+    return buildSmartSection('<h2 class="section-header">Bonus Actions</h2>', items);
 }
 
 function buildReactionsSection(monster) {
     if (!monster.reactions || monster.reactions.length === 0) return '';
-    var html = '<div class="stat-section"><h2 class="section-header">Reactions</h2>';
+    var items = [];
     for (var i = 0; i < monster.reactions.length; i++) {
         var reaction = monster.reactions[i];
-        html += '<div class="action"><span class="action-name">' + reaction.name + '.</span> ';
-        html += '<span class="action-text">' + reaction.text + '</span></div>';
+        items.push('<div class="action"><span class="action-name">' + reaction.name + '.</span> <span class="action-text">' + reaction.text + '</span></div>');
     }
-    html += '</div>';
-    return html;
+    return buildSmartSection('<h2 class="section-header">Reactions</h2>', items);
 }
 
 function buildLegendaryActionsSection(monster) {
     if (!monster.legendaryActions || monster.legendaryActions.length === 0) return '';
-    var html = '<div class="stat-section"><h2 class="section-header">Legendary Actions</h2>';
+    var items = [];
     if (monster.legendaryActionsDescription) {
-        html += '<p class="legendary-description">' + monster.legendaryActionsDescription + '</p>';
+        items.push('<p class="legendary-description">' + monster.legendaryActionsDescription + '</p>');
     }
     for (var i = 0; i < monster.legendaryActions.length; i++) {
         var action = monster.legendaryActions[i];
-        html += '<div class="legendary-action"><span class="legendary-action-name">' + action.name + '.</span> ' + action.text + '</div>';
+        items.push('<div class="legendary-action"><span class="legendary-action-name">' + action.name + '.</span> ' + action.text + '</div>');
     }
-    html += '</div>';
-    return html;
+    return buildSmartSection('<h2 class="section-header">Legendary Actions</h2>', items);
 }
 
 function buildLairActionsSection(monster) {
     if (!monster.lairActions || monster.lairActions.length === 0) return '';
-    var html = '<div class="stat-section"><h2 class="section-header">Lair Actions</h2>';
+    var headerHtml = '<h2 class="section-header">Lair Actions</h2>';
     if (monster.lairActionsDescription) {
-        html += '<p>' + monster.lairActionsDescription + '</p>';
+        headerHtml += '<p>' + monster.lairActionsDescription + '</p>';
     }
-    html += '<ul>';
+    var items = [];
     for (var i = 0; i < monster.lairActions.length; i++) {
-        html += '<li>' + monster.lairActions[i] + '</li>';
+        items.push('<li>' + monster.lairActions[i] + '</li>');
     }
-    html += '</ul></div>';
-    return html;
+    // Lair actions are a list - glue them all together
+    return '<div class="section-start">' + headerHtml + '<ul>' + items.join('') + '</ul></div>';
 }
 
 function buildVillainActionsSection(monster) {
     if (!monster.villainActions || monster.villainActions.length === 0) return '';
-    var html = '<div class="stat-section"><h2 class="section-header">Villain Actions</h2>';
+    var items = [];
     for (var i = 0; i < monster.villainActions.length; i++) {
         var action = monster.villainActions[i];
-        html += '<div class="villain-action"><span class="villain-action-round">(Round ' + action.round + ')</span> ';
-        html += '<span class="villain-action-name">' + action.name + '.</span> ' + action.text + '</div>';
+        items.push('<div class="villain-action"><span class="villain-action-round">(Round ' + action.round + ')</span> <span class="villain-action-name">' + action.name + '.</span> ' + action.text + '</div>');
     }
-    html += '</div>';
-    return html;
+    return buildSmartSection('<h2 class="section-header">Villain Actions</h2>', items);
 }
 
 // ============================================================
@@ -610,7 +608,7 @@ function measureSectionHeight(htmlString, containerWidth) {
 function renderStatBlock(monster) {
     var container = document.getElementById("stat-block-container");
     
-    // Button row (no upload btn - that's in the header now)
+    // Button row
     var buttonsHtml = '<div class="button-row">';
     buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
     buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
@@ -620,43 +618,147 @@ function renderStatBlock(monster) {
     }
     buttonsHtml += '</div>';
     
-    // Build all sections
-    var headerHtml = buildHeaderSection(monster);
-    var featuresHtml = buildFeaturesSection(monster);
-    var actionsHtml = buildActionsSection(monster);
-    var bonusActionsHtml = buildBonusActionsSection(monster);
-    var reactionsHtml = buildReactionsSection(monster);
-    var legendaryHtml = buildLegendaryActionsSection(monster);
-    var lairHtml = buildLairActionsSection(monster);
-    var villainHtml = buildVillainActionsSection(monster);
+    // Build all sections as arrays of individual items
+    // Each item is: { html: string, type: 'header'|'item'|'fixed', sectionId: string }
+    var items = [];
     
-    // Collect all content as one flow
-    var allContent = headerHtml + featuresHtml;
-    if (actionsHtml) allContent += actionsHtml;
-    if (bonusActionsHtml) allContent += bonusActionsHtml;
-    if (reactionsHtml) allContent += reactionsHtml;
-    if (legendaryHtml) allContent += legendaryHtml;
-    if (lairHtml) allContent += lairHtml;
-    if (villainHtml) allContent += villainHtml;
+    // Header + features are always fixed in col1 as a single block
+    var fixedHtml = buildHeaderSection(monster) + buildFeaturesSection(monster);
+    items.push({ html: fixedHtml, type: 'fixed', sectionId: 'header' });
     
-    // Measure total content height at single-column width
+    // Break each section into header + individual items
+    function addSection(sectionId, headerText, entries, buildItemFn) {
+        if (!entries || entries.length === 0) return;
+        items.push({ html: '<h2 class="section-header">' + headerText + '</h2>', type: 'header', sectionId: sectionId });
+        for (var i = 0; i < entries.length; i++) {
+            items.push({ html: buildItemFn(entries[i]), type: 'item', sectionId: sectionId });
+        }
+    }
+    
+    // Actions
+    addSection('actions', 'Actions', monster.actions, function(a) {
+        return buildActionItemHtml(a);
+    });
+    
+    // Bonus Actions
+    addSection('bonusActions', 'Bonus Actions', monster.bonusActions, function(a) {
+        return '<div class="action"><span class="action-name">' + a.name + '.</span> <span class="action-text">' + a.text + '</span></div>';
+    });
+    
+    // Reactions
+    addSection('reactions', 'Reactions', monster.reactions, function(a) {
+        return '<div class="action"><span class="action-name">' + a.name + '.</span> <span class="action-text">' + a.text + '</span></div>';
+    });
+    
+    // Legendary Actions
+    if (monster.legendaryActions && monster.legendaryActions.length > 0) {
+        var legHeader = '<h2 class="section-header">Legendary Actions</h2>';
+        if (monster.legendaryActionsDescription) {
+            legHeader += '<p class="legendary-description">' + monster.legendaryActionsDescription + '</p>';
+        }
+        items.push({ html: legHeader, type: 'header', sectionId: 'legendary' });
+        for (var i = 0; i < monster.legendaryActions.length; i++) {
+            var la = monster.legendaryActions[i];
+            items.push({ html: '<div class="legendary-action"><span class="legendary-action-name">' + la.name + '.</span> ' + la.text + '</div>', type: 'item', sectionId: 'legendary' });
+        }
+    }
+    
+    // Lair Actions (keep as one block since they're a list)
+    if (monster.lairActions && monster.lairActions.length > 0) {
+        var lairHtml = '<h2 class="section-header">Lair Actions</h2>';
+        if (monster.lairActionsDescription) lairHtml += '<p>' + monster.lairActionsDescription + '</p>';
+        lairHtml += '<ul>';
+        for (var i = 0; i < monster.lairActions.length; i++) {
+            lairHtml += '<li>' + monster.lairActions[i] + '</li>';
+        }
+        lairHtml += '</ul>';
+        items.push({ html: lairHtml, type: 'fixed', sectionId: 'lair' });
+    }
+    
+    // Villain Actions
+    addSection('villainActions', 'Villain Actions', monster.villainActions, function(a) {
+        return '<div class="villain-action"><span class="villain-action-round">(Round ' + a.round + ')</span> <span class="villain-action-name">' + a.name + '.</span> ' + a.text + '</div>';
+    });
+    
+    // Measure all items
     var colWidth = 380;
-    var totalHeight = measureSectionHeight(allContent, colWidth);
+    var heights = [];
+    var totalHeight = 0;
+    for (var i = 0; i < items.length; i++) {
+        var h = measureSectionHeight(items[i].html, colWidth);
+        heights.push(h);
+        totalHeight += h;
+    }
     
-    // Decide: single column if total content is short enough
+    // Single column if short enough
     var SINGLE_COL_THRESHOLD = 1000;
-    
     if (totalHeight <= SINGLE_COL_THRESHOLD) {
         var html = buttonsHtml + '<div class="stat-block single-column">';
-        html += allContent;
+        for (var i = 0; i < items.length; i++) html += items[i].html;
         html += '</div>';
         container.innerHTML = html;
         return;
     }
     
-    // Two-column: use CSS column-count for natural text flow
+    // Two-column layout: find the best split point
+    // Rules:
+    // 1. Col1 must never be shorter than col2
+    // 2. The last item in col1 must be >= 4 lines (~80px tall)
+    //    If not, we need at least 2 items after the last section header in col1
+    // 3. A section header can never be the last item in col1 (orphaned header)
+    var MIN_LAST_ITEM_HEIGHT = 80; // ~4 lines
+    var idealMidpoint = totalHeight / 2;
+    
+    // Try each possible split point and score it
+    var bestSplit = 1; // At minimum, fixed header goes in col1
+    var bestScore = Infinity;
+    
+    for (var split = 1; split < items.length; split++) {
+        // Col1 = items[0..split-1], Col2 = items[split..end]
+        var col1Height = 0;
+        var col2Height = 0;
+        for (var j = 0; j < split; j++) col1Height += heights[j];
+        for (var j = split; j < items.length; j++) col2Height += heights[j];
+        
+        // Rule: col1 must not be shorter than col2
+        if (col1Height < col2Height * 0.85) continue;
+        
+        // Rule: last item in col1 cannot be a section header (orphan)
+        if (items[split - 1].type === 'header') continue;
+        
+        // Rule: check if last item in col1 is substantial enough
+        var lastCol1Item = items[split - 1];
+        var lastCol1Height = heights[split - 1];
+        
+        if (lastCol1Height < MIN_LAST_ITEM_HEIGHT && lastCol1Item.type === 'item') {
+            // Last item is too short. Check: are there at least 2 items
+            // from this section in col1 (after its header)?
+            var sectionId = lastCol1Item.sectionId;
+            var sectionItemsInCol1 = 0;
+            for (var j = 0; j < split; j++) {
+                if (items[j].sectionId === sectionId && items[j].type === 'item') {
+                    sectionItemsInCol1++;
+                }
+            }
+            if (sectionItemsInCol1 < 2) continue;
+        }
+        
+        // Score: how balanced are the columns? Lower is better.
+        var imbalance = Math.abs(col1Height - col2Height);
+        if (imbalance < bestScore) {
+            bestScore = imbalance;
+            bestSplit = split;
+        }
+    }
+    
+    // Build two-column HTML
     var html = buttonsHtml + '<div class="stat-block two-column">';
-    html += allContent;
+    html += '<div class="stat-col stat-col-1">';
+    for (var i = 0; i < bestSplit; i++) html += items[i].html;
+    html += '</div>';
+    html += '<div class="stat-col stat-col-2">';
+    for (var i = bestSplit; i < items.length; i++) html += items[i].html;
+    html += '</div>';
     html += '</div>';
     
     container.innerHTML = html;

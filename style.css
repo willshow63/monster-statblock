@@ -317,11 +317,20 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
-/* Two-column layout via CSS columns */
+/* Two-column layout via JS */
 .stat-block.two-column {
-    column-count: 2;
-    column-gap: 40px;
-    column-rule: 1px solid #184e4f;
+    display: flex;
+    gap: 40px;
+}
+
+.stat-col-1 {
+    flex: 1;
+    border-right: 1px solid #184e4f;
+    padding-right: 20px;
+}
+
+.stat-col-2 {
+    flex: 1;
 }
 
 /* Single-column layout */
@@ -330,9 +339,14 @@ body {
     max-width: 450px;
 }
 
-/* Section wrapper - header + first item stay together */
-.stat-section {
-    break-inside: auto;
+/* Section headers avoid orphaning - handled by JS grouping */
+.section-start {
+    /* no special rules needed, just a wrapper */
+}
+
+/* Individual items avoid breaking */
+.feature, .action, .legendary-action, .villain-action {
+    /* handled by JS placement */
 }
 
 /* Button Row */
