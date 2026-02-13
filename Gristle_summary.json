@@ -1,0 +1,47 @@
+{
+  "name": "Gristle",
+  "description": "Gristle is a notorious goblin mercenary who operates out of the Thornwaste badlands. Most goblins travel in packs, but Gristle works alone — partly by choice, partly because nobody can stand him for long. He's earned a reputation for taking impossible contracts and surviving through sheer stubbornness and a mechanical hookshot arm that replaced the one he lost in circumstances he refuses to discuss. Tavern rumors claim he once held a bridge alone against a dozen hobgoblin soldiers, though Gristle himself just scowls when asked about it.",
+  "legendsAndLore": [
+    { "dc": 10, "text": "Gristle is a goblin mercenary known for his mechanical hookshot prosthesis and foul temper." },
+    { "dc": 15, "text": "He's an expert ambusher who coats his weapons in a potent spider-derived poison. He never takes jobs involving children or animals — everything else is fair game." },
+    { "dc": 20, "text": "Gristle was once part of a goblin warband called the Rust Fang Company. He's the sole survivor of a job gone wrong, and the hookshot arm is a reminder of what he lost." }
+  ],
+  "encounters": {
+    "description": "Gristle operates in wilderness areas, particularly rocky terrain where his hookshot gives him an advantage.",
+    "groups": [
+      { "cr": "CR 0–2", "creatures": "Signs of Gristle's passage (old campsites, hookshot marks on cliff faces)", "treasure": "a discarded poison vial (empty) and 3 (1d6) cp" },
+      { "cr": "CR 3–4", "creatures": "Gristle, alone and irritable", "treasure": "a vial of spider venom (3 doses), 28 (4d12) gp, and a tattered map of local bounties" },
+      { "cr": "CR 5–7", "creatures": "Gristle with 2 to 4 hired goblin scouts", "treasure": "a +1 scimitar, a potion of climbing, and 55 (10d10) gp" }
+    ]
+  },
+  "signs": [
+    { "roll": "1–2", "text": "Deep hookshot gouges in a rock face or tree trunk" },
+    { "roll": "3", "text": "The faint smell of spider venom on the wind" },
+    { "roll": "4", "text": "A small campfire, still warm — only one bedroll" },
+    { "roll": "5", "text": "A dead bounty target, neatly dispatched with a single blade wound" },
+    { "roll": "6", "text": "Grumbling and cursing in Goblin from somewhere above you" }
+  ],
+  "behavior": [
+    { "roll": "1", "text": "Watching from a high vantage point, hookshot ready" },
+    { "roll": "2", "text": "Counting coins and muttering about being underpaid" },
+    { "roll": "3", "text": "Sharpening his scimitar with an annoyed expression" },
+    { "roll": "4", "text": "Eating dried meat alone and glaring at anyone who approaches" },
+    { "roll": "5", "text": "Negotiating a contract — poorly, because he has no patience for haggling" },
+    { "roll": "6", "text": "Swinging between cliff faces with his hookshot, scouting the area" },
+    { "roll": "7", "text": "Tending to his mechanical arm with careful, practiced movements" },
+    { "roll": "8", "text": "Picking a fight with someone twice his size" }
+  ],
+  "names": "Gristle doesn't use aliases. If you hear the name, it's already too late to run.",
+  "loot": {
+    "title": "Weapons, Armor & Items",
+    "description": "Scimitar, short bow, quiver with 20 arrows, leather armor, and roll a d8:",
+    "dieType": "d8",
+    "table": [
+      { "roll": "1–3", "text": "1d4 days' dried meat and a half-empty waterskin" },
+      { "roll": "4–5", "text": "A vial of spider venom (1 dose, coats 1 weapon for 1 minute)" },
+      { "roll": "6", "text": "A tattered leather pouch containing 14 (4d6) gp and a crumpled bounty notice" },
+      { "roll": "7", "text": "A potion of climbing" },
+      { "roll": "8", "text": "Hookshot repair kit (spare cable, oil, and tiny goblin-made tools)" }
+    ]
+  }
+}

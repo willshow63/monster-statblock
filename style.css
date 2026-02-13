@@ -728,3 +728,241 @@ body {
     visibility: hidden !important;
     pointer-events: none;
 }
+
+
+/* ============ TAB SYSTEM ============ */
+.tab-bar {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+}
+
+.tab-btn {
+    padding: 8px 20px;
+    border: 2px solid #184e4f;
+    border-bottom: none;
+    background: #e8e0d0;
+    color: #184e4f;
+    font-family: 'Times New Roman', serif;
+    font-variant: small-caps;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    top: 2px;
+    z-index: 1;
+    transition: background 0.2s;
+}
+
+.tab-btn:hover {
+    background: #d4cbb8;
+}
+
+.tab-btn.active {
+    background: #f5f0e6;
+    border-bottom: 2px solid #f5f0e6;
+    z-index: 2;
+}
+
+.tab-panel {
+    border-top: 2px solid #184e4f;
+    position: relative;
+    top: -1px;
+}
+
+#summary-upload {
+    display: none;
+}
+
+.summary-upload-btn {
+    background: #5c4a1e !important;
+}
+
+.summary-upload-btn:hover {
+    background: #3d3113 !important;
+}
+
+/* ============ LORE BLOCK ============ */
+.lore-block {
+    background: #f5f0e6;
+    padding: 20px 25px;
+    font-family: 'Times New Roman', serif;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #333;
+    max-width: 840px;
+}
+
+.lore-title {
+    font-family: 'Times New Roman', serif;
+    font-size: 28px;
+    font-variant: small-caps;
+    color: #184e4f;
+    margin: 0 0 8px 0;
+    border-bottom: 2px solid #184e4f;
+    padding-bottom: 4px;
+}
+
+.lore-columns {
+    display: flex;
+    gap: 25px;
+}
+
+.lore-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.lore-col-1 {
+    flex: 1.1;
+}
+
+.lore-col-2 {
+    flex: 0.9;
+}
+
+.lore-section-header {
+    font-family: 'Times New Roman', serif;
+    font-size: 18px;
+    font-variant: small-caps;
+    color: #184e4f;
+    margin: 14px 0 6px 0;
+    border-bottom: 1px solid #184e4f;
+    padding-bottom: 2px;
+}
+
+.lore-description {
+    margin-bottom: 12px;
+    text-align: justify;
+    text-indent: 1em;
+}
+
+.lore-intro {
+    margin: 0 0 6px 0;
+    font-style: italic;
+}
+
+.lore-dc-entry {
+    margin: 4px 0 4px 10px;
+}
+
+.lore-encounter-group {
+    margin: 6px 0 6px 10px;
+    padding: 4px 0;
+    border-bottom: 1px dotted #bbb;
+}
+
+.lore-encounter-group:last-child {
+    border-bottom: none;
+}
+
+.lore-encounter-cr {
+    margin-bottom: 2px;
+}
+
+.lore-encounter-treasure {
+    margin-left: 10px;
+    font-style: italic;
+}
+
+.lore-encounters-desc {
+    margin: 0 0 8px 0;
+}
+
+/* Lore tables */
+.lore-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4px 0 10px 0;
+    font-size: 13px;
+}
+
+.lore-table th {
+    background: #184e4f;
+    color: white;
+    padding: 4px 8px;
+    text-align: left;
+    font-variant: small-caps;
+    font-size: 13px;
+}
+
+.lore-table td {
+    padding: 3px 8px;
+    border-bottom: 1px solid #d4cbb8;
+    vertical-align: top;
+}
+
+.lore-table tr:nth-child(even) td {
+    background: #ece6d6;
+}
+
+.lore-table-roll {
+    white-space: nowrap;
+    font-weight: bold;
+    width: 40px;
+    text-align: center;
+}
+
+.lore-loot-table {
+    margin-top: 6px;
+}
+
+.lore-names {
+    margin: 4px 0;
+    font-style: italic;
+}
+
+.lore-loot-desc {
+    margin: 0 0 6px 0;
+}
+
+/* Lore image with torn-edge frame */
+.lore-image-frame {
+    margin: 15px 0;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #c8b98a;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+    position: relative;
+}
+
+.lore-image-frame::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 2px solid #c8b98a;
+    pointer-events: none;
+}
+
+.lore-image {
+    width: 100%;
+    display: block;
+    clip-path: polygon(
+        0% 2%, 3% 0%, 7% 3%, 12% 1%, 18% 3%, 24% 0%, 30% 2%, 36% 0%, 42% 3%, 48% 1%,
+        54% 3%, 60% 0%, 66% 2%, 72% 0%, 78% 3%, 84% 1%, 90% 2%, 95% 0%, 100% 2%,
+        100% 97%, 97% 100%, 93% 97%, 88% 100%, 82% 98%, 76% 100%, 70% 97%, 64% 100%,
+        58% 98%, 52% 100%, 46% 97%, 40% 100%, 34% 98%, 28% 100%, 22% 97%, 16% 100%,
+        10% 98%, 5% 100%, 0% 97%
+    );
+}
+
+/* Responsive lore */
+@media (max-width: 900px) {
+    .lore-block {
+        max-width: 450px;
+    }
+    .lore-columns {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+@media print {
+    .tab-bar {
+        display: none !important;
+    }
+}

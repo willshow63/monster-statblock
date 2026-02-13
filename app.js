@@ -20,6 +20,8 @@ var groups = [];
 var monsters = [];
 var expandedGroups = new Set(); // Track which groups are expanded (all start collapsed)
 var sidebarOpen = false;
+var currentSummary = null;
+var activeTab = 'statblock';
 
 function toggleSidebar() {
     var content = document.getElementById('sidebar-content');
@@ -288,6 +290,7 @@ function parseItemsBack(statBlock, sectionName, nameSelector, textSelector) {
 
 // Attach the file upload listener once on page load
 document.getElementById("json-upload").addEventListener("change", handleFileUpload);
+document.getElementById("summary-upload").addEventListener("change", handleSummaryUpload);
 
 // Export Template - downloads a zip-like pair of files
 document.getElementById("export-template-btn").addEventListener("click", exportTemplate);
@@ -1078,6 +1081,236 @@ function renderStatBlock(monster) {
     if (restoreInput) {
         restoreInput.addEventListener("change", handleRestoreUpload);
     }
+    
+    // After statblock renders, build tabs if summary exists
+    renderTabs();
+}
+
+// ============ TAB SYSTEM ============
+function renderTabs() {
+    var container = document.getElementById("stat-block-container");
+    var statblockContent = container.innerHTML;
+    
+    // Build tab bar
+    var tabsHtml = '<div class="tab-bar">';
+    tabsHtml += '<button class="tab-btn' + (activeTab === 'statblock' ? ' active' : '') + '" onclick="switchTab(\'statblock\')">Statblock</button>';
+    if (currentSummary) {
+        tabsHtml += '<button class="tab-btn' + (activeTab === 'summary' ? ' active' : '') + '" onclick="switchTab(\'summary\')">Summary</button>';
+    }
+    tabsHtml += '</div>';
+    
+    // Build tab panels
+    var panelsHtml = '<div class="tab-panel" id="tab-statblock" style="' + (activeTab === 'statblock' ? '' : 'display:none') + '">' + statblockContent + '</div>';
+    
+    if (currentSummary) {
+        panelsHtml += '<div class="tab-panel" id="tab-summary" style="' + (activeTab === 'summary' ? '' : 'display:none') + '">' + buildSummaryHtml(currentSummary) + '</div>';
+    }
+    
+    container.innerHTML = tabsHtml + panelsHtml;
+    
+    // Re-attach restore upload listener (it was inside statblock content)
+    var restoreInput = document.getElementById("restore-upload");
+    if (restoreInput) {
+        restoreInput.addEventListener("change", handleRestoreUpload);
+    }
+    // Attach summary replace listener if present
+    var summaryReplace = document.getElementById("summary-upload-replace");
+    if (summaryReplace) {
+        summaryReplace.addEventListener("change", handleSummaryReplace);
+    }
+}
+
+function switchTab(tab) {
+    activeTab = tab;
+    // Hide all panels
+    var panels = document.querySelectorAll('.tab-panel');
+    for (var i = 0; i < panels.length; i++) {
+        panels[i].style.display = 'none';
+    }
+    // Show selected
+    var active = document.getElementById('tab-' + tab);
+    if (active) active.style.display = '';
+    // Update tab buttons
+    var btns = document.querySelectorAll('.tab-btn');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+    }
+    var activeBtn = document.querySelector('.tab-btn[onclick*="' + tab + '"]');
+    if (activeBtn) activeBtn.classList.add('active');
+}
+
+// ============ SUMMARY / LORE BLOCK ============
+function buildSummaryHtml(summary) {
+    var html = '<div class="lore-block">';
+    
+    // Button row for summary
+    html += '<div class="button-row">';
+    html += '<label for="summary-upload-replace" class="restore-btn">Overwrite Summary</label>';
+    html += '<input type="file" id="summary-upload-replace" accept=".json" style="display:none" />';
+    html += '<button class="export-btn" onclick="exportSummary()">Export Summary</button>';
+    html += '</div>';
+    
+    // Header
+    html += '<h1 class="lore-title">' + (summary.name || (currentMonster ? currentMonster.name : 'Creature')) + '</h1>';
+    
+    // Two-column layout
+    html += '<div class="lore-columns">';
+    
+    // Column 1: Description, Legends & Lore, Encounters
+    html += '<div class="lore-col lore-col-1">';
+    
+    // Description / flavor text
+    if (summary.description) {
+        html += '<div class="lore-description">' + summary.description + '</div>';
+    }
+    
+    // Legends and Lore
+    if (summary.legendsAndLore && summary.legendsAndLore.length > 0) {
+        html += '<h2 class="lore-section-header">Legends and Lore</h2>';
+        html += '<p class="lore-intro">With a History or Nature check, characters can learn the following:</p>';
+        for (var i = 0; i < summary.legendsAndLore.length; i++) {
+            var lore = summary.legendsAndLore[i];
+            html += '<div class="lore-dc-entry"><strong>DC ' + lore.dc + '</strong> ' + lore.text + '</div>';
+        }
+    }
+    
+    // Encounters
+    if (summary.encounters) {
+        html += '<h2 class="lore-section-header">' + (summary.name || 'Creature') + ' Encounters</h2>';
+        if (summary.encounters.description) {
+            html += '<p class="lore-encounters-desc">' + summary.encounters.description + '</p>';
+        }
+        if (summary.encounters.groups && summary.encounters.groups.length > 0) {
+            for (var i = 0; i < summary.encounters.groups.length; i++) {
+                var enc = summary.encounters.groups[i];
+                html += '<div class="lore-encounter-group">';
+                html += '<div class="lore-encounter-cr"><strong>' + enc.cr + '</strong> ' + enc.creatures + '</div>';
+                if (enc.treasure) {
+                    html += '<div class="lore-encounter-treasure"><strong>Treasure</strong> ' + enc.treasure + '</div>';
+                }
+                html += '</div>';
+            }
+        }
+    }
+    
+    html += '</div>'; // end col 1
+    
+    // Column 2: Signs, Behavior, Names, Loot, Image
+    html += '<div class="lore-col lore-col-2">';
+    
+    // Signs
+    if (summary.signs && summary.signs.length > 0) {
+        html += '<h2 class="lore-section-header">Signs</h2>';
+        html += '<table class="lore-table"><tbody>';
+        for (var i = 0; i < summary.signs.length; i++) {
+            var sign = summary.signs[i];
+            html += '<tr><td class="lore-table-roll">' + sign.roll + '</td><td>' + sign.text + '</td></tr>';
+        }
+        html += '</tbody></table>';
+    }
+    
+    // Behavior
+    if (summary.behavior && summary.behavior.length > 0) {
+        html += '<h2 class="lore-section-header">Behavior</h2>';
+        html += '<table class="lore-table"><tbody>';
+        for (var i = 0; i < summary.behavior.length; i++) {
+            var beh = summary.behavior[i];
+            html += '<tr><td class="lore-table-roll">' + beh.roll + '</td><td>' + beh.text + '</td></tr>';
+        }
+        html += '</tbody></table>';
+    }
+    
+    // Names
+    if (summary.names) {
+        html += '<h2 class="lore-section-header">Names</h2>';
+        html += '<p class="lore-names">' + summary.names + '</p>';
+    }
+    
+    // Loot / Weapons, Armor & Items
+    if (summary.loot) {
+        html += '<h2 class="lore-section-header">' + (summary.loot.title || 'Weapons, Armor & Items') + '</h2>';
+        if (summary.loot.description) {
+            html += '<p class="lore-loot-desc">' + summary.loot.description + '</p>';
+        }
+        if (summary.loot.table && summary.loot.table.length > 0) {
+            html += '<table class="lore-table lore-loot-table">';
+            html += '<thead><tr><th>' + (summary.loot.dieType || 'd12') + '</th><th>Item(s)</th></tr></thead>';
+            html += '<tbody>';
+            for (var i = 0; i < summary.loot.table.length; i++) {
+                var item = summary.loot.table[i];
+                html += '<tr><td class="lore-table-roll">' + item.roll + '</td><td>' + item.text + '</td></tr>';
+            }
+            html += '</tbody></table>';
+        }
+    }
+    
+    // Image
+    if (summary.image) {
+        html += '<div class="lore-image-frame">';
+        html += '<img src="' + summary.image + '" alt="' + (summary.name || 'Creature') + '" class="lore-image" />';
+        html += '</div>';
+    }
+    
+    html += '</div>'; // end col 2
+    html += '</div>'; // end lore-columns
+    html += '</div>'; // end lore-block
+    
+    return html;
+}
+
+function handleSummaryUpload(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        try {
+            var summary = JSON.parse(event.target.result);
+            currentSummary = summary;
+            activeTab = 'summary';
+            // Re-render tabs
+            if (currentMonster) {
+                renderStatBlock(currentMonster);
+            }
+        } catch (err) {
+            showAlert("Error parsing summary JSON: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+}
+
+function handleSummaryReplace(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        try {
+            var summary = JSON.parse(event.target.result);
+            currentSummary = summary;
+            // Re-render tabs staying on summary
+            if (currentMonster) {
+                renderStatBlock(currentMonster);
+            }
+        } catch (err) {
+            showAlert("Error parsing summary JSON: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+}
+
+function exportSummary() {
+    if (!currentSummary) return;
+    var json = JSON.stringify(currentSummary, null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = (currentSummary.name || 'summary').replace(/\s+/g, '_') + '_summary.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 function handleRestoreUpload(e) {
