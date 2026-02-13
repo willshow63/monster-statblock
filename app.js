@@ -355,30 +355,201 @@ function createGroup(name) {
 }
 
 // Delete Group
-function deleteGroup(groupId) {
-    showConfirm("Delete this group? Monsters will be moved to ungrouped.", function() {
+function showGroupMenu(groupId, groupName, btnEl) {
+    // Remove any existing menu
+    var existing = document.querySelector('.group-menu-popup');
+    if (existing) existing.remove();
+    
+    var menu = document.createElement('div');
+    menu.className = 'group-menu-popup';
+    
+    var renameBtn = document.createElement('button');
+    renameBtn.textContent = 'Rename';
+    renameBtn.className = 'group-menu-item';
+    renameBtn.onclick = function(e) {
+        e.stopPropagation();
+        menu.remove();
+        renameGroup(groupId, groupName);
+    };
+    
+    var deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.className = 'group-menu-item group-menu-delete';
+    deleteBtn.onclick = function(e) {
+        e.stopPropagation();
+        menu.remove();
+        deleteGroupPrompt(groupId, groupName);
+    };
+    
+    menu.appendChild(renameBtn);
+    menu.appendChild(deleteBtn);
+    
+    // Position next to the button
+    btnEl.parentElement.style.position = 'relative';
+    btnEl.parentElement.appendChild(menu);
+    
+    // Close on outside click
+    setTimeout(function() {
+        document.addEventListener('click', function closeMenu(e) {
+            if (!menu.contains(e.target)) {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    }, 0);
+}
+
+function renameGroup(groupId, currentName) {
+    // Use a modal approach — create a simple input modal
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.display = 'flex';
+    
+    var box = document.createElement('div');
+    box.className = 'modal-box';
+    
+    var msg = document.createElement('p');
+    msg.className = 'modal-message';
+    msg.textContent = 'Rename group:';
+    
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentName;
+    input.className = 'group-rename-input';
+    input.style.cssText = 'width:100%;padding:6px 8px;margin:8px 0;border:1px solid #ccc;border-radius:4px;font-family:Times New Roman,serif;font-size:14px;';
+    
+    var btnRow = document.createElement('div');
+    btnRow.className = 'modal-buttons';
+    
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.className = 'modal-btn modal-btn-cancel';
+    cancelBtn.onclick = function() { overlay.remove(); };
+    
+    var saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    saveBtn.className = 'modal-btn modal-btn-confirm';
+    saveBtn.onclick = function() {
+        var newName = input.value.trim();
+        if (!newName) return;
+        if (newName === currentName) { overlay.remove(); return; }
+        db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId)
+            .update({ name: newName })
+            .then(function() {
+                overlay.remove();
+                loadGroupsAndMonsters();
+            })
+            .catch(function(error) {
+                console.error("Error renaming group:", error);
+                showAlert("Error renaming group: " + error.message);
+            });
+    };
+    
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') saveBtn.click();
+        if (e.key === 'Escape') overlay.remove();
+    });
+    
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(saveBtn);
+    box.appendChild(msg);
+    box.appendChild(input);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    
+    input.focus();
+    input.select();
+}
+
+function deleteGroupPrompt(groupId, groupName) {
+    // Count monsters in this group
+    var groupMonsters = monsters.filter(function(m) { return m.groupId === groupId; });
+    
+    if (groupMonsters.length === 0) {
+        // No monsters — just delete the group
+        showConfirm('Delete group "' + groupName + '"?', function() {
+            expandedGroups.delete(groupId);
+            db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete()
+                .then(function() { loadGroupsAndMonsters(); });
+        });
+        return;
+    }
+    
+    // Has monsters — show choice modal
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.display = 'flex';
+    
+    var box = document.createElement('div');
+    box.className = 'modal-box';
+    
+    var msg = document.createElement('p');
+    msg.className = 'modal-message';
+    msg.textContent = 'Delete group "' + groupName + '"? It contains ' + groupMonsters.length + ' monster' + (groupMonsters.length > 1 ? 's' : '') + '.';
+    
+    var btnRow = document.createElement('div');
+    btnRow.className = 'modal-buttons';
+    btnRow.style.flexWrap = 'wrap';
+    btnRow.style.gap = '6px';
+    
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.className = 'modal-btn modal-btn-cancel';
+    cancelBtn.onclick = function() { overlay.remove(); };
+    
+    var moveBtn = document.createElement('button');
+    moveBtn.textContent = 'Move to Ungrouped';
+    moveBtn.className = 'modal-btn modal-btn-confirm';
+    moveBtn.onclick = function() {
+        overlay.remove();
         expandedGroups.delete(groupId);
-        
+        // Move monsters to ungrouped, then delete group
         db.collection("users").doc(currentUser.uid).collection("monsters")
-            .where("groupId", "==", groupId)
-            .get()
-            .then(function(querySnapshot) {
+            .where("groupId", "==", groupId).get()
+            .then(function(snap) {
                 var batch = db.batch();
-                querySnapshot.forEach(function(doc) {
-                    batch.update(doc.ref, { groupId: null });
-                });
+                snap.forEach(function(doc) { batch.update(doc.ref, { groupId: null }); });
                 return batch.commit();
             })
             .then(function() {
                 return db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete();
             })
-            .then(function() {
-                loadGroupsAndMonsters();
+            .then(function() { loadGroupsAndMonsters(); });
+    };
+    
+    var deleteAllBtn = document.createElement('button');
+    deleteAllBtn.textContent = 'Delete All Monsters';
+    deleteAllBtn.className = 'modal-btn modal-btn-danger';
+    deleteAllBtn.onclick = function() {
+        overlay.remove();
+        expandedGroups.delete(groupId);
+        // Delete all monsters in group, then delete group
+        db.collection("users").doc(currentUser.uid).collection("monsters")
+            .where("groupId", "==", groupId).get()
+            .then(function(snap) {
+                var batch = db.batch();
+                snap.forEach(function(doc) { batch.delete(doc.ref); });
+                return batch.commit();
             })
-            .catch(function(error) {
-                console.error("Error deleting group:", error);
-            });
-    });
+            .then(function() {
+                return db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete();
+            })
+            .then(function() { loadGroupsAndMonsters(); });
+    };
+    
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(moveBtn);
+    btnRow.appendChild(deleteAllBtn);
+    box.appendChild(msg);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+}
+
+// Keep old function for backward compat
+function deleteGroup(groupId) {
+    deleteGroupPrompt(groupId, 'this group');
 }
 
 // Toggle Group Collapse
@@ -455,7 +626,7 @@ function renderMonsterList() {
         html += '<div class="group-header" onclick="toggleGroup(\'' + group.id + '\')">';
         html += '<span class="group-toggle">' + (isExpanded ? '▼' : '►') + '</span>';
         html += '<span class="group-name">' + group.name + '</span>';
-        html += '<button class="group-delete" onclick="event.stopPropagation(); deleteGroup(\'' + group.id + '\')">X</button>';
+        html += '<button class="group-edit-btn" onclick="event.stopPropagation(); showGroupMenu(\'' + group.id + '\', \'' + group.name.replace(/'/g, "\\'") + '\', this)" title="Edit group">&#9998;</button>';
         html += '</div>';
         html += '<div class="group-monsters' + (isExpanded ? '' : ' collapsed') + '" data-group-id="' + group.id + '">';
         

@@ -385,17 +385,75 @@ body {
     font-size: 10px;
 }
 
-.group-delete {
+.group-edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0 4px;
+    color: #666;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.group-header:hover .group-edit-btn {
+    opacity: 1;
+}
+
+.group-edit-btn:hover {
+    color: #184e4f;
+}
+
+/* Group context menu */
+.group-menu-popup {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 100;
+    overflow: hidden;
+    min-width: 120px;
+}
+
+.group-menu-item {
+    display: block;
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'Times New Roman', serif;
+    font-size: 13px;
+}
+
+.group-menu-item:hover {
+    background: #f0f0f0;
+}
+
+.group-menu-delete {
+    color: #c0392b;
+}
+
+.group-menu-delete:hover {
+    background: #fde8e6;
+}
+
+/* Danger button in modals */
+.modal-btn-danger {
     background: #c0392b;
     color: white;
     border: none;
-    padding: 2px 6px;
-    border-radius: 3px;
+    padding: 8px 16px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 10px;
+    font-family: 'Times New Roman', serif;
 }
 
-.group-delete:hover {
+.modal-btn-danger:hover {
     background: #a93226;
 }
 
