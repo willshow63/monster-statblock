@@ -989,10 +989,11 @@ function renderStatBlock(monster) {
     // Single column if short enough
     var SINGLE_COL_THRESHOLD = 1000;
     if (totalHeight <= SINGLE_COL_THRESHOLD) {
-        var html = buttonsHtml + '<div class="stat-block single-column">';
+        var html = '<div class="stat-block single-column">';
         for (var i = 0; i < items.length; i++) html += items[i].html;
         html += '</div>';
         container.innerHTML = html;
+        renderTabs();
         return;
     }
     
