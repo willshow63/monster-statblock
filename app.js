@@ -15,6 +15,7 @@ var db = firebase.firestore();
 
 var currentUser = null;
 var currentMonster = null;
+var currentMonsterDocId = null;
 var groups = [];
 var monsters = [];
 var expandedGroups = new Set(); // Track which groups are expanded (all start collapsed)
@@ -299,6 +300,7 @@ function loadMonster(docId) {
             if (doc.exists) {
                 var monster = doc.data();
                 currentMonster = monster;
+                currentMonsterDocId = docId;
                 renderStatBlock(monster);
             }
         })
@@ -612,6 +614,8 @@ function renderStatBlock(monster) {
     var buttonsHtml = '<div class="button-row">';
     buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
     buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+    buttonsHtml += '<label for="restore-upload" class="restore-btn">Restore</label>';
+    buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
     buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
     if (currentUser) {
         buttonsHtml += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save</button>';
@@ -769,6 +773,61 @@ function renderStatBlock(monster) {
     html += '</div>';
     
     container.innerHTML = html;
+    
+    // Attach restore upload listener
+    var restoreInput = document.getElementById("restore-upload");
+    if (restoreInput) {
+        restoreInput.addEventListener("change", handleRestoreUpload);
+    }
+}
+
+function handleRestoreUpload(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    
+    if (!currentUser) {
+        alert("Please sign in to restore monsters.");
+        e.target.value = '';
+        return;
+    }
+    
+    if (!currentMonsterDocId) {
+        alert("No saved monster is currently open. Load a monster first, then restore.");
+        e.target.value = '';
+        return;
+    }
+    
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        try {
+            var monsterData = JSON.parse(event.target.result);
+            
+            if (!confirm("Replace \"" + (currentMonster.name || "current monster") + "\" with \"" + (monsterData.name || "uploaded data") + "\"?")) {
+                e.target.value = '';
+                return;
+            }
+            
+            // Preserve the groupId from the existing monster
+            monsterData.groupId = currentMonster.groupId || null;
+            
+            db.collection("users").doc(currentUser.uid).collection("monsters").doc(currentMonsterDocId)
+                .set(monsterData)
+                .then(function() {
+                    currentMonster = monsterData;
+                    renderStatBlock(monsterData);
+                    loadGroupsAndMonsters();
+                    alert("Monster restored successfully!");
+                })
+                .catch(function(error) {
+                    console.error("Error restoring monster:", error);
+                    alert("Error restoring: " + error.message);
+                });
+        } catch (err) {
+            alert("Invalid JSON file: " + err.message);
+        }
+        e.target.value = '';
+    };
+    reader.readAsText(file);
 }
 
 function exportTemplate() {

@@ -119,7 +119,7 @@ body {
     display: none;
 }
 
-.upload-btn, .print-btn, .export-btn {
+.upload-btn, .print-btn, .export-btn, .restore-btn {
     background: #184e4f;
     color: white;
     padding: 8px 15px;
@@ -129,7 +129,7 @@ body {
     border-radius: 4px;
 }
 
-.upload-btn:hover, .print-btn:hover, .export-btn:hover {
+.upload-btn:hover, .print-btn:hover, .export-btn:hover, .restore-btn:hover {
     background: #0d3536;
 }
 
