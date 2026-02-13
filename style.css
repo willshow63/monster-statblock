@@ -974,7 +974,6 @@ body {
 .lore-description {
     margin-bottom: 12px;
     text-align: justify;
-    text-indent: 1em;
 }
 
 .lore-intro {
@@ -983,11 +982,11 @@ body {
 }
 
 .lore-dc-entry {
-    margin: 4px 0 4px 10px;
+    margin: 4px 0;
 }
 
 .lore-encounter-group {
-    margin: 6px 0 6px 10px;
+    margin: 6px 0;
     padding: 4px 0;
     border-bottom: 1px dotted #bbb;
 }
@@ -1001,7 +1000,6 @@ body {
 }
 
 .lore-encounter-treasure {
-    margin-left: 10px;
     font-style: italic;
 }
 
