@@ -614,7 +614,7 @@ function renderStatBlock(monster) {
     var buttonsHtml = '<div class="button-row">';
     buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
     buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
-    buttonsHtml += '<label for="restore-upload" class="restore-btn">Restore</label>';
+    buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
     buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
     buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
     if (currentUser) {
@@ -902,13 +902,13 @@ function exportTemplate() {
         "MONSTER STATBLOCK JSON CONVERSION INSTRUCTIONS",
         "==============================================",
         "",
-        "Use these instructions along with the included template.json to convert a D&D 5e",
-        "monster or NPC character sheet into the proper JSON format for upload to the",
-        "Monster Statblock Generator.",
+        "Use these instructions along with the included statblock_template.json to convert",
+        "a D&D 5e monster or NPC character sheet into the proper JSON format for upload to",
+        "the Monster Statblock Generator.",
         "",
         "RULES:",
         "",
-        "1. Follow the template.json structure exactly. Do not add or rename any fields.",
+        "1. Follow the statblock_template.json structure exactly. Do not add or rename any fields.",
         "",
         "2. All ability scores are raw numbers (e.g. 16, not \"+3\"). Modifiers are",
         "   calculated automatically by the app.",
@@ -945,33 +945,63 @@ function exportTemplate() {
         "9. Remove any example/placeholder entries from the template that don't apply.",
         "   For example, if the monster has no bonus actions, set \"bonusActions\": []",
         "",
-        "10. Output ONLY valid JSON. No comments, no markdown, no explanation.",
+        "10. HTML is supported in text fields. Use <b><i>Sub-heading.</i></b> for",
+        "    sub-sections within a single ability, and <br><br> for paragraph breaks.",
+        "",
+        "11. Output ONLY valid JSON. No comments, no markdown, no explanation.",
         ""
     ].join("\n");
 
-    // Download template.json
-    var templateBlob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
-    var templateUrl = URL.createObjectURL(templateBlob);
-    var a = document.createElement('a');
-    a.href = templateUrl;
-    a.download = 'statblock_template.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(templateUrl);
+    var readme = [
+        "MONSTER STATBLOCK TEMPLATE KIT",
+        "==============================",
+        "",
+        "This zip contains everything you need to create a properly formatted",
+        "monster statblock JSON file for upload to the Monster Statblock Generator.",
+        "",
+        "INCLUDED FILES:",
+        "",
+        "  statblock_template.json",
+        "    A blank monster template with all supported fields and example values.",
+        "    Fill this in with your monster's stats, or use it as a reference for",
+        "    the expected JSON structure.",
+        "",
+        "  statblock_instructions.txt",
+        "    Detailed rules for how to format the JSON. Give this file to an AI",
+        "    tool (like ChatGPT or Claude) along with your character sheet or",
+        "    monster notes, and it will convert them into the correct format.",
+        "",
+        "HOW TO USE:",
+        "",
+        "  Option 1 - Manual:",
+        "    Copy statblock_template.json, fill in your monster's data, and",
+        "    upload it using the \"Upload JSON\" button in the app.",
+        "",
+        "  Option 2 - AI-Assisted:",
+        "    Give an AI tool both the statblock_instructions.txt and your",
+        "    monster's character sheet or notes. Ask it to output a JSON file",
+        "    in the correct format. Upload the result to the app.",
+        "",
+        "  Once uploaded, click \"Save\" to store it in your account, or",
+        "  \"Overwrite\" to replace an existing saved monster's data.",
+        ""
+    ].join("\n");
 
-    // Download instructions.txt after a short delay
-    setTimeout(function() {
-        var instructionsBlob = new Blob([instructions], { type: 'text/plain' });
-        var instructionsUrl = URL.createObjectURL(instructionsBlob);
-        var b = document.createElement('a');
-        b.href = instructionsUrl;
-        b.download = 'statblock_instructions.txt';
-        document.body.appendChild(b);
-        b.click();
-        document.body.removeChild(b);
-        URL.revokeObjectURL(instructionsUrl);
-    }, 300);
+    var zip = new JSZip();
+    zip.file("statblock_template.json", JSON.stringify(template, null, 2));
+    zip.file("statblock_instructions.txt", instructions);
+    zip.file("README.txt", readme);
+
+    zip.generateAsync({ type: "blob" }).then(function(content) {
+        var url = URL.createObjectURL(content);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'statblock_template_kit.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
 }
 
 function handleFileUpload(e) {

@@ -49,33 +49,6 @@ body {
     background: #444;
 }
 
-/* Custom tooltip for template button */
-.template-btn::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 8px);
-    right: 0;
-    background: #1a1a1a;
-    color: #e0e0e0;
-    padding: 10px 14px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-family: 'Times New Roman', serif;
-    line-height: 1.5;
-    width: 300px;
-    white-space: normal;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    border: 1px solid #184e4f;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    z-index: 100;
-}
-
-.template-btn:hover::after {
-    opacity: 1;
-}
-
 #login-btn {
     background: #4285f4;
     color: white;
