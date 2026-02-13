@@ -22,6 +22,9 @@ var expandedGroups = new Set(); // Track which groups are expanded (all start co
 // Attach the file upload listener once on page load
 document.getElementById("json-upload").addEventListener("change", handleFileUpload);
 
+// Export Template - downloads a zip-like pair of files
+document.getElementById("export-template-btn").addEventListener("click", exportTemplate);
+
 // Auth State Listener
 auth.onAuthStateChanged(function(user) {
     if (user) {
@@ -740,6 +743,150 @@ function renderStatBlock(monster) {
     html += '</div>';
     
     container.innerHTML = html;
+}
+
+function exportTemplate() {
+    var template = {
+        "name": "Monster Name",
+        "size": "Medium",
+        "type": "Humanoid (Race)",
+        "alignment": "Any Alignment",
+        "ac": 15,
+        "acType": "leather armor",
+        "hp": 45,
+        "hpFormula": "7d8 + 14",
+        "speed": "30 ft.",
+        "abilities": {
+            "str": 10,
+            "dex": 16,
+            "con": 14,
+            "int": 12,
+            "wis": 12,
+            "cha": 10
+        },
+        "savingThrows": "Dex +5, Con +4",
+        "skills": "Stealth +5, Perception +3",
+        "damageVulnerabilities": "",
+        "damageResistances": "",
+        "damageImmunities": "",
+        "conditionImmunities": "",
+        "senses": "darkvision 60 ft., passive Perception 13",
+        "languages": "Common",
+        "cr": "3",
+        "xp": "700",
+        "features": [
+            {
+                "name": "Feature Name",
+                "text": "Description of the feature."
+            }
+        ],
+        "actions": [
+            {
+                "name": "Multiattack",
+                "text": "The creature makes two attacks."
+            },
+            {
+                "name": "Longsword",
+                "attackType": "Melee Weapon Attack",
+                "toHit": "+5 to hit",
+                "reach": "reach 5 ft.",
+                "target": "one target",
+                "damage": "7 (1d8 + 3) slashing damage."
+            }
+        ],
+        "bonusActions": [
+            {
+                "name": "Bonus Action Name",
+                "text": "Description of the bonus action."
+            }
+        ],
+        "reactions": [
+            {
+                "name": "Reaction Name",
+                "text": "Description of the reaction."
+            }
+        ],
+        "legendaryActions": [],
+        "legendaryActionsDescription": "",
+        "lairActions": [],
+        "lairActionsDescription": "",
+        "villainActions": []
+    };
+
+    var instructions = [
+        "MONSTER STATBLOCK JSON CONVERSION INSTRUCTIONS",
+        "==============================================",
+        "",
+        "Use these instructions along with the included template.json to convert a D&D 5e",
+        "monster or NPC character sheet into the proper JSON format for upload to the",
+        "Monster Statblock Generator.",
+        "",
+        "RULES:",
+        "",
+        "1. Follow the template.json structure exactly. Do not add or rename any fields.",
+        "",
+        "2. All ability scores are raw numbers (e.g. 16, not \"+3\"). Modifiers are",
+        "   calculated automatically by the app.",
+        "",
+        "3. For ACTIONS, there are two formats:",
+        "",
+        "   ATTACK actions use these fields:",
+        "     \"name\": \"Longsword\"",
+        "     \"attackType\": \"Melee Weapon Attack\"    (or \"Ranged Weapon Attack\")",
+        "     \"toHit\": \"+5 to hit\"",
+        "     \"reach\": \"reach 5 ft.\"                 (or \"range 80/320 ft.\")",
+        "     \"target\": \"one target\"",
+        "     \"damage\": \"7 (1d8 + 3) slashing damage.\"",
+        "",
+        "   NON-ATTACK actions use these fields:",
+        "     \"name\": \"Multiattack\"",
+        "     \"text\": \"The creature makes two attacks.\"",
+        "",
+        "   Do NOT mix both formats on the same action.",
+        "",
+        "4. bonusActions, reactions, legendaryActions all use { \"name\": ..., \"text\": ... }",
+        "",
+        "5. legendaryActions should include a \"legendaryActionsDescription\" string like:",
+        "   \"The dragon can take 3 legendary actions, choosing from the options below.\"",
+        "",
+        "6. villainActions use this format:",
+        "   { \"round\": 1, \"name\": \"Action Name\", \"text\": \"Description.\" }",
+        "",
+        "7. lairActions is an array of plain strings (no name/text objects).",
+        "",
+        "8. Optional string fields (damageVulnerabilities, damageResistances, etc.) can",
+        "   be empty strings \"\" or omitted entirely if not applicable.",
+        "",
+        "9. Remove any example/placeholder entries from the template that don't apply.",
+        "   For example, if the monster has no bonus actions, set \"bonusActions\": []",
+        "",
+        "10. Output ONLY valid JSON. No comments, no markdown, no explanation.",
+        ""
+    ].join("\n");
+
+    // Download template.json
+    var templateBlob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+    var templateUrl = URL.createObjectURL(templateBlob);
+    var a = document.createElement('a');
+    a.href = templateUrl;
+    a.download = 'statblock_template.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(templateUrl);
+
+    // Download instructions.txt after a short delay
+    setTimeout(function() {
+        var instructionsBlob = new Blob([instructions], { type: 'text/plain' });
+        var instructionsUrl = URL.createObjectURL(instructionsBlob);
+        var b = document.createElement('a');
+        b.href = instructionsUrl;
+        b.download = 'statblock_instructions.txt';
+        document.body.appendChild(b);
+        b.click();
+        document.body.removeChild(b);
+        URL.revokeObjectURL(instructionsUrl);
+    }, 300);
 }
 
 function handleFileUpload(e) {
