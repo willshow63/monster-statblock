@@ -1636,7 +1636,7 @@ function buildSummaryHtml(summary) {
         } else {
             html += '<div class="lore-columns" style="column-fill:auto;height:' + maxH + 'px;">';
         }
-        for (var i = 0; i < page.sections.length; i++) html += page.sections[i].html;
+        for (var i = 0; i < page.sections.length; i++) html += page.sections[i];
         html += '</div></div>';
     }
     
