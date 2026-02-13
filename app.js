@@ -978,18 +978,18 @@ function renderStatBlock(monster) {
     
     // Two-column layout: find the best split point
     // Rules:
-    // 1. Col1 must never be shorter than col2
-    // 2. The last item in col1 must be >= 4 lines (~80px tall)
-    //    If not, we need at least 2 items after the last section header in col1
+    // 1. Col2 can NEVER be significantly longer than col1 (max 5% taller)
+    //    If no split satisfies this, keep extending col1 (col1 longer is OK)
+    // 2. Col1 must end with a full paragraph of at least 4 lines (~80px)
+    //    If the last item is shorter, need at least 2 items from that section in col1
     // 3. A section header can never be the last item in col1 (orphaned header)
+    // 4. Col1 being longer than col2 is acceptable and preferred over col2 being longer
     var MIN_LAST_ITEM_HEIGHT = 80; // ~4 lines
-    var idealMidpoint = totalHeight / 2;
+    var MIN_COL1_HEIGHT = 400; // Minimum col1 height before allowing split
     
     // Try each possible split point and score it
-    var bestSplit = 1; // At minimum, fixed header goes in col1
+    var bestSplit = -1;
     var bestScore = Infinity;
-    var fallbackSplit = 1; // Best split ignoring col2 constraint
-    var fallbackScore = Infinity;
     
     for (var split = 1; split < items.length; split++) {
         // Col1 = items[0..split-1], Col2 = items[split..end]
@@ -998,10 +998,14 @@ function renderStatBlock(monster) {
         for (var j = 0; j < split; j++) col1Height += heights[j];
         for (var j = split; j < items.length; j++) col2Height += heights[j];
         
+        // Rule: col1 must meet minimum height before we allow a split
+        if (col1Height < MIN_COL1_HEIGHT) continue;
+        
         // Rule: last item in col1 cannot be a section header (orphan)
         if (items[split - 1].type === 'header') continue;
         
-        // Rule: check if last item in col1 is substantial enough
+        // Rule: col1 must end with a substantial paragraph (>= 4 lines)
+        // If the last item is too short, need at least 2 items from that section
         var lastCol1Item = items[split - 1];
         var lastCol1Height = heights[split - 1];
         
@@ -1016,18 +1020,11 @@ function renderStatBlock(monster) {
             if (sectionItemsInCol1 < 2) continue;
         }
         
-        // Track fallback (best balance ignoring col2 constraint)
-        var rawImbalance = Math.abs(col1Height - col2Height);
-        if (rawImbalance < fallbackScore) {
-            fallbackScore = rawImbalance;
-            fallbackSplit = split;
-        }
-        
-        // Rule: col2 must never be significantly longer than col1 (max 5% taller)
+        // Rule: col2 must NEVER be significantly longer than col1 (max 5%)
         if (col2Height > col1Height * 1.05) continue;
         
-        // Score: prefer balanced columns, but slightly favor col1 being taller
-        // We weight col2-longer scenarios as worse than col1-longer
+        // Score: prefer balanced columns, but col1 being taller is OK
+        // Col2 being taller is penalized more heavily
         var imbalance;
         if (col2Height > col1Height) {
             imbalance = (col2Height - col1Height) * 2;
@@ -1040,9 +1037,13 @@ function renderStatBlock(monster) {
         }
     }
     
-    // If no valid split found (bestScore unchanged), use fallback
-    if (bestScore === Infinity) {
-        bestSplit = fallbackSplit;
+    // If no valid split found, fall back to single column
+    if (bestSplit === -1) {
+        var html = buttonsHtml + '<div class="stat-block single-column">';
+        for (var i = 0; i < items.length; i++) html += items[i].html;
+        html += '</div>';
+        container.innerHTML = html;
+        return;
     }
     
     // Build two-column HTML
