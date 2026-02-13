@@ -35,6 +35,12 @@ auth.onAuthStateChanged(function(user) {
         document.getElementById("user-name").textContent = user.displayName;
         document.getElementById("saved-monsters").style.display = "block";
         loadGroupsAndMonsters();
+        
+        // Auto-load last opened monster
+        var lastDocId = localStorage.getItem('lastMonsterDocId');
+        if (lastDocId) {
+            loadMonster(lastDocId);
+        }
     } else {
         currentUser = null;
         document.getElementById("login-btn").style.display = "inline-block";
@@ -301,6 +307,7 @@ function loadMonster(docId) {
                 var monster = doc.data();
                 currentMonster = monster;
                 currentMonsterDocId = docId;
+                localStorage.setItem('lastMonsterDocId', docId);
                 renderStatBlock(monster);
             }
         })
@@ -612,11 +619,11 @@ function renderStatBlock(monster) {
     
     // Button row
     var buttonsHtml = '<div class="button-row">';
-    buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
-    buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
     buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
     buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
     buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
+    buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
+    buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
     if (currentUser) {
         buttonsHtml += '<button class="save-btn" onclick="saveMonster(currentMonster)">Save</button>';
     }
