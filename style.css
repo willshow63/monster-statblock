@@ -155,6 +155,11 @@ body {
     background: #0d3536;
 }
 
+.group-header.drag-over {
+    background: #2a7a2a;
+    outline: 2px dashed #4caf50;
+}
+
 .group-name {
     font-weight: bold;
     flex-grow: 1;

@@ -208,6 +208,7 @@ function renderMonsterItem(monster) {
 function setupDragAndDrop() {
     var monsterItems = document.querySelectorAll('.monster-item');
     var dropZones = document.querySelectorAll('.group-monsters, .ungrouped-monsters');
+    var groupHeaders = document.querySelectorAll('.group-header');
     
     monsterItems.forEach(function(item) {
         item.addEventListener('dragstart', function(e) {
@@ -219,6 +220,9 @@ function setupDragAndDrop() {
             item.classList.remove('dragging');
             dropZones.forEach(function(zone) {
                 zone.classList.remove('drag-over');
+            });
+            groupHeaders.forEach(function(header) {
+                header.classList.remove('drag-over');
             });
         });
     });
@@ -245,6 +249,29 @@ function setupDragAndDrop() {
             }
             
             moveMonsterToGroup(monsterId, newGroupId);
+        });
+    });
+    
+    // Group headers are also drop targets (for collapsed groups)
+    groupHeaders.forEach(function(header) {
+        header.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            header.classList.add('drag-over');
+        });
+        
+        header.addEventListener('dragleave', function(e) {
+            header.classList.remove('drag-over');
+        });
+        
+        header.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            header.classList.remove('drag-over');
+            
+            var monsterId = e.dataTransfer.getData('text/plain');
+            var groupId = header.closest('.monster-group').dataset.groupId;
+            
+            moveMonsterToGroup(monsterId, groupId);
         });
     });
 }
