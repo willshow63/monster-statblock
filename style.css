@@ -931,6 +931,14 @@ body {
     width: 840px;
 }
 
+.lore-page {
+    margin-bottom: 20px;
+}
+
+.lore-page:last-child {
+    margin-bottom: 0;
+}
+
 .lore-title {
     font-family: 'Times New Roman', serif;
     font-size: 2em;

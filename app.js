@@ -1570,12 +1570,85 @@ function buildSummaryHtml(summary) {
         return html;
     }
     
-    // Desktop: CSS column flow
-    var html = '<div class="lore-block">';
-    html += '<h1 class="lore-title">' + summaryName + '</h1>';
-    html += '<div class="lore-columns">';
-    for (var i = 0; i < sections.length; i++) html += sections[i];
-    html += '</div></div>';
+    // Desktop: CSS column flow, paginated to letter-page-sized blocks
+    // Render all content into a hidden measurer to get total height per page
+    var PAGE_HEIGHT = 1016;
+    var TITLE_HEIGHT = 50;
+    
+    // First, render everything in a single lore-block to measure
+    var measurer = document.createElement('div');
+    measurer.style.cssText = 'position:absolute;visibility:hidden;width:840px;';
+    measurer.innerHTML = '<div class="lore-block" style="width:840px;padding:20px;font-family:Times New Roman,serif;font-size:14px;line-height:1.4;">'
+        + '<h1 class="lore-title">' + summaryName + '</h1>'
+        + '<div class="lore-columns" style="column-count:2;column-gap:40px;">'
+        + sections.join('')
+        + '</div></div>';
+    document.body.appendChild(measurer);
+    var totalHeight = measurer.firstChild.offsetHeight;
+    document.body.removeChild(measurer);
+    
+    // If it fits on one page, just return it
+    if (totalHeight <= PAGE_HEIGHT) {
+        var html = '<div class="lore-block">';
+        html += '<h1 class="lore-title">' + summaryName + '</h1>';
+        html += '<div class="lore-columns">';
+        for (var i = 0; i < sections.length; i++) html += sections[i];
+        html += '</div></div>';
+        return html;
+    }
+    
+    // Multi-page: measure each section height individually
+    var colMeasurer = document.createElement('div');
+    colMeasurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:14px;line-height:1.4;';
+    document.body.appendChild(colMeasurer);
+    
+    var sectionData = [];
+    for (var i = 0; i < sections.length; i++) {
+        colMeasurer.innerHTML = sections[i];
+        sectionData.push({ html: sections[i], height: colMeasurer.offsetHeight });
+    }
+    document.body.removeChild(colMeasurer);
+    
+    // Distribute into pages — each page gets a CSS-column block with a max-height
+    // We estimate: each page has ~2 columns, so effective content height per page
+    // is PAGE_HEIGHT * 2 (both columns combined). We fill until we exceed that.
+    var pages = [];
+    var remaining = sectionData.slice();
+    var pageNum = 0;
+    
+    while (remaining.length > 0) {
+        var availHeight = PAGE_HEIGHT - (pageNum === 0 ? TITLE_HEIGHT : 0);
+        var twoColCapacity = availHeight * 2;
+        var pageSections = [];
+        var usedHeight = 0;
+        
+        while (remaining.length > 0) {
+            var next = remaining[0];
+            if (usedHeight + next.height <= twoColCapacity || pageSections.length === 0) {
+                pageSections.push(next);
+                usedHeight += next.height;
+                remaining.shift();
+            } else {
+                break;
+            }
+        }
+        
+        pages.push({ sections: pageSections, isFirst: pageNum === 0 });
+        pageNum++;
+    }
+    
+    // Build HTML
+    var html = '';
+    for (var p = 0; p < pages.length; p++) {
+        var page = pages[p];
+        html += '<div class="lore-block lore-page">';
+        if (page.isFirst) {
+            html += '<h1 class="lore-title">' + summaryName + '</h1>';
+        }
+        html += '<div class="lore-columns">';
+        for (var i = 0; i < page.sections.length; i++) html += page.sections[i].html;
+        html += '</div></div>';
+    }
     
     return html;
 }
