@@ -589,18 +589,18 @@ body {
 
 /* Delete current monster button */
 .delete-current-btn {
-    background: none;
+    background: #c0392b;
+    color: white;
     border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 20px;
-    padding: 0;
-    line-height: 1;
-    color: #999;
-    transition: color 0.15s;
+    font-size: 13px;
+    font-family: 'Times New Roman', serif;
 }
 
 .delete-current-btn:hover {
-    color: #c0392b;
+    background: #a93226;
 }
     cursor: pointer;
     font-size: 11px;
@@ -887,14 +887,13 @@ body {
 /* ============ TAB SYSTEM ============ */
 .tab-bar {
     display: flex;
-    gap: 0;
+    gap: 4px;
     margin-bottom: 0;
 }
 
 .tab-btn {
     padding: 8px 20px;
-    border: 2px solid #184e4f;
-    border-bottom: none;
+    border: none;
     background: #ddd;
     color: #184e4f;
     font-family: 'Times New Roman', serif;
@@ -903,9 +902,6 @@ body {
     font-weight: bold;
     cursor: pointer;
     border-radius: 6px 6px 0 0;
-    position: relative;
-    top: 2px;
-    z-index: 1;
     transition: background 0.2s;
 }
 
@@ -915,14 +911,9 @@ body {
 
 .tab-btn.active {
     background: #f5f5f5;
-    border-bottom: 2px solid #f5f5f5;
-    z-index: 2;
 }
 
 .tab-panel {
-    border-top: 2px solid #184e4f;
-    position: relative;
-    top: -1px;
 }
 
 /* ============ LORE BLOCK ============ */

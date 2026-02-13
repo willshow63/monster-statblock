@@ -1417,7 +1417,7 @@ function renderTabs() {
     buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
     buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
     buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
-    buttonsHtml += '<button class="delete-current-btn" onclick="deleteCurrentMonster()" title="Delete this monster">&#128465;</button>';
+    buttonsHtml += '<button class="delete-current-btn" onclick="deleteCurrentMonster()" title="Delete this monster">Delete</button>';
     buttonsHtml += '</div>';
     
     // Build tab bar
