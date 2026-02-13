@@ -20,7 +20,6 @@ var groups = [];
 var monsters = [];
 var expandedGroups = new Set(); // Track which groups are expanded (all start collapsed)
 var sidebarOpen = false;
-var currentSummary = null;
 var activeTab = 'statblock';
 
 function toggleSidebar() {
@@ -60,9 +59,9 @@ function showAlert(message) {
     showModal(message, [{ text: 'OK', className: 'modal-btn-confirm' }]);
 }
 
-function showConfirm(message, onConfirm) {
+function showConfirm(message, onConfirm, onCancel) {
     showModal(message, [
-        { text: 'Cancel', className: 'modal-btn-cancel' },
+        { text: 'Cancel', className: 'modal-btn-cancel', onClick: onCancel },
         { text: 'OK', className: 'modal-btn-confirm', onClick: onConfirm }
     ]);
 }
@@ -290,7 +289,6 @@ function parseItemsBack(statBlock, sectionName, nameSelector, textSelector) {
 
 // Attach the file upload listener once on page load
 document.getElementById("json-upload").addEventListener("change", handleFileUpload);
-document.getElementById("summary-upload").addEventListener("change", handleSummaryUpload);
 
 // Export Template - downloads a zip-like pair of files
 document.getElementById("export-template-btn").addEventListener("click", exportTemplate);
@@ -1094,7 +1092,7 @@ function renderTabs() {
     // Build tab bar
     var tabsHtml = '<div class="tab-bar">';
     tabsHtml += '<button class="tab-btn' + (activeTab === 'statblock' ? ' active' : '') + '" onclick="switchTab(\'statblock\')">Statblock</button>';
-    if (currentSummary) {
+    if (currentMonster && currentMonster.summary) {
         tabsHtml += '<button class="tab-btn' + (activeTab === 'summary' ? ' active' : '') + '" onclick="switchTab(\'summary\')">Summary</button>';
     }
     tabsHtml += '</div>';
@@ -1102,8 +1100,8 @@ function renderTabs() {
     // Build tab panels
     var panelsHtml = '<div class="tab-panel" id="tab-statblock" style="' + (activeTab === 'statblock' ? '' : 'display:none') + '">' + statblockContent + '</div>';
     
-    if (currentSummary) {
-        panelsHtml += '<div class="tab-panel" id="tab-summary" style="' + (activeTab === 'summary' ? '' : 'display:none') + '">' + buildSummaryHtml(currentSummary) + '</div>';
+    if (currentMonster && currentMonster.summary) {
+        panelsHtml += '<div class="tab-panel" id="tab-summary" style="' + (activeTab === 'summary' ? '' : 'display:none') + '">' + buildSummaryHtml(currentMonster.summary) + '</div>';
     }
     
     container.innerHTML = tabsHtml + panelsHtml;
@@ -1112,11 +1110,6 @@ function renderTabs() {
     var restoreInput = document.getElementById("restore-upload");
     if (restoreInput) {
         restoreInput.addEventListener("change", handleRestoreUpload);
-    }
-    // Attach summary replace listener if present
-    var summaryReplace = document.getElementById("summary-upload-replace");
-    if (summaryReplace) {
-        summaryReplace.addEventListener("change", handleSummaryReplace);
     }
 }
 
@@ -1143,15 +1136,9 @@ function switchTab(tab) {
 function buildSummaryHtml(summary) {
     var html = '<div class="lore-block">';
     
-    // Button row for summary
-    html += '<div class="button-row">';
-    html += '<label for="summary-upload-replace" class="restore-btn">Overwrite Summary</label>';
-    html += '<input type="file" id="summary-upload-replace" accept=".json" style="display:none" />';
-    html += '<button class="export-btn" onclick="exportSummary()">Export Summary</button>';
-    html += '</div>';
-    
-    // Header
-    html += '<h1 class="lore-title">' + (summary.name || (currentMonster ? currentMonster.name : 'Creature')) + '</h1>';
+    // Header — use monster name as primary, summary can override
+    var summaryName = summary.name || (currentMonster ? currentMonster.name : 'Creature');
+    html += '<h1 class="lore-title">' + summaryName + '</h1>';
     
     // Two-column layout
     html += '<div class="lore-columns">';
@@ -1176,7 +1163,7 @@ function buildSummaryHtml(summary) {
     
     // Encounters
     if (summary.encounters) {
-        html += '<h2 class="lore-section-header">' + (summary.name || 'Creature') + ' Encounters</h2>';
+        html += '<h2 class="lore-section-header">' + summaryName + ' Encounters</h2>';
         if (summary.encounters.description) {
             html += '<p class="lore-encounters-desc">' + summary.encounters.description + '</p>';
         }
@@ -1258,61 +1245,6 @@ function buildSummaryHtml(summary) {
     return html;
 }
 
-function handleSummaryUpload(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(event) {
-        try {
-            var summary = JSON.parse(event.target.result);
-            currentSummary = summary;
-            activeTab = 'summary';
-            // Re-render tabs
-            if (currentMonster) {
-                renderStatBlock(currentMonster);
-            }
-        } catch (err) {
-            showAlert("Error parsing summary JSON: " + err.message);
-        }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-}
-
-function handleSummaryReplace(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(event) {
-        try {
-            var summary = JSON.parse(event.target.result);
-            currentSummary = summary;
-            // Re-render tabs staying on summary
-            if (currentMonster) {
-                renderStatBlock(currentMonster);
-            }
-        } catch (err) {
-            showAlert("Error parsing summary JSON: " + err.message);
-        }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-}
-
-function exportSummary() {
-    if (!currentSummary) return;
-    var json = JSON.stringify(currentSummary, null, 2);
-    var blob = new Blob([json], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = (currentSummary.name || 'summary').replace(/\s+/g, '_') + '_summary.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
 function handleRestoreUpload(e) {
     var file = e.target.files[0];
     if (!file) return;
@@ -1361,6 +1293,7 @@ function handleRestoreUpload(e) {
 
 function exportTemplate() {
     var template = {
+        "monsterId": "unique_id_here",
         "name": "Monster Name",
         "size": "Medium",
         "type": "Humanoid (Race)",
@@ -1424,7 +1357,37 @@ function exportTemplate() {
         "legendaryActionsDescription": "",
         "lairActions": [],
         "lairActionsDescription": "",
-        "villainActions": []
+        "villainActions": [],
+        "summary": {
+            "description": "A paragraph of flavor text about the creature.",
+            "legendsAndLore": [
+                { "dc": 10, "text": "Basic lore about the creature." },
+                { "dc": 15, "text": "Deeper knowledge about the creature." },
+                { "dc": 20, "text": "Rare or secret information." }
+            ],
+            "encounters": {
+                "description": "Where the creature is typically found.",
+                "groups": [
+                    { "cr": "CR 0–2", "creatures": "1 creature", "treasure": "some coins" }
+                ]
+            },
+            "signs": [
+                { "roll": "1–2", "text": "A sign the creature is nearby." }
+            ],
+            "behavior": [
+                { "roll": "1", "text": "What the creature is doing when found." }
+            ],
+            "names": "Example names for this creature type.",
+            "loot": {
+                "title": "Weapons, Armor & Items",
+                "description": "Standard gear, and roll a d12:",
+                "dieType": "d12",
+                "table": [
+                    { "roll": "1–6", "text": "Common item" },
+                    { "roll": "7–12", "text": "Uncommon item" }
+                ]
+            }
+        }
     };
 
     var instructions = [
@@ -1534,24 +1497,153 @@ function exportTemplate() {
 }
 
 function handleFileUpload(e) {
-    var file = e.target.files[0];
-    if (file) {
+    var files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    var monstersToProcess = [];
+    var filesRead = 0;
+    
+    // Read all files first
+    files.forEach(function(file) {
         var reader = new FileReader();
         reader.onload = function(event) {
             try {
-                var monster = JSON.parse(event.target.result);
-                currentMonster = monster;
-                renderStatBlock(monster);
-                
-                // Auto-save to Firestore if signed in
-                if (currentUser) {
-                    saveMonster(monster);
-                }
+                var data = JSON.parse(event.target.result);
+                monstersToProcess.push(data);
             } catch (err) {
-                showAlert("Error parsing JSON file: " + err.message);
+                showAlert("Error parsing " + file.name + ": " + err.message);
+            }
+            filesRead++;
+            if (filesRead === files.length) {
+                processUploadedMonsters(monstersToProcess);
             }
         };
         reader.readAsText(file);
-    }
+    });
+    
     e.target.value = '';
+}
+
+function processUploadedMonsters(monsterList) {
+    if (monsterList.length === 0) return;
+    
+    // If only one monster uploaded, load it directly (original behavior)
+    if (monsterList.length === 1) {
+        var monster = monsterList[0];
+        // Ensure it has a monsterId
+        if (!monster.monsterId) {
+            monster.monsterId = generateMonsterId();
+        }
+        currentMonster = monster;
+        activeTab = 'statblock';
+        renderStatBlock(monster);
+        if (currentUser) {
+            saveOrUpdateMonster(monster);
+        }
+        return;
+    }
+    
+    // Multiple monsters — save all to Firestore
+    if (!currentUser) {
+        showAlert("Please sign in to bulk-upload monsters. For now, loading the first one.");
+        var m = monsterList[0];
+        if (!m.monsterId) m.monsterId = generateMonsterId();
+        currentMonster = m;
+        activeTab = 'statblock';
+        renderStatBlock(m);
+        return;
+    }
+    
+    // Process each monster sequentially with duplicate checking
+    processBulkUpload(monsterList, 0);
+}
+
+function processBulkUpload(monsterList, index) {
+    if (index >= monsterList.length) {
+        loadGroupsAndMonsters();
+        showAlert("Uploaded " + monsterList.length + " monster(s) successfully.");
+        // Load the last one
+        var last = monsterList[monsterList.length - 1];
+        currentMonster = last;
+        activeTab = 'statblock';
+        renderStatBlock(last);
+        return;
+    }
+    
+    var monster = monsterList[index];
+    if (!monster.monsterId) {
+        monster.monsterId = generateMonsterId();
+    }
+    
+    // Check if this monsterId already exists in Firestore
+    db.collection("users").doc(currentUser.uid).collection("monsters")
+        .where("monsterId", "==", monster.monsterId)
+        .get()
+        .then(function(snapshot) {
+            if (!snapshot.empty) {
+                // Duplicate found — ask user
+                var existingDoc = snapshot.docs[0];
+                showConfirm('"' + monster.name + '" already exists. Replace it?', 
+                    function() {
+                        // Replace
+                        monster.groupId = existingDoc.data().groupId || null;
+                        db.collection("users").doc(currentUser.uid).collection("monsters")
+                            .doc(existingDoc.id).set(monster)
+                            .then(function() {
+                                processBulkUpload(monsterList, index + 1);
+                            });
+                    },
+                    function() {
+                        // Skip
+                        processBulkUpload(monsterList, index + 1);
+                    }
+                );
+            } else {
+                // New monster — save it
+                monster.groupId = null;
+                db.collection("users").doc(currentUser.uid).collection("monsters")
+                    .add(monster)
+                    .then(function() {
+                        processBulkUpload(monsterList, index + 1);
+                    });
+            }
+        })
+        .catch(function(error) {
+            console.error("Error checking duplicate:", error);
+            processBulkUpload(monsterList, index + 1);
+        });
+}
+
+function saveOrUpdateMonster(monster) {
+    if (!currentUser) return;
+    
+    // Check if monsterId already exists
+    db.collection("users").doc(currentUser.uid).collection("monsters")
+        .where("monsterId", "==", monster.monsterId)
+        .get()
+        .then(function(snapshot) {
+            if (!snapshot.empty) {
+                // Update existing
+                var existingDoc = snapshot.docs[0];
+                monster.groupId = existingDoc.data().groupId || null;
+                db.collection("users").doc(currentUser.uid).collection("monsters")
+                    .doc(existingDoc.id).set(monster)
+                    .then(function() {
+                        currentMonsterDocId = existingDoc.id;
+                        localStorage.setItem('lastMonsterDocId', existingDoc.id);
+                        loadGroupsAndMonsters();
+                    });
+            } else {
+                // Save as new
+                saveMonster(monster);
+            }
+        })
+        .catch(function(error) {
+            console.error("Error checking for existing monster:", error);
+            saveMonster(monster);
+        });
+}
+
+function generateMonsterId() {
+    return 'mon_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }

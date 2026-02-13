@@ -771,18 +771,6 @@ body {
     top: -1px;
 }
 
-#summary-upload {
-    display: none;
-}
-
-.summary-upload-btn {
-    background: #5c4a1e !important;
-}
-
-.summary-upload-btn:hover {
-    background: #3d3113 !important;
-}
-
 /* ============ LORE BLOCK ============ */
 .lore-block {
     background: #f5f0e6;

@@ -1,0 +1,125 @@
+{
+  "monsterId": "gristle_001",
+  "bonusActions": [
+    {
+      "name": "Hookshot",
+      "text": "Gristle's left forearm has been replaced from the elbow down with a mechanical hookshot prosthesis (40 ft. range). He lost the arm in a fight he'd rather not talk about. The prosthesis is permanent and cannot be removed. While the hook is deployed, Gristle cannot hold items, make attacks, or benefit from objects that would require use of that arm (such as wielding a two-handed weapon or benefiting from a shield's bonus to AC).<br><br><i>Movement:</i> If the prosthesis isn't being used to hold an item, Gristle can shoot the hook at a fixed surface within 40 feet as a bonus action, or as a reaction when falling. While the hook is attached to a surface, Gristle can use another bonus action to reel himself toward the hook, moving up to 40 feet in a straight line toward the point of attachment. Gristle can then use another bonus action to detach the hook and reel the rope back in, or the hook detaches automatically if the rope is destroyed. Gristle has advantage on ability checks made to move along the rope, such as climbing a vertical surface, swimming against a current, or walking against a strong wind. While the hook is attached, Gristle cannot move or be moved more than 40 feet from the point of attachment.<br><br><i>Attack:</i> Alternatively, Gristle can fire the hook at a creature at least two sizes larger than him within 40 feet, making an attack roll using his Strength or Dexterity modifier (attack bonus +6). On a hit, the creature takes 3 (1d6) piercing damage and the hook embeds itself in the target. At the start of each of the target's turns, it takes 3 (1d6) piercing damage while the hook remains attached. A creature within 5 feet of the hook (including the target) can use an action to forcefully detach it with a successful DC 15 Strength or Dexterity check. The hook also detaches if the rope is destroyed or if Gristle reels it back in using a bonus action.<br><br><i>The Rope:</i> The rope is an object with AC 10 and 10 hit points. If the rope is destroyed while Gristle is suspended or being supported by it, Gristle falls immediately and takes normal falling damage (1d6 bludgeoning per 10 feet fallen).<br><br><i>Falling Arrest:</i> If Gristle is falling and fires the hookshot at a fixed surface within 40 feet (using his reaction), he stops falling at the point where the rope becomes taut and takes no falling damage from that fall. Gristle then hangs suspended from the hook until he reels it in or detaches."
+    }
+  ],
+  "villainActions": [],
+  "damageImmunities": "",
+  "alignment": "Neutral",
+  "conditionImmunities": "",
+  "acType": "",
+  "actions": [
+    {
+      "attackType": "Melee Weapon Attack",
+      "toHit": "+6 to hit",
+      "damage": "7 (1d6 + 4) piercing damage, and the target must make a DC 13 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much on a success.",
+      "reach": "reach 5 ft.",
+      "target": "one target",
+      "name": "Scimitar"
+    },
+    {
+      "name": "Short Bow",
+      "damage": "7 (1d6 + 4) piercing damage, and the target must make a DC 13 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much on a success.",
+      "toHit": "+6 to hit",
+      "target": "one target",
+      "reach": "range 80/320 ft.",
+      "attackType": "Ranged Weapon Attack"
+    }
+  ],
+  "size": "Small",
+  "languages": "Common, Goblin",
+  "xp": "1100",
+  "cr": "4",
+  "savingThrows": "Dex +6, Wis +3",
+  "hp": 36,
+  "abilities": {
+    "con": 13,
+    "dex": 18,
+    "wis": 12,
+    "cha": 12,
+    "str": 8,
+    "int": 12
+  },
+  "reactions": [
+    {
+      "text": "When hit with an attack Gristle can see, halve the attack's damage. He's been hit enough times to know how to roll with it.",
+      "name": "Uncanny Dodge"
+    }
+  ],
+  "damageResistances": "",
+  "name": "Gristle",
+  "legendaryActions": [],
+  "skills": "Acrobatics +8, Insight +4, Intimidation +5, Perception +5, Stealth +6",
+  "features": [
+    {
+      "name": "Crafty",
+      "text": "Gristle doesn't provoke opportunity attacks when he moves out of an enemy's reach. He doesn't have time for their nonsense."
+    },
+    {
+      "text": "When Gristle is subjected to an effect that allows him to make a Dexterity saving throw to take only half damage, he instead takes no damage if he succeeds on the saving throw, and only half damage if he fails.",
+      "name": "Evasion"
+    },
+    {
+      "text": "Gristle can deal an extra 10 (3d6) damage to a foe he hits that he has advantage against, or if that creature is within 5 feet of an ally of the goblin that is not incapacitated. He fights dirty and makes no apologies for it.",
+      "name": "Sneak Attack (1/Turn)"
+    }
+  ],
+  "ac": 18,
+  "hpFormula": "8d6 + 8",
+  "groupId": "bOlUbnDnbxjsbqJuD3VN",
+  "type": "Humanoid (Goblin)",
+  "damageVulnerabilities": "",
+  "speed": "30 ft., climb 20 ft.",
+  "legendaryActionsPerRound": 0,
+  "legendaryActionsDescription": "",
+  "senses": "darkvision 60 ft., passive Perception 15",
+  "summary": {
+    "description": "Gristle is a notorious goblin mercenary who operates out of the Thornwaste badlands. Most goblins travel in packs, but Gristle works alone — partly by choice, partly because nobody can stand him for long. He's earned a reputation for taking impossible contracts and surviving through sheer stubbornness and a mechanical hookshot arm that replaced the one he lost in circumstances he refuses to discuss. Tavern rumors claim he once held a bridge alone against a dozen hobgoblin soldiers, though Gristle himself just scowls when asked about it.",
+    "legendsAndLore": [
+      { "dc": 10, "text": "Gristle is a goblin mercenary known for his mechanical hookshot prosthesis and foul temper." },
+      { "dc": 15, "text": "He's an expert ambusher who coats his weapons in a potent spider-derived poison. He never takes jobs involving children or animals — everything else is fair game." },
+      { "dc": 20, "text": "Gristle was once part of a goblin warband called the Rust Fang Company. He's the sole survivor of a job gone wrong, and the hookshot arm is a reminder of what he lost." }
+    ],
+    "encounters": {
+      "description": "Gristle operates in wilderness areas, particularly rocky terrain where his hookshot gives him an advantage.",
+      "groups": [
+        { "cr": "CR 0–2", "creatures": "Signs of Gristle's passage (old campsites, hookshot marks on cliff faces)", "treasure": "a discarded poison vial (empty) and 3 (1d6) cp" },
+        { "cr": "CR 3–4", "creatures": "Gristle, alone and irritable", "treasure": "a vial of spider venom (3 doses), 28 (4d12) gp, and a tattered map of local bounties" },
+        { "cr": "CR 5–7", "creatures": "Gristle with 2 to 4 hired goblin scouts", "treasure": "a +1 scimitar, a potion of climbing, and 55 (10d10) gp" }
+      ]
+    },
+    "signs": [
+      { "roll": "1–2", "text": "Deep hookshot gouges in a rock face or tree trunk" },
+      { "roll": "3", "text": "The faint smell of spider venom on the wind" },
+      { "roll": "4", "text": "A small campfire, still warm — only one bedroll" },
+      { "roll": "5", "text": "A dead bounty target, neatly dispatched with a single blade wound" },
+      { "roll": "6", "text": "Grumbling and cursing in Goblin from somewhere above you" }
+    ],
+    "behavior": [
+      { "roll": "1", "text": "Watching from a high vantage point, hookshot ready" },
+      { "roll": "2", "text": "Counting coins and muttering about being underpaid" },
+      { "roll": "3", "text": "Sharpening his scimitar with an annoyed expression" },
+      { "roll": "4", "text": "Eating dried meat alone and glaring at anyone who approaches" },
+      { "roll": "5", "text": "Negotiating a contract — poorly, because he has no patience for haggling" },
+      { "roll": "6", "text": "Swinging between cliff faces with his hookshot, scouting the area" },
+      { "roll": "7", "text": "Tending to his mechanical arm with careful, practiced movements" },
+      { "roll": "8", "text": "Picking a fight with someone twice his size" }
+    ],
+    "names": "Gristle doesn't use aliases. If you hear the name, it's already too late to run.",
+    "loot": {
+      "title": "Weapons, Armor & Items",
+      "description": "Scimitar, short bow, quiver with 20 arrows, leather armor, and roll a d8:",
+      "dieType": "d8",
+      "table": [
+        { "roll": "1–3", "text": "1d4 days' dried meat and a half-empty waterskin" },
+        { "roll": "4–5", "text": "A vial of spider venom (1 dose, coats 1 weapon for 1 minute)" },
+        { "roll": "6", "text": "A tattered leather pouch containing 14 (4d6) gp and a crumpled bounty notice" },
+        { "roll": "7", "text": "A potion of climbing" },
+        { "roll": "8", "text": "Hookshot repair kit (spare cable, oil, and tiny goblin-made tools)" }
+      ]
+    }
+  }
+}

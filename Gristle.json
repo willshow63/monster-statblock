@@ -1,0 +1,78 @@
+{
+  "bonusActions": [
+    {
+      "name": "Improved Hookshot (40 ft.)",
+      "text": "Gristle's left forearm has been replaced from the elbow down with a mechanical hookshot prosthesis. The prosthesis is permanent and cannot be removed. While the hook is deployed, Gristle cannot hold items, make attacks, or benefit from objects that would require use of that arm (such as wielding a two-handed weapon or benefiting from a shield's bonus to AC).<br><br><b><i>Hookshot Movement.</i></b> If the prosthesis isn't being used to hold an item, Gristle can shoot the hook at a fixed surface within 40 feet as a bonus action, or as a reaction when falling. While the hook is attached to a surface, Gristle can use another bonus action to reel itself toward the hook, moving up to 40 feet in a straight line toward the point of attachment. Gristle can then use another bonus action to detach the hook and reel the rope back in, or the hook detaches automatically if the rope is destroyed. Gristle has advantage on ability checks made to move along the rope, such as climbing a vertical surface, swimming against a current, or walking against a strong wind. While the hook is attached, Gristle cannot move or be moved more than 40 feet from the point of attachment.<br><br><b><i>Hookshot Attack.</i></b> Alternatively, Gristle can fire the hook at a creature at least two sizes larger than it within 40 feet, making an attack roll using its Strength or Dexterity modifier (attack bonus +6). On a hit, the creature takes 3 (1d6) piercing damage and the hook embeds itself in the target. At the start of each of the target's turns, it takes 3 (1d6) piercing damage while the hook remains attached. A creature within 5 feet of the hook (including the target) can use an action to forcefully detach it with a successful DC 15 Strength or Dexterity check. The hook also detaches if the rope is destroyed or if Gristle reels it back in using a bonus action.<br><br><b><i>The Rope.</i></b> The rope is an object with AC 10 and 10 hit points. If the rope is destroyed while Gristle is suspended or being supported by it, Gristle falls immediately and takes normal falling damage (1d6 bludgeoning per 10 feet fallen).<br><br><b><i>Falling Arrest.</i></b> If Gristle is falling and fires the hookshot at a fixed surface within 40 feet (using its reaction), it stops falling at the point where the rope becomes taut and takes no falling damage from that fall. Gristle then hangs suspended from the hook until it reels itself in or detaches."
+    }
+  ],
+  "villainActions": [],
+  "damageImmunities": "",
+  "alignment": "Neutral",
+  "conditionImmunities": "",
+  "acType": "",
+  "actions": [
+    {
+      "attackType": "Melee Weapon Attack",
+      "toHit": "+6 to hit",
+      "damage": "7 (1d6 + 4) piercing damage, and the target must make a DC 13 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much on a success.",
+      "reach": "reach 5 ft.",
+      "target": "one target",
+      "name": "Scimitar"
+    },
+    {
+      "name": "Short Bow",
+      "damage": "7 (1d6 + 4) piercing damage, and the target must make a DC 13 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much on a success.",
+      "toHit": "+6 to hit",
+      "target": "one target",
+      "reach": "range 80/320 ft.",
+      "attackType": "Ranged Weapon Attack"
+    }
+  ],
+  "size": "Small",
+  "languages": "Common, Goblin",
+  "xp": "1100",
+  "cr": "4",
+  "savingThrows": "Dex +6, Wis +3",
+  "hp": 36,
+  "abilities": {
+    "con": 13,
+    "dex": 18,
+    "wis": 12,
+    "cha": 12,
+    "str": 8,
+    "int": 12
+  },
+  "reactions": [
+    {
+      "text": "When hit with an attack Gristle can see, halve the attack's damage.",
+      "name": "Uncanny Dodge"
+    }
+  ],
+  "damageResistances": "",
+  "name": "Gristle",
+  "legendaryActions": [],
+  "skills": "Acrobatics +8, Insight +4, Intimidation +5, Perception +5, Stealth +6",
+  "features": [
+    {
+      "name": "Crafty",
+      "text": "Gristle doesn't provoke opportunity attacks when they move out of an enemy's reach."
+    },
+    {
+      "text": "When Gristle is subjected to an effect that allows it to make a Dexterity saving throw to take only half damage, it instead takes no damage if it succeeds on the saving throw, and only half damage if it fails.",
+      "name": "Evasion"
+    },
+    {
+      "text": "Gristle can deal an extra 10 (3d6) damage to a foe it hits that it has advantage against, or if that creature is within 5 feet of an ally of the goblin that is not incapacitated.",
+      "name": "Sneak Attack (1/Turn)"
+    }
+  ],
+  "ac": 18,
+  "hpFormula": "8d6 + 8",
+  "groupId": "bOlUbnDnbxjsbqJuD3VN",
+  "type": "Humanoid (Goblin)",
+  "damageVulnerabilities": "",
+  "speed": "30 ft., climb 20 ft.",
+  "legendaryActionsPerRound": 0,
+  "legendaryActionsDescription": "",
+  "senses": "darkvision 60 ft., passive Perception 15"
+}
