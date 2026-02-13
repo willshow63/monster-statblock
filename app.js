@@ -1467,6 +1467,9 @@ function switchTab(tab) {
 function buildSummaryHtml(summary) {
     var summaryName = summary.name || (currentMonster ? currentMonster.name : 'Creature');
     
+    // Check if we're in mobile/single-column mode
+    var isMobile = window.innerWidth <= 768;
+    
     // Build each section as a discrete block
     var sections = [];
     
@@ -1560,80 +1563,107 @@ function buildSummaryHtml(summary) {
         sections.push('<div class="lore-section"><div class="lore-image-frame"><img src="' + summary.image + '" alt="' + summaryName + '" class="lore-image" /></div></div>');
     }
     
-    // Measure each section height to balance columns
+    // Mobile: single column, no pagination
+    if (isMobile) {
+        var html = '<div class="lore-block">';
+        html += '<h1 class="lore-title">' + summaryName + '</h1>';
+        for (var i = 0; i < sections.length; i++) html += sections[i];
+        html += '</div>';
+        return html;
+    }
+    
+    // Desktop: paginated two-column layout
+    var PAGE_HEIGHT = 1016; // letter page content area (1056 - 40px padding)
+    var TITLE_HEIGHT = 50; // approximate title height
+    var COL_WIDTH = 380;
+    
+    // Measure each section
     var measurer = document.createElement('div');
-    measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:14px;line-height:1.5;padding:0;';
+    measurer.style.cssText = 'position:absolute;visibility:hidden;width:' + COL_WIDTH + 'px;font-family:Times New Roman,serif;font-size:14px;line-height:1.4;padding:0;';
     document.body.appendChild(measurer);
     
-    var heights = [];
+    var sectionData = [];
     for (var i = 0; i < sections.length; i++) {
         measurer.innerHTML = sections[i];
-        heights.push(measurer.offsetHeight);
+        sectionData.push({ html: sections[i], height: measurer.offsetHeight });
     }
     document.body.removeChild(measurer);
     
-    // Distribute sections: fill col1 first, move to col2 when col1 is taller
-    // Rule: col1 must be >= col2 height
-    var totalHeight = 0;
-    for (var i = 0; i < heights.length; i++) totalHeight += heights[i];
+    // Distribute sections across pages
+    var pages = [];
+    var remaining = sectionData.slice();
+    var pageNum = 0;
     
-    var col1Sections = [];
-    var col2Sections = [];
-    var col1Height = 0;
-    var col2Height = 0;
-    var movedToCol2 = false;
-    
-    for (var i = 0; i < sections.length; i++) {
-        if (!movedToCol2) {
-            col1Sections.push(sections[i]);
-            col1Height += heights[i];
-            // Check if we should start filling col2
-            // Move to col2 if col1 has at least half the total and there are sections left
-            if (col1Height >= totalHeight / 2 && i < sections.length - 1) {
-                movedToCol2 = true;
+    while (remaining.length > 0) {
+        var availHeight = PAGE_HEIGHT - (pageNum === 0 ? TITLE_HEIGHT : 0);
+        var col1 = [];
+        var col2 = [];
+        var col1H = 0;
+        var col2H = 0;
+        
+        // Fill columns: add sections to the shorter column until page is full
+        while (remaining.length > 0) {
+            var next = remaining[0];
+            
+            // Which column is shorter?
+            if (col1H <= col2H) {
+                // Try adding to col1
+                if (col1H + next.height <= availHeight) {
+                    col1.push(next);
+                    col1H += next.height;
+                    remaining.shift();
+                } else if (col1.length === 0 && col2.length === 0) {
+                    // First section on page and it's too tall — add it anyway (don't get stuck)
+                    col1.push(next);
+                    col1H += next.height;
+                    remaining.shift();
+                } else {
+                    // Doesn't fit in col1, try col2
+                    if (col2H + next.height <= availHeight) {
+                        col2.push(next);
+                        col2H += next.height;
+                        remaining.shift();
+                    } else {
+                        break; // Neither column has room, move to next page
+                    }
+                }
+            } else {
+                // Try adding to col2
+                if (col2H + next.height <= availHeight) {
+                    col2.push(next);
+                    col2H += next.height;
+                    remaining.shift();
+                } else if (col1H + next.height <= availHeight) {
+                    col1.push(next);
+                    col1H += next.height;
+                    remaining.shift();
+                } else {
+                    break; // Neither column has room, move to next page
+                }
             }
-        } else {
-            col2Sections.push(sections[i]);
-            col2Height += heights[i];
         }
+        
+        pages.push({ col1: col1, col2: col2, isFirst: pageNum === 0 });
+        pageNum++;
     }
     
-    // Safety: if col2 ended up taller than col1, move last col2 section back to col1
-    while (col2Height > col1Height && col2Sections.length > 1) {
-        var moved = col2Sections.shift();
-        col1Sections.push(moved);
-        // Recalculate
-        col1Height = 0;
-        col2Height = 0;
-        for (var i = 0; i < col1Sections.length; i++) {
-            measurer = document.createElement('div');
-            measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:14px;line-height:1.5;';
-            measurer.innerHTML = col1Sections[i];
-            document.body.appendChild(measurer);
-            col1Height += measurer.offsetHeight;
-            document.body.removeChild(measurer);
+    // Build HTML for all pages
+    var html = '';
+    for (var p = 0; p < pages.length; p++) {
+        var page = pages[p];
+        html += '<div class="lore-block lore-page">';
+        if (page.isFirst) {
+            html += '<h1 class="lore-title">' + summaryName + '</h1>';
         }
-        for (var i = 0; i < col2Sections.length; i++) {
-            measurer = document.createElement('div');
-            measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:14px;line-height:1.5;';
-            measurer.innerHTML = col2Sections[i];
-            document.body.appendChild(measurer);
-            col2Height += measurer.offsetHeight;
-            document.body.removeChild(measurer);
-        }
+        html += '<div class="lore-columns">';
+        html += '<div class="lore-col lore-col-1">';
+        for (var i = 0; i < page.col1.length; i++) html += page.col1[i].html;
+        html += '</div>';
+        html += '<div class="lore-col lore-col-2">';
+        for (var i = 0; i < page.col2.length; i++) html += page.col2[i].html;
+        html += '</div>';
+        html += '</div></div>';
     }
-    
-    // Build HTML
-    var html = '<div class="lore-block">';
-    html += '<h1 class="lore-title">' + summaryName + '</h1>';
-    html += '<div class="lore-columns">';
-    html += '<div class="lore-col lore-col-1">';
-    for (var i = 0; i < col1Sections.length; i++) html += col1Sections[i];
-    html += '</div>';
-    html += '<div class="lore-col lore-col-2">';
-    for (var i = 0; i < col2Sections.length; i++) html += col2Sections[i];
-    html += '</div>';
-    html += '</div></div>';
     
     return html;
 }
