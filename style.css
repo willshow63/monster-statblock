@@ -154,7 +154,7 @@ body {
     display: none;
 }
 
-.upload-btn, .print-btn, .export-btn, .restore-btn {
+.upload-btn, .print-btn, .export-btn, .restore-btn, .edit-btn {
     background: #184e4f;
     color: white;
     padding: 8px 15px;
@@ -164,8 +164,35 @@ body {
     border-radius: 4px;
 }
 
-.upload-btn:hover, .print-btn:hover, .export-btn:hover, .restore-btn:hover {
+.upload-btn:hover, .print-btn:hover, .export-btn:hover, .restore-btn:hover, .edit-btn:hover {
     background: #0d3536;
+}
+
+.edit-btn {
+    font-size: 16px;
+    padding: 6px 12px;
+}
+
+.edit-btn.edit-active {
+    background: #8b6914;
+}
+
+.edit-btn.edit-active:hover {
+    background: #6b5010;
+}
+
+/* Editing state */
+.stat-block.editing {
+    box-shadow: 0 0 0 2px #8b6914;
+}
+
+.stat-block.editing [contenteditable="true"] {
+    outline: none;
+    border-bottom: 1px dashed #8b6914;
+}
+
+.stat-block.editing [contenteditable="true"]:focus {
+    background: rgba(139, 105, 20, 0.08);
 }
 
 /* Main Content Layout */

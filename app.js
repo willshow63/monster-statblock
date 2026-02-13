@@ -51,6 +51,227 @@ function showConfirm(message, onConfirm) {
     ]);
 }
 
+var isEditing = false;
+
+function toggleEdit() {
+    var statBlock = document.querySelector('.stat-block');
+    if (!statBlock || !currentMonster) return;
+    
+    if (!isEditing) {
+        // Enter edit mode
+        isEditing = true;
+        statBlock.classList.add('editing');
+        
+        // Make all data-field spans editable
+        var fields = statBlock.querySelectorAll('[data-field]');
+        for (var i = 0; i < fields.length; i++) {
+            fields[i].setAttribute('contenteditable', 'true');
+        }
+        
+        // Make feature/action name spans and text spans editable
+        var names = statBlock.querySelectorAll('.feature-name, .action-name, .legendary-action-name, .villain-action-name');
+        for (var i = 0; i < names.length; i++) {
+            names[i].setAttribute('contenteditable', 'true');
+        }
+        var texts = statBlock.querySelectorAll('.feature-text, .action-text, .legendary-description');
+        for (var i = 0; i < texts.length; i++) {
+            texts[i].setAttribute('contenteditable', 'true');
+        }
+        
+        // Make attack detail spans editable
+        var attacks = statBlock.querySelectorAll('.attack-type');
+        for (var i = 0; i < attacks.length; i++) {
+            attacks[i].parentNode.setAttribute('contenteditable', 'true');
+        }
+        
+        // Make lair action list items editable
+        var lairItems = statBlock.querySelectorAll('[data-section="lairActions"]');
+        for (var i = 0; i < lairItems.length; i++) {
+            lairItems[i].setAttribute('contenteditable', 'true');
+        }
+        
+        // Update button
+        var btn = statBlock.parentNode.querySelector('.edit-btn');
+        if (btn) { btn.textContent = '✓'; btn.title = 'Save edits'; btn.classList.add('edit-active'); }
+    } else {
+        // Exit edit mode - parse back and save
+        parseStatBlockBack(statBlock);
+        
+        isEditing = false;
+        statBlock.classList.remove('editing');
+        
+        // Remove contenteditable from everything
+        var editables = statBlock.querySelectorAll('[contenteditable]');
+        for (var i = 0; i < editables.length; i++) {
+            editables[i].removeAttribute('contenteditable');
+        }
+        
+        // Re-render with updated data
+        renderStatBlock(currentMonster);
+        
+        // Auto-save if we have a doc ID
+        if (currentUser && currentMonsterDocId) {
+            var saveData = Object.assign({}, currentMonster);
+            db.collection("users").doc(currentUser.uid).collection("monsters").doc(currentMonsterDocId)
+                .set(saveData)
+                .then(function() {
+                    showAlert(currentMonster.name + " updated!");
+                    loadGroupsAndMonsters();
+                })
+                .catch(function(error) {
+                    showAlert("Error saving edits: " + error.message);
+                });
+        }
+    }
+}
+
+function parseStatBlockBack(statBlock) {
+    // Name
+    var nameEl = statBlock.querySelector('[data-field="name"]');
+    if (nameEl) currentMonster.name = nameEl.textContent.trim();
+    
+    // Type line: "Size Type, Alignment"
+    var typeEl = statBlock.querySelector('[data-field="type-line"]');
+    if (typeEl) {
+        var typeLine = typeEl.textContent.trim();
+        var commaIdx = typeLine.lastIndexOf(',');
+        if (commaIdx > -1) {
+            var sizeType = typeLine.substring(0, commaIdx).trim();
+            currentMonster.alignment = typeLine.substring(commaIdx + 1).trim();
+            var spaceIdx = sizeType.indexOf(' ');
+            if (spaceIdx > -1) {
+                currentMonster.size = sizeType.substring(0, spaceIdx).trim();
+                currentMonster.type = sizeType.substring(spaceIdx + 1).trim();
+            }
+        }
+    }
+    
+    // AC line: "18 (plate armor)" or "18"
+    var acEl = statBlock.querySelector('[data-field="ac-line"]');
+    if (acEl) {
+        var acText = acEl.textContent.trim();
+        var acMatch = acText.match(/^(\d+)\s*(?:\((.+)\))?/);
+        if (acMatch) {
+            currentMonster.ac = parseInt(acMatch[1]);
+            currentMonster.acType = acMatch[2] ? acMatch[2].trim() : '';
+        }
+    }
+    
+    // HP line: "36 (8d6 + 8)" or "36"
+    var hpEl = statBlock.querySelector('[data-field="hp-line"]');
+    if (hpEl) {
+        var hpText = hpEl.textContent.trim();
+        var hpMatch = hpText.match(/^(\d+)\s*(?:\((.+)\))?/);
+        if (hpMatch) {
+            currentMonster.hp = parseInt(hpMatch[1]);
+            currentMonster.hpFormula = hpMatch[2] ? hpMatch[2].trim() : '';
+        }
+    }
+    
+    // Speed
+    var speedEl = statBlock.querySelector('[data-field="speed"]');
+    if (speedEl) currentMonster.speed = speedEl.textContent.trim();
+    
+    // Ability scores: parse "18 (+4)" -> 18
+    var abilityNames = ["str", "dex", "con", "int", "wis", "cha"];
+    for (var i = 0; i < abilityNames.length; i++) {
+        var ab = abilityNames[i];
+        var abEl = statBlock.querySelector('[data-field="ability-' + ab + '"]');
+        if (abEl) {
+            var abMatch = abEl.textContent.trim().match(/^(\d+)/);
+            if (abMatch) currentMonster.abilities[ab] = parseInt(abMatch[1]);
+        }
+    }
+    
+    // Simple string fields
+    var stringFields = ['savingThrows', 'skills', 'damageVulnerabilities', 'damageResistances', 'damageImmunities', 'conditionImmunities', 'senses', 'languages'];
+    for (var i = 0; i < stringFields.length; i++) {
+        var el = statBlock.querySelector('[data-field="' + stringFields[i] + '"]');
+        if (el) currentMonster[stringFields[i]] = el.textContent.trim();
+    }
+    
+    // CR line: "4 (1100 XP)"
+    var crEl = statBlock.querySelector('[data-field="cr-line"]');
+    if (crEl) {
+        var crText = crEl.textContent.trim();
+        var crMatch = crText.match(/^([^\s(]+)\s*(?:\((\d+)\s*XP\))?/);
+        if (crMatch) {
+            currentMonster.cr = crMatch[1].trim();
+            if (crMatch[2]) currentMonster.xp = crMatch[2].trim();
+        }
+    }
+    
+    // Features
+    parseItemsBack(statBlock, 'features', '.feature-name', '.feature-text');
+    
+    // Actions (both attack and non-attack)
+    var actionEls = statBlock.querySelectorAll('[data-section="actions"]');
+    for (var i = 0; i < actionEls.length; i++) {
+        var idx = parseInt(actionEls[i].getAttribute('data-index'));
+        if (idx < currentMonster.actions.length) {
+            var nameSpan = actionEls[i].querySelector('.action-name');
+            if (nameSpan) currentMonster.actions[idx].name = nameSpan.textContent.replace(/\.\s*$/, '').trim();
+            
+            if (currentMonster.actions[idx].attackType) {
+                // For attack actions, parse the full text content
+                var fullText = actionEls[i].textContent;
+                var attackTypeSpan = actionEls[i].querySelector('.attack-type');
+                if (attackTypeSpan) currentMonster.actions[idx].attackType = attackTypeSpan.textContent.replace(/:\s*$/, '').trim();
+            } else {
+                var textSpan = actionEls[i].querySelector('.action-text');
+                if (textSpan) currentMonster.actions[idx].text = textSpan.innerHTML.trim();
+            }
+        }
+    }
+    
+    // Bonus Actions, Reactions
+    parseItemsBack(statBlock, 'bonusActions', '.action-name', '.action-text');
+    parseItemsBack(statBlock, 'reactions', '.action-name', '.action-text');
+    
+    // Legendary Actions
+    var legDescEl = statBlock.querySelector('[data-field="legendaryActionsDescription"]');
+    if (legDescEl) currentMonster.legendaryActionsDescription = legDescEl.textContent.trim();
+    parseItemsBack(statBlock, 'legendaryActions', '.legendary-action-name', null);
+    
+    // Lair Actions
+    var lairEls = statBlock.querySelectorAll('[data-section="lairActions"]');
+    for (var i = 0; i < lairEls.length; i++) {
+        var idx = parseInt(lairEls[i].getAttribute('data-index'));
+        if (currentMonster.lairActions && idx < currentMonster.lairActions.length) {
+            currentMonster.lairActions[idx] = lairEls[i].innerHTML.trim();
+        }
+    }
+    
+    // Lair Actions Description
+    var lairDescEl = statBlock.querySelector('[data-field="lairActionsDescription"]');
+    if (lairDescEl) currentMonster.lairActionsDescription = lairDescEl.textContent.trim();
+    
+    // Villain Actions
+    var villainEls = statBlock.querySelectorAll('[data-section="villainActions"]');
+    for (var i = 0; i < villainEls.length; i++) {
+        var idx = parseInt(villainEls[i].getAttribute('data-index'));
+        if (currentMonster.villainActions && idx < currentMonster.villainActions.length) {
+            var vNameSpan = villainEls[i].querySelector('.villain-action-name');
+            if (vNameSpan) currentMonster.villainActions[idx].name = vNameSpan.textContent.replace(/\.\s*$/, '').trim();
+        }
+    }
+}
+
+function parseItemsBack(statBlock, sectionName, nameSelector, textSelector) {
+    var els = statBlock.querySelectorAll('[data-section="' + sectionName + '"]');
+    for (var i = 0; i < els.length; i++) {
+        var idx = parseInt(els[i].getAttribute('data-index'));
+        if (currentMonster[sectionName] && idx < currentMonster[sectionName].length) {
+            var nameSpan = els[i].querySelector(nameSelector);
+            if (nameSpan) currentMonster[sectionName][idx].name = nameSpan.textContent.replace(/\.\s*$/, '').trim();
+            if (textSelector) {
+                var textSpan = els[i].querySelector(textSelector);
+                if (textSpan) currentMonster[sectionName][idx].text = textSpan.innerHTML.trim();
+            }
+        }
+    }
+}
+
 // Attach the file upload listener once on page load
 document.getElementById("json-upload").addEventListener("change", handleFileUpload);
 
@@ -507,13 +728,13 @@ function getMod(score) {
 
 function buildHeaderSection(monster) {
     var html = '';
-    html += '<h1 class="monster-name">' + monster.name + '</h1>';
-    html += '<p class="monster-type">' + monster.size + ' ' + monster.type + ', ' + monster.alignment + '</p>';
+    html += '<h1 class="monster-name" data-field="name">' + monster.name + '</h1>';
+    html += '<p class="monster-type" data-field="type-line">' + monster.size + ' ' + monster.type + ', ' + monster.alignment + '</p>';
     html += '<hr class="divider">';
     html += '<div class="basic-stats">';
-    html += '<p><span class="stat-label">Armor Class</span> ' + monster.ac + (monster.acType ? ' (' + monster.acType + ')' : '') + '</p>';
-    html += '<p><span class="stat-label">Hit Points</span> ' + monster.hp + (monster.hpFormula ? ' (' + monster.hpFormula + ')' : '') + '</p>';
-    html += '<p><span class="stat-label">Speed</span> ' + monster.speed + '</p>';
+    html += '<p><span class="stat-label">Armor Class</span> <span data-field="ac-line">' + monster.ac + (monster.acType ? ' (' + monster.acType + ')' : '') + '</span></p>';
+    html += '<p><span class="stat-label">Hit Points</span> <span data-field="hp-line">' + monster.hp + (monster.hpFormula ? ' (' + monster.hpFormula + ')' : '') + '</span></p>';
+    html += '<p><span class="stat-label">Speed</span> <span data-field="speed">' + monster.speed + '</span></p>';
     html += '</div>';
     html += '<hr class="divider">';
     html += '<div class="abilities">';
@@ -522,20 +743,20 @@ function buildHeaderSection(monster) {
         var ability = abilityNames[i];
         var score = monster.abilities[ability];
         html += '<div class="ability"><div class="ability-name">' + ability.toUpperCase() + '</div>';
-        html += '<div class="ability-score">' + score + ' (' + getMod(score) + ')</div></div>';
+        html += '<div class="ability-score" data-field="ability-' + ability + '">' + score + ' (' + getMod(score) + ')</div></div>';
     }
     html += '</div>';
     html += '<hr class="divider">';
     html += '<div class="secondary-stats">';
-    if (monster.savingThrows) html += '<p><span class="stat-label">Saving Throws</span> ' + monster.savingThrows + '</p>';
-    if (monster.skills) html += '<p><span class="stat-label">Skills</span> ' + monster.skills + '</p>';
-    if (monster.damageVulnerabilities) html += '<p><span class="stat-label">Damage Vulnerabilities</span> ' + monster.damageVulnerabilities + '</p>';
-    if (monster.damageResistances) html += '<p><span class="stat-label">Damage Resistances</span> ' + monster.damageResistances + '</p>';
-    if (monster.damageImmunities) html += '<p><span class="stat-label">Damage Immunities</span> ' + monster.damageImmunities + '</p>';
-    if (monster.conditionImmunities) html += '<p><span class="stat-label">Condition Immunities</span> ' + monster.conditionImmunities + '</p>';
-    if (monster.senses) html += '<p><span class="stat-label">Senses</span> ' + monster.senses + '</p>';
-    if (monster.languages) html += '<p><span class="stat-label">Languages</span> ' + monster.languages + '</p>';
-    html += '<p><span class="stat-label">Challenge Rating</span> ' + monster.cr + (monster.xp ? ' (' + monster.xp + ' XP)' : '') + '</p>';
+    if (monster.savingThrows) html += '<p><span class="stat-label">Saving Throws</span> <span data-field="savingThrows">' + monster.savingThrows + '</span></p>';
+    if (monster.skills) html += '<p><span class="stat-label">Skills</span> <span data-field="skills">' + monster.skills + '</span></p>';
+    if (monster.damageVulnerabilities) html += '<p><span class="stat-label">Damage Vulnerabilities</span> <span data-field="damageVulnerabilities">' + monster.damageVulnerabilities + '</span></p>';
+    if (monster.damageResistances) html += '<p><span class="stat-label">Damage Resistances</span> <span data-field="damageResistances">' + monster.damageResistances + '</span></p>';
+    if (monster.damageImmunities) html += '<p><span class="stat-label">Damage Immunities</span> <span data-field="damageImmunities">' + monster.damageImmunities + '</span></p>';
+    if (monster.conditionImmunities) html += '<p><span class="stat-label">Condition Immunities</span> <span data-field="conditionImmunities">' + monster.conditionImmunities + '</span></p>';
+    if (monster.senses) html += '<p><span class="stat-label">Senses</span> <span data-field="senses">' + monster.senses + '</span></p>';
+    if (monster.languages) html += '<p><span class="stat-label">Languages</span> <span data-field="languages">' + monster.languages + '</span></p>';
+    html += '<p><span class="stat-label">Challenge Rating</span> <span data-field="cr-line">' + monster.cr + (monster.xp ? ' (' + monster.xp + ' XP)' : '') + '</span></p>';
     html += '</div>';
     return html;
 }
@@ -545,7 +766,7 @@ function buildFeaturesSection(monster) {
     var html = '<hr class="divider">';
     for (var i = 0; i < monster.features.length; i++) {
         var feature = monster.features[i];
-        html += '<div class="feature"><span class="feature-name">' + feature.name + '.</span> ';
+        html += '<div class="feature" data-section="features" data-index="' + i + '"><span class="feature-name">' + feature.name + '.</span> ';
         html += '<span class="feature-text">' + feature.text + '</span></div>';
     }
     return html;
@@ -553,8 +774,8 @@ function buildFeaturesSection(monster) {
 
 // MIN_FIRST_ITEM_HEIGHT not needed - logic is in renderStatBlock now
 
-function buildActionItemHtml(action) {
-    var html = '<div class="action"><span class="action-name">' + action.name + '.</span> ';
+function buildActionItemHtml(action, index) {
+    var html = '<div class="action" data-section="actions" data-index="' + index + '"><span class="action-name">' + action.name + '.</span> ';
     if (action.attackType) {
         html += '<span class="attack-type">' + action.attackType + ':</span> ' + action.toHit + ', ' + action.reach + ', ' + action.target + '. ';
         html += '<span class="hit-label"><em>Hit:</em></span> ' + action.damage;
@@ -569,7 +790,7 @@ function buildActionsSection(monster) {
     if (!monster.actions || monster.actions.length === 0) return '';
     var items = [];
     for (var i = 0; i < monster.actions.length; i++) {
-        items.push(buildActionItemHtml(monster.actions[i]));
+        items.push(buildActionItemHtml(monster.actions[i], i));
     }
     return buildSmartSection('<h2 class="section-header">Actions</h2>', items);
 }
@@ -579,7 +800,7 @@ function buildBonusActionsSection(monster) {
     var items = [];
     for (var i = 0; i < monster.bonusActions.length; i++) {
         var action = monster.bonusActions[i];
-        items.push('<div class="action"><span class="action-name">' + action.name + '.</span> <span class="action-text">' + action.text + '</span></div>');
+        items.push('<div class="action" data-section="bonusActions" data-index="' + i + '"><span class="action-name">' + action.name + '.</span> <span class="action-text">' + action.text + '</span></div>');
     }
     return buildSmartSection('<h2 class="section-header">Bonus Actions</h2>', items);
 }
@@ -589,7 +810,7 @@ function buildReactionsSection(monster) {
     var items = [];
     for (var i = 0; i < monster.reactions.length; i++) {
         var reaction = monster.reactions[i];
-        items.push('<div class="action"><span class="action-name">' + reaction.name + '.</span> <span class="action-text">' + reaction.text + '</span></div>');
+        items.push('<div class="action" data-section="reactions" data-index="' + i + '"><span class="action-name">' + reaction.name + '.</span> <span class="action-text">' + reaction.text + '</span></div>');
     }
     return buildSmartSection('<h2 class="section-header">Reactions</h2>', items);
 }
@@ -598,11 +819,11 @@ function buildLegendaryActionsSection(monster) {
     if (!monster.legendaryActions || monster.legendaryActions.length === 0) return '';
     var items = [];
     if (monster.legendaryActionsDescription) {
-        items.push('<p class="legendary-description">' + monster.legendaryActionsDescription + '</p>');
+        items.push('<p class="legendary-description" data-field="legendaryActionsDescription">' + monster.legendaryActionsDescription + '</p>');
     }
     for (var i = 0; i < monster.legendaryActions.length; i++) {
         var action = monster.legendaryActions[i];
-        items.push('<div class="legendary-action"><span class="legendary-action-name">' + action.name + '.</span> ' + action.text + '</div>');
+        items.push('<div class="legendary-action" data-section="legendaryActions" data-index="' + i + '"><span class="legendary-action-name">' + action.name + '.</span> ' + action.text + '</div>');
     }
     return buildSmartSection('<h2 class="section-header">Legendary Actions</h2>', items);
 }
@@ -611,13 +832,12 @@ function buildLairActionsSection(monster) {
     if (!monster.lairActions || monster.lairActions.length === 0) return '';
     var headerHtml = '<h2 class="section-header">Lair Actions</h2>';
     if (monster.lairActionsDescription) {
-        headerHtml += '<p>' + monster.lairActionsDescription + '</p>';
+        headerHtml += '<p data-field="lairActionsDescription">' + monster.lairActionsDescription + '</p>';
     }
     var items = [];
     for (var i = 0; i < monster.lairActions.length; i++) {
-        items.push('<li>' + monster.lairActions[i] + '</li>');
+        items.push('<li data-section="lairActions" data-index="' + i + '">' + monster.lairActions[i] + '</li>');
     }
-    // Lair actions are a list - glue them all together
     return '<div class="section-start">' + headerHtml + '<ul>' + items.join('') + '</ul></div>';
 }
 
@@ -626,7 +846,7 @@ function buildVillainActionsSection(monster) {
     var items = [];
     for (var i = 0; i < monster.villainActions.length; i++) {
         var action = monster.villainActions[i];
-        items.push('<div class="villain-action"><span class="villain-action-round">(Round ' + action.round + ')</span> <span class="villain-action-name">' + action.name + '.</span> ' + action.text + '</div>');
+        items.push('<div class="villain-action" data-section="villainActions" data-index="' + i + '"><span class="villain-action-round">(Round ' + action.round + ')</span> <span class="villain-action-name">' + action.name + '.</span> ' + action.text + '</div>');
     }
     return buildSmartSection('<h2 class="section-header">Villain Actions</h2>', items);
 }
@@ -657,6 +877,7 @@ function renderStatBlock(monster) {
     buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
     buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
     buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+    buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
     buttonsHtml += '</div>';
     
     // Build all sections as arrays of individual items
