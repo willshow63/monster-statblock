@@ -776,13 +776,16 @@ body {
 
 /* ============ LORE BLOCK ============ */
 .lore-block {
-    background: #f5f0e6;
-    padding: 20px 25px;
+    background: #f5f5f5;
+    padding: 20px;
+    border-top: 4px solid #184e4f;
+    border-bottom: 4px solid #184e4f;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
     font-family: 'Times New Roman', serif;
     font-size: 13.5px;
     line-height: 1.5;
     color: #333;
-    max-width: 840px;
+    width: 840px;
 }
 
 .lore-title {
@@ -797,20 +800,23 @@ body {
 
 .lore-columns {
     display: flex;
-    gap: 25px;
+    gap: 40px;
 }
 
 .lore-col {
-    flex: 1;
     min-width: 0;
 }
 
 .lore-col-1 {
-    flex: 1.1;
+    width: 380px;
+    min-width: 380px;
+    border-right: 1px solid #184e4f;
+    padding-right: 20px;
 }
 
 .lore-col-2 {
-    flex: 0.9;
+    width: 380px;
+    min-width: 380px;
 }
 
 .lore-section-header {
@@ -944,11 +950,21 @@ body {
 /* Responsive lore */
 @media (max-width: 900px) {
     .lore-block {
-        max-width: 450px;
+        width: 450px;
     }
     .lore-columns {
         flex-direction: column;
         gap: 0;
+    }
+    .lore-col-1 {
+        width: auto;
+        min-width: auto;
+        border-right: none;
+        padding-right: 0;
+    }
+    .lore-col-2 {
+        width: auto;
+        min-width: auto;
     }
 }
 
