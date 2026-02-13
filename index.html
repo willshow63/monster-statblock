@@ -30,9 +30,14 @@
     
     <div class="main-content">
         <div class="saved-monsters" id="saved-monsters" style="display:none;">
-            <h2>Saved Monsters</h2>
-            <button id="new-group-btn" class="new-group-btn">+ New Group</button>
-            <div id="monster-list"></div>
+            <div class="sidebar-header">
+                <h2>Saved Monsters</h2>
+                <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">▼</button>
+            </div>
+            <div class="sidebar-content" id="sidebar-content">
+                <button id="new-group-btn" class="new-group-btn">+ New Group</button>
+                <div id="monster-list"></div>
+            </div>
         </div>
         <div id="stat-block-container"></div>
     </div>

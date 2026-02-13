@@ -19,6 +19,20 @@ var currentMonsterDocId = null;
 var groups = [];
 var monsters = [];
 var expandedGroups = new Set(); // Track which groups are expanded (all start collapsed)
+var sidebarOpen = false;
+
+function toggleSidebar() {
+    var content = document.getElementById('sidebar-content');
+    var toggle = document.getElementById('sidebar-toggle');
+    sidebarOpen = !sidebarOpen;
+    if (sidebarOpen) {
+        content.classList.add('open');
+        toggle.textContent = '▲';
+    } else {
+        content.classList.remove('open');
+        toggle.textContent = '▼';
+    }
+}
 
 // Custom modal functions
 function showModal(message, buttons) {
