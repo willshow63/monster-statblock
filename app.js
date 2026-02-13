@@ -661,8 +661,8 @@ function renderStatBlock(monster) {
     var totalHeight = col1FixedHeight + totalSectionsHeight;
     
     // Decide: single column if total content is short enough
-    // Threshold: if everything fits in ~700px, single column is fine
-    var SINGLE_COL_THRESHOLD = 700;
+    // Threshold: if everything fits comfortably in one column, don't split
+    var SINGLE_COL_THRESHOLD = 1000;
     
     if (totalHeight <= SINGLE_COL_THRESHOLD) {
         // Single column layout
