@@ -678,8 +678,8 @@ function renderStatBlock(monster) {
     
     // Two-column layout: distribute sections to balance columns
     // Col 1 starts with header+features (mandatory)
-    // Then we add sections to col1 until adding the next one would
-    // make col1 taller than the ideal midpoint
+    // Walk sections in order, deciding for each whether col1 or col2
+    // produces better overall balance
     var idealMidpoint = totalHeight / 2;
     
     var col1Height = col1FixedHeight;
@@ -691,21 +691,24 @@ function renderStatBlock(monster) {
         if (splitFound) {
             col2Sections.push(sections[i]);
         } else {
-            // Would adding this section make col1 overshoot the midpoint?
             var heightIfAdded = col1Height + sectionHeights[i];
-            var remainingHeight = totalSectionsHeight;
-            for (var j = 0; j <= i; j++) remainingHeight -= sectionHeights[j];
             
-            // If adding this section gets us closer to balanced, add it
-            // But if col1 is already past midpoint, stop
-            if (col1Height >= idealMidpoint) {
-                splitFound = true;
-                col2Sections.push(sections[i]);
-            } else if (heightIfAdded <= idealMidpoint * 1.15) {
-                // Allow col1 to be up to 15% over midpoint to keep sections together
+            // Calculate remaining height if we split here vs after adding
+            var col2HeightIfSplitHere = 0;
+            var col2HeightIfSplitAfter = 0;
+            for (var j = i; j < sections.length; j++) col2HeightIfSplitHere += sectionHeights[j];
+            for (var j = i + 1; j < sections.length; j++) col2HeightIfSplitAfter += sectionHeights[j];
+            
+            // Which split produces more balanced columns?
+            var imbalanceIfSplitHere = Math.abs(col1Height - col2HeightIfSplitHere);
+            var imbalanceIfSplitAfter = Math.abs(heightIfAdded - col2HeightIfSplitAfter);
+            
+            if (imbalanceIfSplitAfter <= imbalanceIfSplitHere) {
+                // Adding this section to col1 produces better or equal balance
                 col1Sections.push(sections[i]);
                 col1Height = heightIfAdded;
             } else {
+                // Splitting here is better
                 splitFound = true;
                 col2Sections.push(sections[i]);
             }
