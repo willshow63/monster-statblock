@@ -931,15 +931,6 @@ body {
     width: 840px;
 }
 
-.lore-page {
-    min-height: 1016px;
-    margin-bottom: 20px;
-}
-
-.lore-page:last-child {
-    margin-bottom: 0;
-}
-
 .lore-title {
     font-family: 'Times New Roman', serif;
     font-size: 2em;
@@ -951,24 +942,13 @@ body {
 }
 
 .lore-columns {
-    display: flex;
-    gap: 40px;
+    column-count: 2;
+    column-gap: 40px;
+    column-rule: 1px solid #184e4f;
 }
 
-.lore-col {
-    min-width: 0;
-}
-
-.lore-col-1 {
-    width: 380px;
-    min-width: 380px;
-    border-right: 1px solid #184e4f;
-    padding-right: 20px;
-}
-
-.lore-col-2 {
-    width: 380px;
-    min-width: 380px;
+.lore-section {
+    break-inside: avoid;
 }
 
 .lore-section-header {

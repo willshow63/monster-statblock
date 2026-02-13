@@ -1561,7 +1561,7 @@ function buildSummaryHtml(summary) {
         sections.push('<div class="lore-section"><div class="lore-image-frame"><img src="' + summary.image + '" alt="' + summaryName + '" class="lore-image" /></div></div>');
     }
     
-    // Mobile: single column, no pagination
+    // Mobile: single column
     if (isMobile) {
         var html = '<div class="lore-block">';
         html += '<h1 class="lore-title">' + summaryName + '</h1>';
@@ -1570,98 +1570,12 @@ function buildSummaryHtml(summary) {
         return html;
     }
     
-    // Desktop: paginated two-column layout
-    var PAGE_HEIGHT = 1016; // letter page content area (1056 - 40px padding)
-    var TITLE_HEIGHT = 50; // approximate title height
-    var COL_WIDTH = 380;
-    
-    // Measure each section
-    var measurer = document.createElement('div');
-    measurer.style.cssText = 'position:absolute;visibility:hidden;width:' + COL_WIDTH + 'px;font-family:Times New Roman,serif;font-size:14px;line-height:1.4;padding:0;';
-    document.body.appendChild(measurer);
-    
-    var sectionData = [];
-    for (var i = 0; i < sections.length; i++) {
-        measurer.innerHTML = sections[i];
-        sectionData.push({ html: sections[i], height: measurer.offsetHeight });
-    }
-    document.body.removeChild(measurer);
-    
-    // Distribute sections across pages
-    var pages = [];
-    var remaining = sectionData.slice();
-    var pageNum = 0;
-    
-    while (remaining.length > 0) {
-        var availHeight = PAGE_HEIGHT - (pageNum === 0 ? TITLE_HEIGHT : 0);
-        var col1 = [];
-        var col2 = [];
-        var col1H = 0;
-        var col2H = 0;
-        
-        // Fill columns: add sections to the shorter column until page is full
-        while (remaining.length > 0) {
-            var next = remaining[0];
-            
-            // Which column is shorter?
-            if (col1H <= col2H) {
-                // Try adding to col1
-                if (col1H + next.height <= availHeight) {
-                    col1.push(next);
-                    col1H += next.height;
-                    remaining.shift();
-                } else if (col1.length === 0 && col2.length === 0) {
-                    // First section on page and it's too tall — add it anyway (don't get stuck)
-                    col1.push(next);
-                    col1H += next.height;
-                    remaining.shift();
-                } else {
-                    // Doesn't fit in col1, try col2
-                    if (col2H + next.height <= availHeight) {
-                        col2.push(next);
-                        col2H += next.height;
-                        remaining.shift();
-                    } else {
-                        break; // Neither column has room, move to next page
-                    }
-                }
-            } else {
-                // Try adding to col2
-                if (col2H + next.height <= availHeight) {
-                    col2.push(next);
-                    col2H += next.height;
-                    remaining.shift();
-                } else if (col1H + next.height <= availHeight) {
-                    col1.push(next);
-                    col1H += next.height;
-                    remaining.shift();
-                } else {
-                    break; // Neither column has room, move to next page
-                }
-            }
-        }
-        
-        pages.push({ col1: col1, col2: col2, isFirst: pageNum === 0 });
-        pageNum++;
-    }
-    
-    // Build HTML for all pages
-    var html = '';
-    for (var p = 0; p < pages.length; p++) {
-        var page = pages[p];
-        html += '<div class="lore-block lore-page">';
-        if (page.isFirst) {
-            html += '<h1 class="lore-title">' + summaryName + '</h1>';
-        }
-        html += '<div class="lore-columns">';
-        html += '<div class="lore-col lore-col-1">';
-        for (var i = 0; i < page.col1.length; i++) html += page.col1[i].html;
-        html += '</div>';
-        html += '<div class="lore-col lore-col-2">';
-        for (var i = 0; i < page.col2.length; i++) html += page.col2[i].html;
-        html += '</div>';
-        html += '</div></div>';
-    }
+    // Desktop: CSS column flow
+    var html = '<div class="lore-block">';
+    html += '<h1 class="lore-title">' + summaryName + '</h1>';
+    html += '<div class="lore-columns">';
+    for (var i = 0; i < sections.length; i++) html += sections[i];
+    html += '</div></div>';
     
     return html;
 }
