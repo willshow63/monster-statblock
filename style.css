@@ -299,7 +299,7 @@ body {
         border-top: none;
         border-radius: 0 0 4px 4px;
         padding: 8px 10px;
-        max-height: 350px;
+        max-height: 70vh;
         overflow-y: auto;
         box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
