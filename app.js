@@ -21,6 +21,7 @@ var monsters = [];
 var expandedGroups = new Set(); // Track which groups are expanded (all start collapsed)
 var sidebarOpen = false;
 var activeTab = 'statblock';
+var selectMode = false;
 
 function toggleSidebar() {
     var content = document.getElementById('sidebar-content');
@@ -436,6 +437,16 @@ function renderMonsterList() {
     var container = document.getElementById("monster-list");
     var html = '';
     
+    // Select mode bar
+    if (selectMode) {
+        html += '<div class="select-mode-bar">';
+        html += '<span class="select-mode-count" id="select-count">0 selected</span>';
+        html += '<button class="select-all-btn" onclick="selectAllMonsters()">Select All</button>';
+        html += '<button class="delete-selected-btn" onclick="deleteSelectedMonsters()">Delete Selected</button>';
+        html += '<button class="cancel-select-btn" onclick="toggleSelectMode()">Cancel</button>';
+        html += '</div>';
+    }
+    
     groups.forEach(function(group) {
         var groupMonsters = monsters.filter(function(m) { return m.groupId === group.id; });
         var isExpanded = expandedGroups.has(group.id);
@@ -475,10 +486,76 @@ function renderMonsterList() {
 // Render Monster Item
 function renderMonsterItem(monster) {
     var html = '<div class="monster-item" draggable="true" data-monster-id="' + monster.id + '">';
+    html += '<input type="checkbox" class="monster-select-cb" data-monster-id="' + monster.id + '" data-monster-name="' + monster.name.replace(/"/g, '&quot;') + '" style="' + (selectMode ? '' : 'display:none') + '" onclick="event.stopPropagation(); updateDeleteCount()" />';
     html += '<button class="monster-name-btn" onclick="loadMonster(\'' + monster.id + '\')">' + monster.name + '</button>';
-    html += '<button class="delete-btn" onclick="event.stopPropagation(); deleteMonster(\'' + monster.id + '\', \'' + monster.name.replace(/'/g, "\\'") + '\')">X</button>';
     html += '</div>';
     return html;
+}
+
+function toggleSelectMode() {
+    selectMode = !selectMode;
+    renderMonsterList();
+    // Update the trash button appearance
+    var btn = document.querySelector('.delete-mode-btn');
+    if (btn) {
+        btn.classList.toggle('active', selectMode);
+    }
+}
+
+function updateDeleteCount() {
+    var checked = document.querySelectorAll('.monster-select-cb:checked');
+    var countEl = document.getElementById('select-count');
+    if (countEl) {
+        countEl.textContent = checked.length + ' selected';
+    }
+}
+
+function selectAllMonsters() {
+    var cbs = document.querySelectorAll('.monster-select-cb');
+    var allChecked = true;
+    for (var i = 0; i < cbs.length; i++) {
+        if (!cbs[i].checked) { allChecked = false; break; }
+    }
+    for (var i = 0; i < cbs.length; i++) {
+        cbs[i].checked = !allChecked;
+    }
+    updateDeleteCount();
+}
+
+function deleteSelectedMonsters() {
+    var checked = document.querySelectorAll('.monster-select-cb:checked');
+    if (checked.length === 0) {
+        showAlert("No monsters selected.");
+        return;
+    }
+    
+    var names = [];
+    var ids = [];
+    for (var i = 0; i < checked.length; i++) {
+        ids.push(checked[i].getAttribute('data-monster-id'));
+        names.push(checked[i].getAttribute('data-monster-name'));
+    }
+    
+    var msg = 'Delete ' + ids.length + ' monster' + (ids.length > 1 ? 's' : '') + '?';
+    if (ids.length <= 5) {
+        msg += '\n' + names.join(', ');
+    }
+    
+    showConfirm(msg, function() {
+        var batch = db.batch();
+        for (var i = 0; i < ids.length; i++) {
+            var ref = db.collection("users").doc(currentUser.uid).collection("monsters").doc(ids[i]);
+            batch.delete(ref);
+        }
+        batch.commit().then(function() {
+            selectMode = false;
+            loadGroupsAndMonsters();
+            showAlert(ids.length + ' monster' + (ids.length > 1 ? 's' : '') + ' deleted.');
+        }).catch(function(error) {
+            console.error("Error deleting monsters:", error);
+            showAlert("Error deleting monsters: " + error.message);
+        });
+    });
 }
 
 // Setup Drag and Drop
@@ -1143,6 +1220,7 @@ function renderTabs() {
     buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
     buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
     buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
+    buttonsHtml += '<button class="delete-mode-btn" onclick="toggleSelectMode()" title="Delete monsters">&#128465;</button>';
     buttonsHtml += '</div>';
     
     // Build tab bar
