@@ -631,7 +631,7 @@ body {
 
 #stat-block-container {
     flex-grow: 1;
-    max-width: 900px;
+    max-width: 840px;
 }
 
 /* Base stat block - shared styles */
@@ -705,6 +705,7 @@ body {
     justify-content: flex-end;
     gap: 8px;
     margin-bottom: 10px;
+    max-width: 840px;
 }
 
 .save-btn {
