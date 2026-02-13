@@ -926,7 +926,7 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
     font-family: 'Times New Roman', serif;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.4;
     color: #333;
     width: 840px;
 }
@@ -982,28 +982,6 @@ body {
     font-style: italic;
 }
 
-.lore-dc-entry {
-    margin: 4px 0;
-}
-
-.lore-encounter-group {
-    margin: 6px 0;
-    padding: 4px 0;
-    border-bottom: 1px dotted #bbb;
-}
-
-.lore-encounter-group:last-child {
-    border-bottom: none;
-}
-
-.lore-encounter-cr {
-    margin-bottom: 2px;
-}
-
-.lore-encounter-treasure {
-    font-style: italic;
-}
-
 .lore-encounters-desc {
     margin: 0 0 8px 0;
 }
@@ -1013,7 +991,8 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin: 4px 0 10px 0;
-    font-size: 13px;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
 .lore-table th {
@@ -1022,11 +1001,11 @@ body {
     padding: 4px 8px;
     text-align: left;
     font-variant: small-caps;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .lore-table td {
-    padding: 3px 8px;
+    padding: 4px 8px;
     border-bottom: 1px solid #d4cbb8;
     vertical-align: top;
 }

@@ -1479,10 +1479,11 @@ function buildSummaryHtml(summary) {
     if (summary.legendsAndLore && summary.legendsAndLore.length > 0) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">Legends and Lore</h2>';
         s += '<p class="lore-intro">With a History or Nature check, characters can learn the following:</p>';
+        s += '<table class="lore-table"><thead><tr><th>DC</th><th>Knowledge</th></tr></thead><tbody>';
         for (var i = 0; i < summary.legendsAndLore.length; i++) {
-            s += '<div class="lore-dc-entry"><strong>DC ' + summary.legendsAndLore[i].dc + '</strong> ' + summary.legendsAndLore[i].text + '</div>';
+            s += '<tr><td class="lore-table-roll">' + summary.legendsAndLore[i].dc + '</td><td>' + summary.legendsAndLore[i].text + '</td></tr>';
         }
-        s += '</div>';
+        s += '</tbody></table></div>';
         sections.push(s);
     }
     
@@ -1493,15 +1494,16 @@ function buildSummaryHtml(summary) {
             s += '<p class="lore-encounters-desc">' + summary.encounters.description + '</p>';
         }
         if (summary.encounters.groups && summary.encounters.groups.length > 0) {
+            s += '<table class="lore-table"><thead><tr><th>CR</th><th>Encounter</th></tr></thead><tbody>';
             for (var i = 0; i < summary.encounters.groups.length; i++) {
                 var enc = summary.encounters.groups[i];
-                s += '<div class="lore-encounter-group">';
-                s += '<div class="lore-encounter-cr"><strong>' + enc.cr + '</strong> ' + enc.creatures + '</div>';
+                var cellContent = enc.creatures;
                 if (enc.treasure) {
-                    s += '<div class="lore-encounter-treasure"><strong>Treasure</strong> ' + enc.treasure + '</div>';
+                    cellContent += '<br><em><strong>Treasure</strong> ' + enc.treasure + '</em>';
                 }
-                s += '</div>';
+                s += '<tr><td class="lore-table-roll">' + enc.cr + '</td><td>' + cellContent + '</td></tr>';
             }
+            s += '</tbody></table>';
         }
         s += '</div>';
         sections.push(s);
