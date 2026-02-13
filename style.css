@@ -887,6 +887,10 @@ body {
     vertical-align: top;
 }
 
+.lore-table tr:nth-child(even) td {
+    background: #ededed;
+}
+
 .lore-table-roll {
     white-space: nowrap;
     font-weight: bold;
