@@ -779,7 +779,7 @@ body {
     border-bottom: 4px solid #184e4f;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
     font-family: 'Times New Roman', serif;
-    font-size: 13.5px;
+    font-size: 14px;
     line-height: 1.5;
     color: #333;
     width: 840px;
@@ -787,12 +787,12 @@ body {
 
 .lore-title {
     font-family: 'Times New Roman', serif;
-    font-size: 28px;
+    font-size: 2em;
     font-variant: small-caps;
+    font-weight: bold;
     color: #184e4f;
-    margin: 0 0 8px 0;
-    border-bottom: 2px solid #184e4f;
-    padding-bottom: 4px;
+    margin: 0 0 0 0;
+    letter-spacing: 1px;
 }
 
 .lore-columns {
@@ -885,10 +885,6 @@ body {
     padding: 3px 8px;
     border-bottom: 1px solid #d4cbb8;
     vertical-align: top;
-}
-
-.lore-table tr:nth-child(even) td {
-    background: #ece6d6;
 }
 
 .lore-table-roll {

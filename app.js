@@ -1261,7 +1261,7 @@ function buildSummaryHtml(summary) {
     
     // Measure each section height to balance columns
     var measurer = document.createElement('div');
-    measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:13.5px;line-height:1.5;padding:0;';
+    measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:14px;line-height:1.5;padding:0;';
     document.body.appendChild(measurer);
     
     var heights = [];
@@ -1306,7 +1306,7 @@ function buildSummaryHtml(summary) {
         col2Height = 0;
         for (var i = 0; i < col1Sections.length; i++) {
             measurer = document.createElement('div');
-            measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:13.5px;line-height:1.5;';
+            measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:14px;line-height:1.5;';
             measurer.innerHTML = col1Sections[i];
             document.body.appendChild(measurer);
             col1Height += measurer.offsetHeight;
@@ -1314,7 +1314,7 @@ function buildSummaryHtml(summary) {
         }
         for (var i = 0; i < col2Sections.length; i++) {
             measurer = document.createElement('div');
-            measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:13.5px;line-height:1.5;';
+            measurer.style.cssText = 'position:absolute;visibility:hidden;width:380px;font-family:Times New Roman,serif;font-size:14px;line-height:1.5;';
             measurer.innerHTML = col2Sections[i];
             document.body.appendChild(measurer);
             col2Height += measurer.offsetHeight;
