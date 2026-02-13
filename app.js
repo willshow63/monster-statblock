@@ -720,8 +720,9 @@ function renderStatBlock(monster) {
         for (var j = 0; j < split; j++) col1Height += heights[j];
         for (var j = split; j < items.length; j++) col2Height += heights[j];
         
-        // Rule: col1 must not be shorter than col2
-        if (col1Height < col2Height * 0.85) continue;
+        // Rule: col2 must never be significantly longer than col1
+        // Col1 can be longer than col2 — that's fine
+        if (col2Height > col1Height * 1.05) continue;
         
         // Rule: last item in col1 cannot be a section header (orphan)
         if (items[split - 1].type === 'header') continue;
@@ -743,8 +744,14 @@ function renderStatBlock(monster) {
             if (sectionItemsInCol1 < 2) continue;
         }
         
-        // Score: how balanced are the columns? Lower is better.
-        var imbalance = Math.abs(col1Height - col2Height);
+        // Score: prefer balanced columns, but slightly favor col1 being taller
+        // We weight col2-longer scenarios as worse than col1-longer
+        var imbalance;
+        if (col2Height > col1Height) {
+            imbalance = (col2Height - col1Height) * 2; // penalize col2 being taller
+        } else {
+            imbalance = col1Height - col2Height; // col1 taller is less bad
+        }
         if (imbalance < bestScore) {
             bestScore = imbalance;
             bestSplit = split;
