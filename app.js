@@ -1593,14 +1593,24 @@ function buildSummaryHtml(summary) {
         var testHtml = '';
         if (pageNum === 0) testHtml += '<h1 class="lore-title">' + summaryName + '</h1>';
         var maxH = PAGE_CONTENT_HEIGHT - (pageNum === 0 ? TITLE_HEIGHT : 0);
-        testHtml += '<div class="lore-columns" style="column-fill:auto;height:' + maxH + 'px;">';
+        testHtml += '<div class="lore-columns" style="column-fill:auto;height:' + maxH + 'px;overflow:hidden;">';
         testHtml += currentPageSections.join('');
         testHtml += '</div>';
         measurer.innerHTML = testHtml;
         
         var colDiv = measurer.querySelector('.lore-columns');
-        // If scrollHeight > clientHeight, content overflows — doesn't fit
-        if (colDiv.scrollHeight > colDiv.clientHeight + 2) {
+        // Check if content overflows the fixed-height column container
+        // We need to measure differently: render without height constraint and compare
+        var unconstrainedHtml = '';
+        if (pageNum === 0) unconstrainedHtml += '<h1 class="lore-title">' + summaryName + '</h1>';
+        unconstrainedHtml += '<div class="lore-columns">';
+        unconstrainedHtml += currentPageSections.join('');
+        unconstrainedHtml += '</div>';
+        measurer.innerHTML = unconstrainedHtml;
+        var naturalHeight = measurer.offsetHeight;
+        var pageLimit = PAGE_CONTENT_HEIGHT + 40; // add padding
+        
+        if (naturalHeight > pageLimit && currentPageSections.length > 1) {
             // This section doesn't fit — remove it and close this page
             currentPageSections.pop();
             

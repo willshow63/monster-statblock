@@ -960,6 +960,14 @@ body {
     column-rule: 1px solid #184e4f;
 }
 
+.lore-section {
+    break-inside: auto;
+}
+
+.lore-table {
+    break-inside: auto;
+}
+
 .lore-section-header {
     font-family: 'Times New Roman', serif;
     font-size: 18px;
