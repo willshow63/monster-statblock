@@ -77,48 +77,62 @@
   "legendaryActionsDescription": "",
   "senses": "darkvision 60 ft., passive Perception 15",
   "summary": {
-    "description": "Gristle is a notorious goblin mercenary who operates out of the Thornwaste badlands. Most goblins travel in packs, but Gristle works alone — partly by choice, partly because nobody can stand him for long. He's earned a reputation for taking impossible contracts and surviving through sheer stubbornness and a mechanical hookshot arm that replaced the one he lost in circumstances he refuses to discuss. Tavern rumors claim he once held a bridge alone against a dozen hobgoblin soldiers, though Gristle himself just scowls when asked about it.",
+    "description": "Gristle is a notorious goblin mercenary who operates out of the Thornwaste badlands, a jagged expanse of red rock canyons and dead forests east of the Greymarch. Most goblins travel in packs, but Gristle works alone — partly by choice, partly because nobody can stand him for long. He's earned a reputation for taking impossible contracts and surviving through sheer stubbornness and a mechanical hookshot arm that replaced the one he lost in circumstances he refuses to discuss.<br><br>Tavern rumors claim he once held a bridge alone against a dozen hobgoblin soldiers, though Gristle himself just scowls when asked about it. Other stories place him at the Siege of Gallowstep, where he allegedly assassinated a war priest mid-sermon by swinging in through a stained glass window. The priest's congregation scattered. Gristle reportedly took the priest's holy symbol as payment and later traded it for a wheel of cheese, which he describes as 'the best deal I ever made.'<br><br>Despite his foul temperament, Gristle follows a personal code. He never takes contracts on children, animals, or 'anyone who reminds me of my mother — and before you ask, no, I won't tell you what she looked like.' He honors his contracts to the letter, if not always the spirit, and has been known to return overpayment with a grumbled 'I ain't no charity case.' Those who have worked with him more than once describe a creature of contradictions: brutal but principled, antisocial but oddly loyal to the very few he considers allies.",
     "legendsAndLore": [
-      { "dc": 10, "text": "Gristle is a goblin mercenary known for his mechanical hookshot prosthesis and foul temper." },
-      { "dc": 15, "text": "He's an expert ambusher who coats his weapons in a potent spider-derived poison. He never takes jobs involving children or animals — everything else is fair game." },
-      { "dc": 20, "text": "Gristle was once part of a goblin warband called the Rust Fang Company. He's the sole survivor of a job gone wrong, and the hookshot arm is a reminder of what he lost." }
+      { "dc": 10, "text": "Gristle is a goblin mercenary known for his mechanical hookshot prosthesis and legendary foul temper. He operates primarily in the Thornwaste badlands and surrounding wilderness." },
+      { "dc": 13, "text": "He coats his weapons in a potent spider-derived venom harvested from cave spiders in the Thornwaste. The poison causes violent muscle spasms and is extremely painful but rarely lethal — Gristle prefers his targets alive for collection." },
+      { "dc": 15, "text": "Gristle was once part of a goblin warband called the Rust Fang Company, a mercenary outfit of roughly forty goblins that operated throughout the eastern provinces. The Company was wiped out during a job gone catastrophically wrong — something involving a collapsed mine, a double-cross, and what survivors described as 'something in the dark.'" },
+      { "dc": 18, "text": "The hookshot arm is a gnomish prosthesis originally designed for mining operations. Gristle had it modified by a disgraced artificer named Wren Cogspark, who added the combat cable and grappling mechanisms. Wren is one of the only people Gristle has ever been seen buying a drink for." },
+      { "dc": 20, "text": "Gristle keeps a small carved wooden figure in his pack — a goblin child's toy. He has never explained it to anyone, and the one person who tried to take it from him lost three fingers. Those who know the story of the Rust Fang Company believe Gristle was not always alone, and that the toy belonged to someone he could not save from the mine." }
     ],
     "encounters": {
-      "description": "Gristle operates in wilderness areas, particularly rocky terrain where his hookshot gives him an advantage.",
+      "description": "Gristle operates in wilderness areas, particularly rocky terrain, canyons, and vertical surfaces where his hookshot gives him a decisive tactical advantage. He avoids open plains and dense forests where his mobility is limited. He is most commonly encountered along trade routes in the Thornwaste, where he takes bounty contracts from the few settlements brave enough to exist in the region.",
       "groups": [
-        { "cr": "CR 0–2", "creatures": "Signs of Gristle's passage (old campsites, hookshot marks on cliff faces)", "treasure": "a discarded poison vial (empty) and 3 (1d6) cp" },
-        { "cr": "CR 3–4", "creatures": "Gristle, alone and irritable", "treasure": "a vial of spider venom (3 doses), 28 (4d12) gp, and a tattered map of local bounties" },
-        { "cr": "CR 5–7", "creatures": "Gristle with 2 to 4 hired goblin scouts", "treasure": "a +1 scimitar, a potion of climbing, and 55 (10d10) gp" }
+        { "cr": "CR 0–2", "creatures": "Signs of Gristle's passage — old campsites with a single bedroll, hookshot gouges scored into cliff faces, or the stripped remains of a bounty target left for scavengers", "treasure": "a discarded poison vial (empty), a torn bounty notice, and 3 (1d6) cp scattered in the dirt" },
+        { "cr": "CR 3–4", "creatures": "Gristle, alone and irritable, either on a contract or between jobs. He is likely perched on a high vantage point or moving through a canyon at speed using his hookshot.", "treasure": "a vial of spider venom (3 doses), 28 (4d12) gp in a battered leather pouch, a tattered map of local bounties with several names crossed out, and a half-eaten wheel of hard cheese" },
+        { "cr": "CR 5–7", "creatures": "Gristle with 2 to 4 hired goblin scouts he has grudgingly employed for a larger job. The scouts are terrified of him and follow orders without question. Gristle positions them as bait or distractions while he flanks from above.", "treasure": "a +1 scimitar, a potion of climbing, 55 (10d10) gp, a set of forged travel papers, and a letter of contract from an anonymous employer sealed with black wax" },
+        { "cr": "CR 8–10", "creatures": "Gristle leading a coordinated ambush with 4 to 6 goblin scouts and 1 goblin boss acting as his reluctant second-in-command. This configuration is rare and indicates a high-value target — Gristle only builds a team when the pay justifies tolerating company.", "treasure": "a +1 scimitar, 2 potions of climbing, 120 (20d10+10) gp, a vial of superior spider venom (DC 15, 4d6 poison), and a sealed bounty letter naming a specific individual" }
       ]
     },
     "signs": [
-      { "roll": "1–2", "text": "Deep hookshot gouges in a rock face or tree trunk" },
-      { "roll": "3", "text": "The faint smell of spider venom on the wind" },
-      { "roll": "4", "text": "A small campfire, still warm — only one bedroll" },
-      { "roll": "5", "text": "A dead bounty target, neatly dispatched with a single blade wound" },
-      { "roll": "6", "text": "Grumbling and cursing in Goblin from somewhere above you" }
+      { "roll": "1", "text": "Deep hookshot gouges scored into a rock face or tree trunk, the stone still freshly scarred" },
+      { "roll": "2", "text": "The faint, acrid smell of spider venom carried on the wind — sharp and chemical, like burnt almonds" },
+      { "roll": "3", "text": "A small campfire still warm to the touch, with only one bedroll and the remains of a meal for one" },
+      { "roll": "4", "text": "A dead bounty target slumped against a rock, dispatched with a single precise blade wound to the throat" },
+      { "roll": "5", "text": "Grumbling and creative profanity in Goblin echoing from somewhere above, interspersed with the metallic clanking of a mechanical arm" },
+      { "roll": "6", "text": "A crude warning carved into a tree or rock face in Goblin script: 'PAID FOR. LEAVE OR BLEED.'" },
+      { "roll": "7", "text": "A thin steel cable hanging from a cliff edge or high branch, swaying gently — recently used and recently abandoned" },
+      { "roll": "8", "text": "A crumpled bounty notice nailed to a post with a goblin-sized dagger, the target's name crossed out in dried blood" },
+      { "roll": "9–10", "text": "Absolute silence in an area that should have ambient wildlife noise — the local fauna has learned to avoid this stretch of territory" }
     ],
     "behavior": [
-      { "roll": "1", "text": "Watching from a high vantage point, hookshot ready" },
-      { "roll": "2", "text": "Counting coins and muttering about being underpaid" },
-      { "roll": "3", "text": "Sharpening his scimitar with an annoyed expression" },
-      { "roll": "4", "text": "Eating dried meat alone and glaring at anyone who approaches" },
-      { "roll": "5", "text": "Negotiating a contract — poorly, because he has no patience for haggling" },
-      { "roll": "6", "text": "Swinging between cliff faces with his hookshot, scouting the area" },
-      { "roll": "7", "text": "Tending to his mechanical arm with careful, practiced movements" },
-      { "roll": "8", "text": "Picking a fight with someone twice his size" }
+      { "roll": "1", "text": "Watching from a high vantage point with his hookshot primed, silhouetted against the sky like a gargoyle with anger issues" },
+      { "roll": "2", "text": "Counting coins one by one, muttering bitterly about being underpaid for 'hazard work' despite setting the price himself" },
+      { "roll": "3", "text": "Sharpening his scimitar on a whetstone with an expression of concentrated annoyance, occasionally testing the edge on his own thumbnail" },
+      { "roll": "4", "text": "Eating dried meat alone on a rocky outcropping, glaring at anyone who approaches within sixty feet and making no effort to hide" },
+      { "roll": "5", "text": "Attempting to negotiate a contract with a potential employer — badly, because he has absolutely no patience for haggling and keeps raising his own price out of spite" },
+      { "roll": "6", "text": "Swinging between cliff faces or building ledges with his hookshot at alarming speed, scouting the area from multiple angles before settling on a perch" },
+      { "roll": "7", "text": "Tending to his mechanical arm with careful, practiced movements — oiling the gears, testing the cable tension, and talking to the arm like it can hear him" },
+      { "roll": "8", "text": "Picking a loud, unnecessary fight with someone at least twice his size over a perceived insult that may or may not have actually occurred" },
+      { "roll": "9", "text": "Sitting in a tavern corner with his back to two walls, nursing a single ale for hours while watching every entrance and exit" },
+      { "roll": "10", "text": "Applying spider venom to his weapons with the meticulous care of an alchemist, wearing thick leather gloves and muttering the steps to himself as if reciting from memory" },
+      { "roll": "11–12", "text": "Standing perfectly still on a high ledge, staring at the horizon with an unreadable expression. If approached, he snaps back to his usual irritability immediately and denies he was doing anything." }
     ],
-    "names": "Gristle doesn't use aliases. If you hear the name, it's already too late to run.",
+    "names": "Gristle doesn't use aliases. He considers fake names 'coward talk' and insists that if someone wants to find him, they're welcome to try. That said, he has accumulated a number of involuntary nicknames over the years: 'The Hook' (which he tolerates), 'Goblin Grump' (which earns a scimitar pointed at your throat), 'Old Clanky' (a reference to his arm, used exclusively by people who have never met him), and 'That Horrible Little Green Bastard' (reportedly coined by a magistrate in Gallowstep, which Gristle took as a compliment).",
     "loot": {
       "title": "Weapons, Armor & Items",
-      "description": "Scimitar, short bow, quiver with 20 arrows, leather armor, and roll a d8:",
-      "dieType": "d8",
+      "description": "Gristle carries a well-maintained scimitar, a goblin-crafted short bow, a quiver with 20 arrows, and wears patched leather armor reinforced with metal plates scavenged from various kills. His hookshot arm is permanently attached and cannot be looted without specialized tools and at least an hour of work. In addition, roll a d12:",
+      "dieType": "d12",
       "table": [
-        { "roll": "1–3", "text": "1d4 days' dried meat and a half-empty waterskin" },
-        { "roll": "4–5", "text": "A vial of spider venom (1 dose, coats 1 weapon for 1 minute)" },
-        { "roll": "6", "text": "A tattered leather pouch containing 14 (4d6) gp and a crumpled bounty notice" },
-        { "roll": "7", "text": "A potion of climbing" },
-        { "roll": "8", "text": "Hookshot repair kit (spare cable, oil, and tiny goblin-made tools)" }
+        { "roll": "1–3", "text": "1d4 days' worth of dried meat, a half-empty waterskin, and a small pouch of coarse salt" },
+        { "roll": "4–5", "text": "A vial of spider venom (1 dose, coats 1 weapon for 1 minute, DC 13 Con save or take 3d6 poison)" },
+        { "roll": "6", "text": "A tattered leather pouch containing 14 (4d6) gp, 7 (2d6) sp, and a crumpled bounty notice for someone the party may recognize" },
+        { "roll": "7", "text": "A potion of climbing and a 50-foot coil of silk rope, knotted at regular intervals" },
+        { "roll": "8", "text": "Hookshot repair kit — spare cable (20 ft.), machine oil, a set of tiny goblin-made precision tools, and a hand-drawn maintenance diagram" },
+        { "roll": "9", "text": "A battered journal written in barely legible Goblin, containing terse mission logs, crude maps, and a single page that has been torn out" },
+        { "roll": "10", "text": "A small carved wooden figure of a goblin child, worn smooth from years of handling. Gristle will fight to the death to recover this item." },
+        { "roll": "11", "text": "A sealed letter addressed to 'Wren' in surprisingly careful handwriting. The letter has never been opened or sent." },
+        { "roll": "12", "text": "A vial of superior spider venom (1 dose, DC 15 Con save or take 4d6 poison and be poisoned for 1 minute), wrapped in cloth and stored separately from everything else" }
       ]
     }
   }

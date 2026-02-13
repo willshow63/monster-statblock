@@ -1254,11 +1254,6 @@ function buildSummaryHtml(summary) {
         sections.push(s);
     }
     
-    // Names
-    if (summary.names) {
-        sections.push('<div class="lore-section"><h2 class="lore-section-header">Names</h2><p class="lore-names">' + summary.names + '</p></div>');
-    }
-    
     // Loot
     if (summary.loot) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">' + (summary.loot.title || 'Weapons, Armor & Items') + '</h2>';
@@ -1276,6 +1271,11 @@ function buildSummaryHtml(summary) {
         }
         s += '</div>';
         sections.push(s);
+    }
+    
+    // Names (after loot)
+    if (summary.names) {
+        sections.push('<div class="lore-section"><h2 class="lore-section-header">Names</h2><p class="lore-names">' + summary.names + '</p></div>');
     }
     
     // Image
