@@ -317,20 +317,11 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
-/* Two-column layout via flexbox */
+/* Two-column layout via CSS columns */
 .stat-block.two-column {
-    display: flex;
-    gap: 40px;
-}
-
-.stat-block.two-column .stat-col {
-    flex: 1;
-    min-width: 0;
-}
-
-.stat-block.two-column .stat-col-1 {
-    border-right: 1px solid #184e4f;
-    padding-right: 20px;
+    column-count: 2;
+    column-gap: 40px;
+    column-rule: 1px solid #184e4f;
 }
 
 /* Single-column layout */
@@ -339,9 +330,9 @@ body {
     max-width: 450px;
 }
 
-/* Section wrapper - keeps header + content together */
+/* Section wrapper - header + first item stay together */
 .stat-section {
-    break-inside: avoid;
+    break-inside: auto;
 }
 
 /* Button Row */
@@ -416,7 +407,7 @@ body {
 /* Secondary Stats */
 .secondary-stats p { margin: 2px 0; }
 
-/* Section Headers */
+/* Section Headers - never orphan at bottom of column */
 .section-header {
     font-size: 1.4em;
     font-variant: small-caps;
@@ -424,10 +415,11 @@ body {
     border-bottom: 2px solid #184e4f;
     margin: 15px 0 5px 0;
     padding-bottom: 2px;
+    break-after: avoid;
 }
 
-/* Features and Actions */
-.feature, .action { margin: 10px 0; }
+/* Features and Actions - individual items avoid breaking */
+.feature, .action { margin: 10px 0; break-inside: avoid; }
 
 .feature-name, .action-name {
     font-weight: bold;
@@ -461,13 +453,7 @@ body {
     .saved-monsters { width: 100%; }
     
     .stat-block.two-column {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    .stat-block.two-column .stat-col-1 {
-        border-right: none;
-        padding-right: 0;
+        column-count: 1;
     }
 }
 

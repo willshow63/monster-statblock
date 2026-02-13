@@ -363,15 +363,8 @@ function createPrintClone() {
     var wrapper = document.createElement('div');
     wrapper.style.cssText = 'position:absolute;left:0;top:0;width:1000px;background:white;z-index:9999;overflow:visible;';
     
-    // Force the two-column flex layout at print width
-    clone.style.cssText = 'display:flex!important;width:850px!important;max-width:none!important;min-width:850px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid #184e4f!important;border-bottom:4px solid #184e4f!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
-    
-    // Style columns within the clone
-    var cols = clone.querySelectorAll('.stat-col');
-    if (cols.length === 2) {
-        cols[0].style.cssText = 'flex:1;min-width:0;border-right:1px solid #184e4f;padding-right:20px;';
-        cols[1].style.cssText = 'flex:1;min-width:0;padding-left:0;';
-    }
+    // Force desktop two-column layout
+    clone.style.cssText = 'display:block!important;width:850px!important;max-width:none!important;min-width:850px!important;column-count:2!important;column-gap:40px!important;column-rule:1px solid #184e4f!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid #184e4f!important;border-bottom:4px solid #184e4f!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
@@ -637,109 +630,33 @@ function renderStatBlock(monster) {
     var lairHtml = buildLairActionsSection(monster);
     var villainHtml = buildVillainActionsSection(monster);
     
-    // Collect sections in order: header+features always in col1,
-    // then the remaining sections get distributed
-    var col1Fixed = headerHtml + featuresHtml; // Always column 1
+    // Collect all content as one flow
+    var allContent = headerHtml + featuresHtml;
+    if (actionsHtml) allContent += actionsHtml;
+    if (bonusActionsHtml) allContent += bonusActionsHtml;
+    if (reactionsHtml) allContent += reactionsHtml;
+    if (legendaryHtml) allContent += legendaryHtml;
+    if (lairHtml) allContent += lairHtml;
+    if (villainHtml) allContent += villainHtml;
     
-    var sections = [];
-    if (actionsHtml) sections.push(actionsHtml);
-    if (bonusActionsHtml) sections.push(bonusActionsHtml);
-    if (reactionsHtml) sections.push(reactionsHtml);
-    if (legendaryHtml) sections.push(legendaryHtml);
-    if (lairHtml) sections.push(lairHtml);
-    if (villainHtml) sections.push(villainHtml);
-    
-    // Measure total content height at single-column width (~380px per column)
+    // Measure total content height at single-column width
     var colWidth = 380;
-    var col1FixedHeight = measureSectionHeight(col1Fixed, colWidth);
-    
-    var sectionHeights = [];
-    var totalSectionsHeight = 0;
-    for (var i = 0; i < sections.length; i++) {
-        var h = measureSectionHeight(sections[i], colWidth);
-        sectionHeights.push(h);
-        totalSectionsHeight += h;
-    }
-    
-    var totalHeight = col1FixedHeight + totalSectionsHeight;
+    var totalHeight = measureSectionHeight(allContent, colWidth);
     
     // Decide: single column if total content is short enough
-    // Threshold: if everything fits comfortably in one column, don't split
     var SINGLE_COL_THRESHOLD = 1000;
     
     if (totalHeight <= SINGLE_COL_THRESHOLD) {
-        // Single column layout
-        var html = buttonsHtml + '<div class="stat-block single-column"><div class="stat-col">';
-        html += col1Fixed;
-        for (var i = 0; i < sections.length; i++) {
-            html += sections[i];
-        }
-        html += '</div></div>';
+        var html = buttonsHtml + '<div class="stat-block single-column">';
+        html += allContent;
+        html += '</div>';
         container.innerHTML = html;
         return;
     }
     
-    // Two-column layout: distribute sections to balance columns
-    // Col 1 starts with header+features (mandatory)
-    // Walk sections in order, deciding for each whether col1 or col2
-    // produces better overall balance
-    // Rule: col1 should never be shorter than col2
-    var idealMidpoint = totalHeight / 2;
-    
-    var col1Height = col1FixedHeight;
-    var col1Sections = [];
-    var col2Sections = [];
-    var splitFound = false;
-    
-    for (var i = 0; i < sections.length; i++) {
-        if (splitFound) {
-            col2Sections.push(sections[i]);
-        } else {
-            var heightIfAdded = col1Height + sectionHeights[i];
-            
-            // Calculate col2 height for each split option
-            var col2HeightIfSplitHere = 0;
-            var col2HeightIfSplitAfter = 0;
-            for (var j = i; j < sections.length; j++) col2HeightIfSplitHere += sectionHeights[j];
-            for (var j = i + 1; j < sections.length; j++) col2HeightIfSplitAfter += sectionHeights[j];
-            
-            // Never let col1 be shorter than col2
-            if (col1Height < col2HeightIfSplitHere) {
-                // Col1 would be shorter than col2 if we split here — keep adding
-                col1Sections.push(sections[i]);
-                col1Height = heightIfAdded;
-            } else {
-                // Col1 is already >= col2, pick whichever split is more balanced
-                var imbalanceIfSplitHere = Math.abs(col1Height - col2HeightIfSplitHere);
-                var imbalanceIfSplitAfter = Math.abs(heightIfAdded - col2HeightIfSplitAfter);
-                
-                if (imbalanceIfSplitAfter <= imbalanceIfSplitHere) {
-                    col1Sections.push(sections[i]);
-                    col1Height = heightIfAdded;
-                } else {
-                    splitFound = true;
-                    col2Sections.push(sections[i]);
-                }
-            }
-        }
-    }
-    
-    // If nothing went to col2 (all sections fit better in col1), 
-    // that's fine - col2 will just be shorter
-    
-    // Build the two-column HTML
+    // Two-column: use CSS column-count for natural text flow
     var html = buttonsHtml + '<div class="stat-block two-column">';
-    html += '<div class="stat-col stat-col-1">';
-    html += col1Fixed;
-    for (var i = 0; i < col1Sections.length; i++) {
-        html += col1Sections[i];
-    }
-    html += '</div>';
-    html += '<div class="stat-col stat-col-2">';
-    for (var i = 0; i < col2Sections.length; i++) {
-        html += col2Sections[i];
-    }
-    html += '</div>';
+    html += allContent;
     html += '</div>';
     
     container.innerHTML = html;
