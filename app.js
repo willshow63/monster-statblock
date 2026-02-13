@@ -641,8 +641,22 @@ function createPrintClone() {
     var wrapper = document.createElement('div');
     wrapper.style.cssText = 'position:absolute;left:0;top:0;width:1000px;background:white;z-index:9999;overflow:visible;';
     
-    // Force desktop two-column layout
-    clone.style.cssText = 'display:block!important;width:850px!important;max-width:none!important;min-width:850px!important;column-count:2!important;column-gap:40px!important;column-rule:1px solid #184e4f!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid #184e4f!important;border-bottom:4px solid #184e4f!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+    // Preserve the actual flex-based two-column layout
+    var isTwoCol = element.classList.contains('two-column');
+    if (isTwoCol) {
+        clone.style.cssText = 'display:flex!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid #184e4f!important;border-bottom:4px solid #184e4f!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        // Style the columns
+        var cols = clone.querySelectorAll('.stat-col');
+        for (var i = 0; i < cols.length; i++) {
+            if (cols[i].classList.contains('stat-col-1')) {
+                cols[i].style.cssText = 'flex:1!important;min-width:0!important;padding-right:20px!important;border-right:1px solid #184e4f!important;';
+            } else {
+                cols[i].style.cssText = 'flex:1!important;min-width:0!important;';
+            }
+        }
+    } else {
+        clone.style.cssText = 'display:block!important;width:450px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid #184e4f!important;border-bottom:4px solid #184e4f!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+    }
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
@@ -675,7 +689,7 @@ function printStatBlock() {
             margin: [0.5, 0.5, 0.5, 0.5],
             filename: filename,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, width: 850, height: cloneHeight, scrollX: 0, scrollY: 0 },
+            html2canvas: { scale: 2, useCORS: true, logging: false, width: 840, height: cloneHeight, scrollX: 0, scrollY: 0 },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
         
@@ -700,7 +714,7 @@ function printPNG() {
         void printElements.clone.offsetWidth;
         var cloneHeight = printElements.clone.scrollHeight;
         
-        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: 850, height: cloneHeight, scrollX: 0, scrollY: 0 })
+        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: 840, height: cloneHeight, scrollX: 0, scrollY: 0 })
         .then(function(canvas) {
             cleanupPrintClone(printElements);
             var link = document.createElement('a');
@@ -885,16 +899,6 @@ function measureSectionHeight(htmlString, containerWidth) {
 function renderStatBlock(monster) {
     var container = document.getElementById("stat-block-container");
     
-    // Button row
-    var buttonsHtml = '<div class="button-row">';
-    buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
-    buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
-    buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
-    buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
-    buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
-    buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
-    buttonsHtml += '</div>';
-    
     // Build all sections as arrays of individual items
     // Each item is: { html: string, type: 'header'|'item'|'fixed', sectionId: string }
     var items = [];
@@ -1055,15 +1059,16 @@ function renderStatBlock(monster) {
     
     // If no valid split found, fall back to single column
     if (bestSplit === -1) {
-        var html = buttonsHtml + '<div class="stat-block single-column">';
+        var html = '<div class="stat-block single-column">';
         for (var i = 0; i < items.length; i++) html += items[i].html;
         html += '</div>';
         container.innerHTML = html;
+        renderTabs();
         return;
     }
     
     // Build two-column HTML
-    var html = buttonsHtml + '<div class="stat-block two-column">';
+    var html = '<div class="stat-block two-column">';
     html += '<div class="stat-col stat-col-1">';
     for (var i = 0; i < bestSplit; i++) html += items[i].html;
     html += '</div>';
@@ -1089,6 +1094,16 @@ function renderTabs() {
     var container = document.getElementById("stat-block-container");
     var statblockContent = container.innerHTML;
     
+    // Button row — always above tabs
+    var buttonsHtml = '<div class="button-row">';
+    buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
+    buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
+    buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
+    buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
+    buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+    buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
+    buttonsHtml += '</div>';
+    
     // Build tab bar
     var tabsHtml = '<div class="tab-bar">';
     tabsHtml += '<button class="tab-btn' + (activeTab === 'statblock' ? ' active' : '') + '" onclick="switchTab(\'statblock\')">Statblock</button>';
@@ -1104,7 +1119,7 @@ function renderTabs() {
         panelsHtml += '<div class="tab-panel" id="tab-summary" style="' + (activeTab === 'summary' ? '' : 'display:none') + '">' + buildSummaryHtml(currentMonster.summary) + '</div>';
     }
     
-    container.innerHTML = tabsHtml + panelsHtml;
+    container.innerHTML = buttonsHtml + tabsHtml + panelsHtml;
     
     // Re-attach restore upload listener (it was inside statblock content)
     var restoreInput = document.getElementById("restore-upload");
