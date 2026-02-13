@@ -683,7 +683,16 @@ function printStatBlock() {
     
     setTimeout(function() {
         void printElements.clone.offsetWidth;
+        // Measure true height - for flex layouts, check both column heights
         var cloneHeight = printElements.clone.scrollHeight;
+        var cols = printElements.clone.querySelectorAll('.stat-col');
+        if (cols.length === 2) {
+            var col1H = cols[0].scrollHeight;
+            var col2H = cols[1].scrollHeight;
+            var maxColH = Math.max(col1H, col2H);
+            // Add padding (20px top + 20px bottom + 8px border)
+            cloneHeight = Math.max(cloneHeight, maxColH + 48);
+        }
         
         var opt = {
             margin: [0.5, 0.5, 0.5, 0.5],
@@ -713,6 +722,13 @@ function printPNG() {
     setTimeout(function() {
         void printElements.clone.offsetWidth;
         var cloneHeight = printElements.clone.scrollHeight;
+        var cols = printElements.clone.querySelectorAll('.stat-col');
+        if (cols.length === 2) {
+            var col1H = cols[0].scrollHeight;
+            var col2H = cols[1].scrollHeight;
+            var maxColH = Math.max(col1H, col2H);
+            cloneHeight = Math.max(cloneHeight, maxColH + 48);
+        }
         
         html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: 840, height: cloneHeight, scrollX: 0, scrollY: 0 })
         .then(function(canvas) {
