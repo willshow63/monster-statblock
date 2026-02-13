@@ -637,6 +637,7 @@ body {
 
 .attack-type { font-style: italic; }
 .feature-text, .action-text { display: inline; }
+.action-continuation { margin-top: 8px; }
 
 /* Legendary Actions */
 .legendary-description { margin-bottom: 10px; }

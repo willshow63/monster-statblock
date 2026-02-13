@@ -903,11 +903,26 @@ function renderStatBlock(monster) {
     items.push({ html: fixedHtml, type: 'fixed', sectionId: 'header' });
     
     // Break each section into header + individual items
+    // Items with <br><br> in text get split into paragraph-level sub-items
     function addSection(sectionId, headerText, entries, buildItemFn) {
         if (!entries || entries.length === 0) return;
         items.push({ html: '<h2 class="section-header">' + headerText + '</h2>', type: 'header', sectionId: sectionId });
         for (var i = 0; i < entries.length; i++) {
-            items.push({ html: buildItemFn(entries[i], i), type: 'item', sectionId: sectionId });
+            var entry = entries[i];
+            // Check if text contains paragraph breaks
+            if (entry.text && entry.text.indexOf('<br><br>') !== -1) {
+                var paragraphs = entry.text.split('<br><br>');
+                // First paragraph includes the name
+                var firstHtml = '<div class="action" data-section="' + sectionId + '" data-index="' + i + '"><span class="action-name">' + entry.name + '.</span> <span class="action-text">' + paragraphs[0] + '</span></div>';
+                items.push({ html: firstHtml, type: 'item', sectionId: sectionId });
+                // Subsequent paragraphs are continuation items
+                for (var p = 1; p < paragraphs.length; p++) {
+                    var contHtml = '<div class="action action-continuation" data-section="' + sectionId + '" data-index="' + i + '" data-para="' + p + '"><span class="action-text">' + paragraphs[p] + '</span></div>';
+                    items.push({ html: contHtml, type: 'item', sectionId: sectionId });
+                }
+            } else {
+                items.push({ html: buildItemFn(entry, i), type: 'item', sectionId: sectionId });
+            }
         }
     }
     
