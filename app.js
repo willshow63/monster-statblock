@@ -988,6 +988,8 @@ function renderStatBlock(monster) {
     // Try each possible split point and score it
     var bestSplit = 1; // At minimum, fixed header goes in col1
     var bestScore = Infinity;
+    var fallbackSplit = 1; // Best split ignoring col2 constraint
+    var fallbackScore = Infinity;
     
     for (var split = 1; split < items.length; split++) {
         // Col1 = items[0..split-1], Col2 = items[split..end]
@@ -1004,8 +1006,6 @@ function renderStatBlock(monster) {
         var lastCol1Height = heights[split - 1];
         
         if (lastCol1Height < MIN_LAST_ITEM_HEIGHT && lastCol1Item.type === 'item') {
-            // Last item is too short. Check: are there at least 2 items
-            // from this section in col1 (after its header)?
             var sectionId = lastCol1Item.sectionId;
             var sectionItemsInCol1 = 0;
             for (var j = 0; j < split; j++) {
@@ -1016,17 +1016,33 @@ function renderStatBlock(monster) {
             if (sectionItemsInCol1 < 2) continue;
         }
         
-        // Score: prefer balanced columns, penalize col2 being taller more
+        // Track fallback (best balance ignoring col2 constraint)
+        var rawImbalance = Math.abs(col1Height - col2Height);
+        if (rawImbalance < fallbackScore) {
+            fallbackScore = rawImbalance;
+            fallbackSplit = split;
+        }
+        
+        // Rule: col2 must never be significantly longer than col1 (max 5% taller)
+        if (col2Height > col1Height * 1.05) continue;
+        
+        // Score: prefer balanced columns, but slightly favor col1 being taller
+        // We weight col2-longer scenarios as worse than col1-longer
         var imbalance;
         if (col2Height > col1Height) {
-            imbalance = (col2Height - col1Height) * 1.5; // penalize col2 being taller
+            imbalance = (col2Height - col1Height) * 2;
         } else {
-            imbalance = col1Height - col2Height; // col1 taller is less bad
+            imbalance = col1Height - col2Height;
         }
         if (imbalance < bestScore) {
             bestScore = imbalance;
             bestSplit = split;
         }
+    }
+    
+    // If no valid split found (bestScore unchanged), use fallback
+    if (bestScore === Infinity) {
+        bestSplit = fallbackSplit;
     }
     
     // Build two-column HTML
