@@ -27,10 +27,10 @@ function toggleSidebar() {
     sidebarOpen = !sidebarOpen;
     if (sidebarOpen) {
         content.classList.add('open');
-        toggle.textContent = '▲';
+        toggle.classList.add('open');
     } else {
         content.classList.remove('open');
-        toggle.textContent = '▼';
+        toggle.classList.remove('open');
     }
 }
 
