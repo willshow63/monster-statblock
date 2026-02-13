@@ -666,9 +666,9 @@ function renderMonsterItem(monster) {
 function toggleSelectMode() {
     selectMode = !selectMode;
     renderMonsterList();
-    // Update the trash button appearance
-    var btn = document.querySelector('.delete-mode-btn');
+    var btn = document.getElementById('select-mode-toggle');
     if (btn) {
+        btn.textContent = selectMode ? 'Cancel' : 'Select';
         btn.classList.toggle('active', selectMode);
     }
 }
@@ -865,6 +865,32 @@ function deleteMonster(docId, name) {
             })
             .catch(function(error) {
                 console.error("Error deleting monster:", error);
+            });
+    });
+}
+
+function deleteCurrentMonster() {
+    if (!currentMonster || !currentMonsterDocId) {
+        showAlert("No monster is currently loaded.");
+        return;
+    }
+    if (!currentUser) {
+        showAlert("Please sign in to delete monsters.");
+        return;
+    }
+    showConfirm('Delete "' + currentMonster.name + '"?', function() {
+        db.collection("users").doc(currentUser.uid).collection("monsters").doc(currentMonsterDocId)
+            .delete()
+            .then(function() {
+                currentMonster = null;
+                currentMonsterDocId = null;
+                document.getElementById("stat-block-container").innerHTML = '';
+                loadGroupsAndMonsters();
+                showAlert("Monster deleted.");
+            })
+            .catch(function(error) {
+                console.error("Error deleting monster:", error);
+                showAlert("Error deleting monster: " + error.message);
             });
     });
 }
@@ -1391,7 +1417,7 @@ function renderTabs() {
     buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
     buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
     buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
-    buttonsHtml += '<button class="delete-mode-btn" onclick="toggleSelectMode()" title="Delete monsters">&#128465;</button>';
+    buttonsHtml += '<button class="delete-current-btn" onclick="deleteCurrentMonster()" title="Delete this monster">&#128465;</button>';
     buttonsHtml += '</div>';
     
     // Build tab bar

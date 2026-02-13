@@ -37,7 +37,10 @@
                 <span class="sidebar-toggle" id="sidebar-toggle">▼</span>
             </div>
             <div class="sidebar-content" id="sidebar-content">
-                <button id="new-group-btn" class="new-group-btn">+ New Group</button>
+                <div class="sidebar-top-row">
+                    <button id="new-group-btn" class="new-group-btn">+ New Group</button>
+                    <button onclick="toggleSelectMode()" class="select-mode-toggle-btn" id="select-mode-toggle" title="Select monsters for bulk delete">Select</button>
+                </div>
                 <div id="monster-list"></div>
             </div>
         </div>

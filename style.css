@@ -327,6 +327,13 @@ body {
 }
 
 .new-group-btn {
+.sidebar-top-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+#new-group-btn {
     background: #184e4f;
     color: white;
     padding: 6px 12px;
@@ -334,12 +341,32 @@ body {
     cursor: pointer;
     font-size: 12px;
     border-radius: 4px;
-    margin-bottom: 10px;
-    width: 100%;
+    flex-grow: 1;
 }
 
-.new-group-btn:hover {
+#new-group-btn:hover {
     background: #0d3536;
+}
+
+.select-mode-toggle-btn {
+    background: white;
+    color: #184e4f;
+    border: 1px solid #184e4f;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+    font-family: 'Times New Roman', serif;
+}
+
+.select-mode-toggle-btn:hover {
+    background: #f0f0f0;
+}
+
+.select-mode-toggle-btn.active {
+    background: #c0392b;
+    color: white;
+    border-color: #c0392b;
 }
 
 #monster-list {
@@ -561,8 +588,8 @@ body {
     background: #666;
 }
 
-/* Delete mode button in button row */
-.delete-mode-btn {
+/* Delete current monster button in button row */
+.delete-current-btn {
     background: none;
     border: 1px solid #999;
     cursor: pointer;
@@ -572,11 +599,7 @@ body {
     line-height: 1;
 }
 
-.delete-mode-btn:hover {
-    background: #f0f0f0;
-}
-
-.delete-mode-btn.active {
+.delete-current-btn:hover {
     background: #c0392b;
     border-color: #c0392b;
     color: white;
@@ -867,7 +890,9 @@ body {
 .tab-bar {
     display: flex;
     gap: 0;
-    margin-bottom: 0;
+    margin-bottom: -4px;
+    position: relative;
+    z-index: 3;
 }
 
 .tab-btn {
@@ -883,7 +908,6 @@ body {
     cursor: pointer;
     border-radius: 6px 6px 0 0;
     position: relative;
-    top: 2px;
     z-index: 1;
     transition: background 0.2s;
 }
@@ -894,14 +918,12 @@ body {
 
 .tab-btn.active {
     background: #f5f5f5;
-    border-bottom: 2px solid #f5f5f5;
-    z-index: 2;
+    z-index: 4;
+    padding-bottom: 12px;
 }
 
 .tab-panel {
-    border-top: 2px solid #184e4f;
     position: relative;
-    top: -1px;
 }
 
 /* ============ LORE BLOCK ============ */
