@@ -602,9 +602,6 @@ body {
 .delete-current-btn:hover {
     background: #a93226;
 }
-    cursor: pointer;
-    font-size: 11px;
-}
 
 /* Ungrouped section */
 .ungrouped-section { margin-top: 10px; }

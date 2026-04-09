@@ -1,17 +1,9 @@
-// Firebase Configuration
-var firebaseConfig = {
-    apiKey: "AIzaSyC9L6qq-_pl_jjmPAK5a4iO8rL6Zu13JN4",
-    authDomain: "character-sheet-app-6803e.firebaseapp.com",
-    projectId: "character-sheet-app-6803e",
-    storageBucket: "character-sheet-app-6803e.firebasestorage.app",
-    messagingSenderId: "360308222227",
-    appId: "1:360308222227:web:97e06b4e0eec72f87012e6"
-};
+// Supabase Configuration
+var SUPABASE_URL = 'https://cvtddvfglskmfkzjuepn.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2dGRkdmZnbHNrbWZremp1ZXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3Mzk4ODYsImV4cCI6MjA5MTMxNTg4Nn0.z1Fn809NV5gBkLwYzH0AbqgskpID_nBmTyCyBVHcqWo';
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-var auth = firebase.auth();
-var db = firebase.firestore();
+// Initialize Supabase
+var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 var currentUser = null;
 var currentMonster = null;
@@ -128,9 +120,14 @@ function toggleEdit() {
         // Auto-save if we have a doc ID
         if (currentUser && currentMonsterDocId) {
             var saveData = Object.assign({}, currentMonster);
-            db.collection("users").doc(currentUser.uid).collection("monsters").doc(currentMonsterDocId)
-                .set(saveData)
-                .then(function() {
+            delete saveData.groupId;
+            sb.from('monsters').update({
+                name: currentMonster.name,
+                monster_id: currentMonster.monsterId || null,
+                data: saveData
+            }).eq('id', currentMonsterDocId)
+                .then(function(result) {
+                    if (result.error) throw result.error;
                     showAlert(currentMonster.name + " updated!");
                     loadGroupsAndMonsters();
                 })
@@ -295,15 +292,15 @@ document.getElementById("json-upload").addEventListener("change", handleFileUplo
 document.getElementById("export-template-btn").addEventListener("click", exportTemplate);
 
 // Auth State Listener
-auth.onAuthStateChanged(function(user) {
-    if (user) {
-        currentUser = user;
+sb.auth.onAuthStateChange(function(event, session) {
+    if (session && session.user) {
+        currentUser = session.user;
         document.getElementById("login-btn").style.display = "none";
         document.getElementById("user-info").style.display = "flex";
-        document.getElementById("user-name").textContent = user.displayName;
+        document.getElementById("user-name").textContent = session.user.user_metadata.full_name || session.user.email;
         document.getElementById("saved-monsters").style.display = "block";
         loadGroupsAndMonsters();
-        
+
         // Auto-load last opened monster
         var lastDocId = localStorage.getItem('lastMonsterDocId');
         if (lastDocId) {
@@ -320,16 +317,22 @@ auth.onAuthStateChanged(function(user) {
 
 // Login
 document.getElementById("login-btn").addEventListener("click", function() {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(function(error) {
-        console.error("Login error:", error);
-        showAlert("Login failed: " + error.message);
+    sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin + window.location.pathname
+        }
+    }).then(function(result) {
+        if (result.error) {
+            console.error("Login error:", result.error);
+            showAlert("Login failed: " + result.error.message);
+        }
     });
 });
 
 // Logout
 document.getElementById("logout-btn").addEventListener("click", function() {
-    auth.signOut();
+    sb.auth.signOut();
 });
 
 // New Group Button
@@ -343,10 +346,10 @@ document.getElementById("new-group-btn").addEventListener("click", function() {
 // Create Group
 function createGroup(name) {
     if (!currentUser) return;
-    
-    db.collection("users").doc(currentUser.uid).collection("groups")
-        .add({ name: name })
-        .then(function() {
+
+    sb.from('groups').insert({ user_id: currentUser.id, name: name })
+        .then(function(result) {
+            if (result.error) throw result.error;
             loadGroupsAndMonsters();
         })
         .catch(function(error) {
@@ -433,9 +436,9 @@ function renameGroup(groupId, currentName) {
         var newName = input.value.trim();
         if (!newName) return;
         if (newName === currentName) { overlay.remove(); return; }
-        db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId)
-            .update({ name: newName })
-            .then(function() {
+        sb.from('groups').update({ name: newName }).eq('id', groupId)
+            .then(function(result) {
+                if (result.error) throw result.error;
                 overlay.remove();
                 loadGroupsAndMonsters();
             })
@@ -470,8 +473,8 @@ function deleteGroupPrompt(groupId, groupName) {
         // No monsters — just delete the group
         showConfirm('Delete group "' + groupName + '"?', function() {
             expandedGroups.delete(groupId);
-            db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete()
-                .then(function() { loadGroupsAndMonsters(); });
+            sb.from('groups').delete().eq('id', groupId)
+                .then(function(result) { if (result.error) throw result.error; loadGroupsAndMonsters(); });
         });
         return;
     }
@@ -505,17 +508,15 @@ function deleteGroupPrompt(groupId, groupName) {
         overlay.remove();
         expandedGroups.delete(groupId);
         // Move monsters to ungrouped, then delete group
-        db.collection("users").doc(currentUser.uid).collection("monsters")
-            .where("groupId", "==", groupId).get()
-            .then(function(snap) {
-                var batch = db.batch();
-                snap.forEach(function(doc) { batch.update(doc.ref, { groupId: null }); });
-                return batch.commit();
+        sb.from('monsters').update({ group_id: null }).eq('group_id', groupId)
+            .then(function(result) {
+                if (result.error) throw result.error;
+                return sb.from('groups').delete().eq('id', groupId);
             })
-            .then(function() {
-                return db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete();
-            })
-            .then(function() { loadGroupsAndMonsters(); });
+            .then(function(result) {
+                if (result.error) throw result.error;
+                loadGroupsAndMonsters();
+            });
     };
     
     var deleteAllBtn = document.createElement('button');
@@ -525,17 +526,15 @@ function deleteGroupPrompt(groupId, groupName) {
         overlay.remove();
         expandedGroups.delete(groupId);
         // Delete all monsters in group, then delete group
-        db.collection("users").doc(currentUser.uid).collection("monsters")
-            .where("groupId", "==", groupId).get()
-            .then(function(snap) {
-                var batch = db.batch();
-                snap.forEach(function(doc) { batch.delete(doc.ref); });
-                return batch.commit();
+        sb.from('monsters').delete().eq('group_id', groupId)
+            .then(function(result) {
+                if (result.error) throw result.error;
+                return sb.from('groups').delete().eq('id', groupId);
             })
-            .then(function() {
-                return db.collection("users").doc(currentUser.uid).collection("groups").doc(groupId).delete();
-            })
-            .then(function() { loadGroupsAndMonsters(); });
+            .then(function(result) {
+                if (result.error) throw result.error;
+                loadGroupsAndMonsters();
+            });
     };
     
     btnRow.appendChild(cancelBtn);
@@ -576,26 +575,20 @@ function toggleGroup(groupId) {
 // Load Groups and Monsters
 function loadGroupsAndMonsters() {
     if (!currentUser) return;
-    
-    db.collection("users").doc(currentUser.uid).collection("groups")
-        .orderBy("name")
-        .get()
-        .then(function(groupSnapshot) {
-            groups = [];
-            groupSnapshot.forEach(function(doc) {
-                groups.push({ id: doc.id, ...doc.data() });
-            });
-            
-            return db.collection("users").doc(currentUser.uid).collection("monsters")
-                .orderBy("name")
-                .get();
+
+    sb.from('groups').select('id, name').order('name')
+        .then(function(result) {
+            if (result.error) throw result.error;
+            groups = result.data;
+
+            return sb.from('monsters').select('id, name, monster_id, group_id').order('name');
         })
-        .then(function(monsterSnapshot) {
-            monsters = [];
-            monsterSnapshot.forEach(function(doc) {
-                monsters.push({ id: doc.id, ...doc.data() });
+        .then(function(result) {
+            if (result.error) throw result.error;
+            monsters = result.data.map(function(row) {
+                return { id: row.id, name: row.name, monsterId: row.monster_id, groupId: row.group_id };
             });
-            
+
             renderMonsterList();
         })
         .catch(function(error) {
@@ -713,19 +706,16 @@ function deleteSelectedMonsters() {
     }
     
     showConfirm(msg, function() {
-        var batch = db.batch();
-        for (var i = 0; i < ids.length; i++) {
-            var ref = db.collection("users").doc(currentUser.uid).collection("monsters").doc(ids[i]);
-            batch.delete(ref);
-        }
-        batch.commit().then(function() {
-            selectMode = false;
-            loadGroupsAndMonsters();
-            showAlert(ids.length + ' monster' + (ids.length > 1 ? 's' : '') + ' deleted.');
-        }).catch(function(error) {
-            console.error("Error deleting monsters:", error);
-            showAlert("Error deleting monsters: " + error.message);
-        });
+        sb.from('monsters').delete().in('id', ids)
+            .then(function(result) {
+                if (result.error) throw result.error;
+                selectMode = false;
+                loadGroupsAndMonsters();
+                showAlert(ids.length + ' monster' + (ids.length > 1 ? 's' : '') + ' deleted.');
+            }).catch(function(error) {
+                console.error("Error deleting monsters:", error);
+                showAlert("Error deleting monsters: " + error.message);
+            });
     });
 }
 
@@ -803,9 +793,9 @@ function setupDragAndDrop() {
 
 // Move Monster to Group
 function moveMonsterToGroup(monsterId, groupId) {
-    db.collection("users").doc(currentUser.uid).collection("monsters").doc(monsterId)
-        .update({ groupId: groupId })
-        .then(function() {
+    sb.from('monsters').update({ group_id: groupId }).eq('id', monsterId)
+        .then(function(result) {
+            if (result.error) throw result.error;
             loadGroupsAndMonsters();
         })
         .catch(function(error) {
@@ -815,14 +805,15 @@ function moveMonsterToGroup(monsterId, groupId) {
 
 // Load a specific monster
 function loadMonster(docId) {
-    db.collection("users").doc(currentUser.uid).collection("monsters").doc(docId)
-        .get()
-        .then(function(doc) {
-            if (doc.exists) {
-                var monster = doc.data();
+    sb.from('monsters').select('*').eq('id', docId).single()
+        .then(function(result) {
+            if (result.error) throw result.error;
+            if (result.data) {
+                var monster = result.data.data; // the JSONB column
+                monster.groupId = result.data.group_id;
                 currentMonster = monster;
-                currentMonsterDocId = docId;
-                localStorage.setItem('lastMonsterDocId', docId);
+                currentMonsterDocId = result.data.id;
+                localStorage.setItem('lastMonsterDocId', result.data.id);
                 renderStatBlock(monster);
             }
         })
@@ -837,16 +828,22 @@ function saveMonster(monster) {
         showAlert("Please sign in to save monsters.");
         return;
     }
-    
+
     var monsterData = Object.assign({}, monster);
-    monsterData.groupId = null;
-    
-    db.collection("users").doc(currentUser.uid).collection("monsters")
-        .add(monsterData)
-        .then(function(docRef) {
-            currentMonsterDocId = docRef.id;
-            localStorage.setItem('lastMonsterDocId', docRef.id);
-            showAlert(monsterData.name + " saved!");
+    delete monsterData.groupId;
+
+    sb.from('monsters').insert({
+        user_id: currentUser.id,
+        group_id: null,
+        monster_id: monster.monsterId || null,
+        name: monster.name,
+        data: monsterData
+    }).select().single()
+        .then(function(result) {
+            if (result.error) throw result.error;
+            currentMonsterDocId = result.data.id;
+            localStorage.setItem('lastMonsterDocId', result.data.id);
+            showAlert(monster.name + " saved!");
             loadGroupsAndMonsters();
         })
         .catch(function(error) {
@@ -858,9 +855,9 @@ function saveMonster(monster) {
 // Delete Monster
 function deleteMonster(docId, name) {
     showConfirm("Delete " + name + "?", function() {
-        db.collection("users").doc(currentUser.uid).collection("monsters").doc(docId)
-            .delete()
-            .then(function() {
+        sb.from('monsters').delete().eq('id', docId)
+            .then(function(result) {
+                if (result.error) throw result.error;
                 loadGroupsAndMonsters();
             })
             .catch(function(error) {
@@ -879,9 +876,9 @@ function deleteCurrentMonster() {
         return;
     }
     showConfirm('Delete "' + currentMonster.name + '"?', function() {
-        db.collection("users").doc(currentUser.uid).collection("monsters").doc(currentMonsterDocId)
-            .delete()
-            .then(function() {
+        sb.from('monsters').delete().eq('id', currentMonsterDocId)
+            .then(function(result) {
+                if (result.error) throw result.error;
                 currentMonster = null;
                 currentMonsterDocId = null;
                 document.getElementById("stat-block-container").innerHTML = '';
@@ -1676,11 +1673,19 @@ function handleRestoreUpload(e) {
             
             showConfirm('Replace "' + (currentMonster.name || "current monster") + '" with "' + (monsterData.name || "uploaded data") + '"?', function() {
                 // Preserve the groupId from the existing monster
-                monsterData.groupId = currentMonster.groupId || null;
-                
-                db.collection("users").doc(currentUser.uid).collection("monsters").doc(currentMonsterDocId)
-                    .set(monsterData)
-                    .then(function() {
+                var preservedGroupId = currentMonster.groupId || null;
+                var uploadData = Object.assign({}, monsterData);
+                delete uploadData.groupId;
+
+                sb.from('monsters').update({
+                    name: monsterData.name,
+                    monster_id: monsterData.monsterId || null,
+                    group_id: preservedGroupId,
+                    data: uploadData
+                }).eq('id', currentMonsterDocId)
+                    .then(function(result) {
+                        if (result.error) throw result.error;
+                        monsterData.groupId = preservedGroupId;
                         currentMonster = monsterData;
                         renderStatBlock(monsterData);
                         loadGroupsAndMonsters();
@@ -1951,7 +1956,7 @@ function processUploadedMonsters(monsterList) {
         return;
     }
     
-    // Multiple monsters — save all to Firestore
+    // Multiple monsters — save all to database
     if (!currentUser) {
         showAlert("Please sign in to bulk-upload monsters. For now, loading the first one.");
         var m = monsterList[0];
@@ -1983,20 +1988,24 @@ function processBulkUpload(monsterList, index) {
         monster.monsterId = generateMonsterId();
     }
     
-    // Check if this monsterId already exists in Firestore
-    db.collection("users").doc(currentUser.uid).collection("monsters")
-        .where("monsterId", "==", monster.monsterId)
-        .get()
-        .then(function(snapshot) {
-            if (!snapshot.empty) {
+    // Check if this monsterId already exists
+    sb.from('monsters').select('id, group_id').eq('monster_id', monster.monsterId)
+        .then(function(result) {
+            if (result.error) throw result.error;
+            if (result.data && result.data.length > 0) {
                 // Duplicate found — ask user
-                var existingDoc = snapshot.docs[0];
-                showConfirm('"' + monster.name + '" already exists. Replace it?', 
+                var existing = result.data[0];
+                showConfirm('"' + monster.name + '" already exists. Replace it?',
                     function() {
                         // Replace
-                        monster.groupId = existingDoc.data().groupId || null;
-                        db.collection("users").doc(currentUser.uid).collection("monsters")
-                            .doc(existingDoc.id).set(monster)
+                        var uploadData = Object.assign({}, monster);
+                        delete uploadData.groupId;
+                        sb.from('monsters').update({
+                            name: monster.name,
+                            monster_id: monster.monsterId,
+                            group_id: existing.group_id,
+                            data: uploadData
+                        }).eq('id', existing.id)
                             .then(function() {
                                 processBulkUpload(monsterList, index + 1);
                             });
@@ -2008,9 +2017,15 @@ function processBulkUpload(monsterList, index) {
                 );
             } else {
                 // New monster — save it
-                monster.groupId = null;
-                db.collection("users").doc(currentUser.uid).collection("monsters")
-                    .add(monster)
+                var uploadData = Object.assign({}, monster);
+                delete uploadData.groupId;
+                sb.from('monsters').insert({
+                    user_id: currentUser.id,
+                    group_id: null,
+                    monster_id: monster.monsterId,
+                    name: monster.name,
+                    data: uploadData
+                })
                     .then(function() {
                         processBulkUpload(monsterList, index + 1);
                     });
@@ -2024,21 +2039,26 @@ function processBulkUpload(monsterList, index) {
 
 function saveOrUpdateMonster(monster) {
     if (!currentUser) return;
-    
+
     // Check if monsterId already exists
-    db.collection("users").doc(currentUser.uid).collection("monsters")
-        .where("monsterId", "==", monster.monsterId)
-        .get()
-        .then(function(snapshot) {
-            if (!snapshot.empty) {
+    sb.from('monsters').select('id, group_id').eq('monster_id', monster.monsterId)
+        .then(function(result) {
+            if (result.error) throw result.error;
+            if (result.data && result.data.length > 0) {
                 // Update existing
-                var existingDoc = snapshot.docs[0];
-                monster.groupId = existingDoc.data().groupId || null;
-                db.collection("users").doc(currentUser.uid).collection("monsters")
-                    .doc(existingDoc.id).set(monster)
-                    .then(function() {
-                        currentMonsterDocId = existingDoc.id;
-                        localStorage.setItem('lastMonsterDocId', existingDoc.id);
+                var existing = result.data[0];
+                monster.groupId = existing.group_id;
+                var uploadData = Object.assign({}, monster);
+                delete uploadData.groupId;
+                sb.from('monsters').update({
+                    name: monster.name,
+                    monster_id: monster.monsterId,
+                    data: uploadData
+                }).eq('id', existing.id)
+                    .then(function(updateResult) {
+                        if (updateResult.error) throw updateResult.error;
+                        currentMonsterDocId = existing.id;
+                        localStorage.setItem('lastMonsterDocId', existing.id);
                         loadGroupsAndMonsters();
                     });
             } else {
