@@ -1509,8 +1509,10 @@ function buildSummaryHtml(summary) {
     
     // Signs
     if (summary.signs && summary.signs.length > 0) {
+        var lastSignRoll = summary.signs[summary.signs.length - 1].roll;
+        var signDie = 'd' + (lastSignRoll.toString().match(/(\d+)\s*$/) || [0, summary.signs.length])[1];
         var s = '<div class="lore-section"><h2 class="lore-section-header">Signs</h2>';
-        s += '<table class="lore-table"><tbody>';
+        s += '<table class="lore-table"><thead><tr><th>' + signDie + '</th><th>Sign</th></tr></thead><tbody>';
         for (var i = 0; i < summary.signs.length; i++) {
             s += '<tr><td class="lore-table-roll">' + summary.signs[i].roll + '</td><td>' + summary.signs[i].text + '</td></tr>';
         }
@@ -1520,8 +1522,10 @@ function buildSummaryHtml(summary) {
     
     // Behavior
     if (summary.behavior && summary.behavior.length > 0) {
+        var lastBehRoll = summary.behavior[summary.behavior.length - 1].roll;
+        var behDie = 'd' + (lastBehRoll.toString().match(/(\d+)\s*$/) || [0, summary.behavior.length])[1];
         var s = '<div class="lore-section"><h2 class="lore-section-header">Behavior</h2>';
-        s += '<table class="lore-table"><tbody>';
+        s += '<table class="lore-table"><thead><tr><th>' + behDie + '</th><th>Behavior</th></tr></thead><tbody>';
         for (var i = 0; i < summary.behavior.length; i++) {
             s += '<tr><td class="lore-table-roll">' + summary.behavior[i].roll + '</td><td>' + summary.behavior[i].text + '</td></tr>';
         }
