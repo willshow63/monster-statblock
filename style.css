@@ -958,7 +958,7 @@ body {
 }
 
 .lore-section {
-    break-inside: avoid;
+    break-inside: auto;
 }
 
 .lore-table {
@@ -974,6 +974,13 @@ body {
     border-bottom: 1px solid #184e4f;
     padding-bottom: 2px;
     break-after: avoid;
+}
+
+.lore-section-header::after {
+    content: "";
+    display: block;
+    height: 100px;
+    margin-bottom: -100px;
 }
 
 .lore-description {
