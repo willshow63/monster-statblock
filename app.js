@@ -1641,7 +1641,25 @@ function buildSummaryHtml(summary) {
             html += '<h1 class="lore-title">' + summaryName + '</h1>';
         }
         var maxH = PAGE_CONTENT_HEIGHT - (page.isFirst ? TITLE_HEIGHT : 0);
-        // All pages use column-fill:auto so column 1 fills first
+        if (isLast) {
+            // Last page: measure actual content height and use half (for 2 columns)
+            // so there's no excess blank space, but column 1 still fills first
+            measurer = document.createElement('div');
+            measurer.className = 'lore-block';
+            measurer.style.cssText = 'position:absolute;visibility:hidden;width:400px;padding:20px;';
+            var contentHtml = '';
+            for (var i = 0; i < page.sections.length; i++) contentHtml += page.sections[i];
+            measurer.innerHTML = contentHtml;
+            document.body.appendChild(measurer);
+            var totalContentH = measurer.offsetHeight;
+            document.body.removeChild(measurer);
+            // Each column gets roughly half; add a small buffer for padding/margins
+            maxH = Math.ceil(totalContentH / 2) + 40;
+            // But don't exceed the page height
+            if (maxH > PAGE_CONTENT_HEIGHT - (page.isFirst ? TITLE_HEIGHT : 0)) {
+                maxH = PAGE_CONTENT_HEIGHT - (page.isFirst ? TITLE_HEIGHT : 0);
+            }
+        }
         html += '<div class="lore-columns" style="column-fill:auto;height:' + maxH + 'px;">';
         for (var i = 0; i < page.sections.length; i++) html += page.sections[i];
         html += '</div></div>';
