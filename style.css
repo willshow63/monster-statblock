@@ -976,9 +976,15 @@ body {
     break-after: avoid;
 }
 
-caption.lore-section-header {
+.lore-table-title {
+    background: none;
+    color: #184e4f;
+    font-size: 18px;
+    font-variant: small-caps;
+    border-bottom: 1px solid #184e4f;
+    padding: 14px 0 2px 0;
     text-align: left;
-    caption-side: top;
+    font-weight: bold;
 }
 
 .lore-description {
