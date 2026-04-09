@@ -958,7 +958,7 @@ body {
 }
 
 .lore-section {
-    break-inside: auto;
+    break-inside: avoid;
 }
 
 .lore-table {
