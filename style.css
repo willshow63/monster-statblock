@@ -958,7 +958,7 @@ body {
 }
 
 .lore-section {
-    break-inside: auto;
+    break-inside: avoid;
 }
 
 .lore-table {
@@ -976,16 +976,6 @@ body {
     break-after: avoid;
 }
 
-.lore-table-title {
-    background: none;
-    color: #184e4f;
-    font-size: 18px;
-    font-variant: small-caps;
-    border-bottom: 1px solid #184e4f;
-    padding: 14px 0 2px 0;
-    text-align: left;
-    font-weight: bold;
-}
 
 .lore-description {
     margin-bottom: 12px;
