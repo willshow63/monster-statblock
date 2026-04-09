@@ -976,11 +976,9 @@ body {
     break-after: avoid;
 }
 
-.lore-section-header::after {
-    content: "";
-    display: block;
-    height: 100px;
-    margin-bottom: -100px;
+caption.lore-section-header {
+    text-align: left;
+    caption-side: top;
 }
 
 .lore-description {
