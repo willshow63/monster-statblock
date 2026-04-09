@@ -952,17 +952,18 @@ body {
 }
 
 .lore-columns {
-    column-count: 2;
-    column-gap: 40px;
-    column-rule: 1px solid #184e4f;
+    display: flex;
+    gap: 40px;
 }
 
-.lore-section {
-    break-inside: avoid;
+.lore-col {
+    flex: 1;
+    min-width: 0;
 }
 
-.lore-table {
-    break-inside: auto;
+.lore-col-1 {
+    border-right: 1px solid #184e4f;
+    padding-right: 20px;
 }
 
 .lore-section-header {

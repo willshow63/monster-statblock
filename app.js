@@ -1566,87 +1566,110 @@ function buildSummaryHtml(summary) {
         html += '</div>';
         return html;
     }
-    
-    // Desktop: paginated CSS-column pages of fixed height
-    var PAGE_CONTENT_HEIGHT = 980; // content area within each page
+
+    // Desktop: JS-driven two-column layout (same approach as statblock)
+    var PAGE_CONTENT_HEIGHT = 980;
     var TITLE_HEIGHT = 50;
-    
-    // Create a hidden measurer that mimics a page's column layout
+    var COL_WIDTH = 380;
+
+    // Measure each section at column width
     var measurer = document.createElement('div');
     measurer.className = 'lore-block';
-    measurer.style.cssText = 'position:absolute;visibility:hidden;width:840px;padding:20px;';
+    measurer.style.cssText = 'position:absolute;visibility:hidden;width:' + COL_WIDTH + 'px;padding:0;margin:0;border:none;box-shadow:none;';
     document.body.appendChild(measurer);
-    
-    // Build pages by adding sections one at a time and checking if columns overflow
-    var pages = [];
-    var currentPageSections = [];
-    var pageNum = 0;
-    
+
+    var heights = [];
     for (var i = 0; i < sections.length; i++) {
-        // Try adding this section to the current page
-        currentPageSections.push(sections[i]);
-        
-        // Measure this page
-        var testHtml = '';
-        if (pageNum === 0) testHtml += '<h1 class="lore-title">' + summaryName + '</h1>';
-        var maxH = PAGE_CONTENT_HEIGHT - (pageNum === 0 ? TITLE_HEIGHT : 0);
-        testHtml += '<div class="lore-columns" style="column-fill:auto;height:' + maxH + 'px;overflow:hidden;">';
-        testHtml += currentPageSections.join('');
-        testHtml += '</div>';
-        measurer.innerHTML = testHtml;
-        
-        var colDiv = measurer.querySelector('.lore-columns');
-        // Check if content overflows the fixed-height column container
-        // We need to measure differently: render without height constraint and compare
-        var unconstrainedHtml = '';
-        if (pageNum === 0) unconstrainedHtml += '<h1 class="lore-title">' + summaryName + '</h1>';
-        unconstrainedHtml += '<div class="lore-columns">';
-        unconstrainedHtml += currentPageSections.join('');
-        unconstrainedHtml += '</div>';
-        measurer.innerHTML = unconstrainedHtml;
-        var naturalHeight = measurer.offsetHeight;
-        var pageLimit = PAGE_CONTENT_HEIGHT + 40; // add padding
-        
-        if (naturalHeight > pageLimit && currentPageSections.length > 1) {
-            // This section doesn't fit — remove it and close this page
-            currentPageSections.pop();
-            
-            if (currentPageSections.length > 0) {
-                pages.push({ sections: currentPageSections, isFirst: pageNum === 0 });
-                pageNum++;
-            }
-            // Start new page with this section
-            currentPageSections = [sections[i]];
-        }
+        measurer.innerHTML = sections[i];
+        heights.push(measurer.offsetHeight);
     }
-    
-    // Push the last page
-    if (currentPageSections.length > 0) {
-        pages.push({ sections: currentPageSections, isFirst: pageNum === 0 });
-    }
-    
     document.body.removeChild(measurer);
-    
-    // Build HTML — each page is a fixed-height block
+
+    // Paginate: group sections into pages based on measured heights
+    var pages = [];
+    var pageStart = 0;
+
+    while (pageStart < sections.length) {
+        var isFirstPage = (pages.length === 0);
+        var availH = PAGE_CONTENT_HEIGHT - (isFirstPage ? TITLE_HEIGHT : 0);
+        var pageEnd = pageStart;
+        var totalH = 0;
+
+        while (pageEnd < sections.length) {
+            totalH += heights[pageEnd];
+            // Content fills two columns, so page overflows when totalH/2 > availH
+            if (totalH > availH * 2 && pageEnd > pageStart) {
+                totalH -= heights[pageEnd];
+                break;
+            }
+            pageEnd++;
+        }
+        if (pageEnd === pageStart) pageEnd = pageStart + 1;
+
+        pages.push({ start: pageStart, end: pageEnd, isFirst: isFirstPage });
+        pageStart = pageEnd;
+    }
+
+    // Build HTML for each page
     var html = '';
     for (var p = 0; p < pages.length; p++) {
         var page = pages[p];
         var isLast = (p === pages.length - 1);
+        var pageSections = sections.slice(page.start, page.end);
+        var pageHeights = heights.slice(page.start, page.end);
+
         html += '<div class="lore-block lore-page' + (isLast ? ' lore-page-last' : '') + '">';
         if (page.isFirst) {
             html += '<h1 class="lore-title">' + summaryName + '</h1>';
         }
-        var maxH = PAGE_CONTENT_HEIGHT - (page.isFirst ? TITLE_HEIGHT : 0);
-        // Last page: don't constrain height so it sizes naturally
-        if (isLast) {
-            html += '<div class="lore-columns">';
-        } else {
-            html += '<div class="lore-columns" style="column-fill:auto;height:' + maxH + 'px;">';
+
+        // Find best split point: col1 >= col2, most balanced
+        var bestSplit = -1;
+        var bestScore = Infinity;
+        var totalPageH = 0;
+        for (var i = 0; i < pageHeights.length; i++) totalPageH += pageHeights[i];
+
+        for (var split = 1; split < pageSections.length; split++) {
+            var col1H = 0;
+            var col2H = 0;
+            for (var j = 0; j < split; j++) col1H += pageHeights[j];
+            for (var j = split; j < pageSections.length; j++) col2H += pageHeights[j];
+
+            // Col2 must never be longer than col1
+            if (col2H > col1H * 1.05) continue;
+
+            // Score: prefer balanced, penalize col2 > col1 heavily
+            var imbalance;
+            if (col2H > col1H) {
+                imbalance = (col2H - col1H) * 2;
+            } else {
+                imbalance = col1H - col2H;
+            }
+            if (imbalance < bestScore) {
+                bestScore = imbalance;
+                bestSplit = split;
+            }
         }
-        for (var i = 0; i < page.sections.length; i++) html += page.sections[i];
-        html += '</div></div>';
+
+        if (bestSplit === -1) {
+            // No valid split — single column
+            html += '<div class="lore-columns"><div class="lore-col lore-col-1">';
+            for (var i = 0; i < pageSections.length; i++) html += pageSections[i];
+            html += '</div></div>';
+        } else {
+            html += '<div class="lore-columns">';
+            html += '<div class="lore-col lore-col-1">';
+            for (var i = 0; i < bestSplit; i++) html += pageSections[i];
+            html += '</div>';
+            html += '<div class="lore-col lore-col-2">';
+            for (var i = bestSplit; i < pageSections.length; i++) html += pageSections[i];
+            html += '</div>';
+            html += '</div>';
+        }
+
+        html += '</div>';
     }
-    
+
     return html;
 }
 
