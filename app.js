@@ -1651,8 +1651,23 @@ function buildSummaryHtml(summary) {
             }
         }
 
+        // If strict col1>=col2 found no split, fall back to most balanced split
+        if (bestSplit === -1 && pageSections.length >= 2) {
+            for (var split = 1; split < pageSections.length; split++) {
+                var col1H = 0;
+                var col2H = 0;
+                for (var j = 0; j < split; j++) col1H += pageHeights[j];
+                for (var j = split; j < pageSections.length; j++) col2H += pageHeights[j];
+                var imbalance = Math.abs(col1H - col2H);
+                if (imbalance < bestScore) {
+                    bestScore = imbalance;
+                    bestSplit = split;
+                }
+            }
+        }
+
         if (bestSplit === -1) {
-            // No valid split — single column
+            // Only 1 section — single column
             html += '<div class="lore-columns"><div class="lore-col lore-col-1">';
             for (var i = 0; i < pageSections.length; i++) html += pageSections[i];
             html += '</div></div>';
