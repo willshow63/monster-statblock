@@ -1478,7 +1478,8 @@ function buildSummaryHtml(summary) {
     // Legends and Lore
     if (summary.legendsAndLore && summary.legendsAndLore.length > 0) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">Legends and Lore</h2>';
-        s += '<p class="lore-intro">With a History or Nature check, characters can learn the following:</p>';
+        var loreIntro = summary.legendsAndLoreIntro || 'With a History or Nature check, characters can learn the following:';
+        s += '<p class="lore-intro">' + loreIntro + '</p>';
         for (var i = 0; i < summary.legendsAndLore.length; i++) {
             s += '<div class="lore-dc-entry"><strong>DC ' + summary.legendsAndLore[i].dc + '</strong> ' + summary.legendsAndLore[i].text + '</div>';
         }
@@ -1812,6 +1813,7 @@ function exportTemplate() {
         "villainActions": [],
         "summary": {
             "description": "A paragraph of flavor text about the creature.",
+            "legendsAndLoreIntro": "",
             "legendsAndLore": [
                 { "dc": 10, "text": "Basic lore about the creature." },
                 { "dc": 15, "text": "Deeper knowledge about the creature." },
@@ -1892,7 +1894,12 @@ function exportTemplate() {
         "10. HTML is supported in text fields. Use <b><i>Sub-heading.</i></b> for",
         "    sub-sections within a single ability, and <br><br> for paragraph breaks.",
         "",
-        "11. Output ONLY valid JSON. No comments, no markdown, no explanation.",
+        "11. The optional field \"legendsAndLoreIntro\" inside summary allows a custom intro",
+        "    line for the Legends and Lore section (e.g., \"With a History check, characters",
+        "    can learn:\"). If omitted or empty, it defaults to \"With a History or Nature",
+        "    check, characters can learn the following:\"",
+        "",
+        "12. Output ONLY valid JSON. No comments, no markdown, no explanation.",
         ""
     ].join("\n");
 
