@@ -1020,6 +1020,10 @@ body {
     text-align: justify;
 }
 
+.lore-description p {
+    margin: 0 0 4px 0;
+}
+
 .lore-intro {
     margin: 0 0 6px 0;
     font-style: italic;
