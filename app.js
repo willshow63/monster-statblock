@@ -368,18 +368,16 @@ function generateSlug(name) {
 function shareMonster() {
     if (!currentUser || !currentMonsterDocId || !currentMonster) return;
     var slug = generateSlug(currentMonster.name);
+    var url = window.location.origin + '/monster-statblock/' + slug;
     sb.from('monsters').update({ public: true, slug: slug }).eq('id', currentMonsterDocId)
         .then(function(result) {
             if (result.error) {
                 showAlert('Error sharing: ' + result.error.message);
                 return;
             }
-            var url = window.location.origin + '/monster-statblock/' + slug;
-            showModal('Shareable link:', [
-                { text: 'Copy', className: 'modal-btn-confirm', onClick: function() { navigator.clipboard.writeText(url); } },
-                { text: 'Close', className: 'modal-btn-cancel' }
+            showModal(url, [
+                { text: 'Copy Link', className: 'modal-btn-confirm', onClick: function() { navigator.clipboard.writeText(url); } }
             ]);
-            document.getElementById('modal-message').innerHTML = '<a href="' + url + '" target="_blank" style="word-break:break-all;">' + url + '</a>';
         });
 }
 
