@@ -1423,15 +1423,17 @@ function renderTabs() {
     tabsHtml += '<button class="tab-btn' + (activeTab === 'statblock' ? ' active' : '') + '" onclick="switchTab(\'statblock\')">Statblock</button>';
     if (currentMonster && currentMonster.summary) {
         tabsHtml += '<button class="tab-btn' + (activeTab === 'summary' ? ' active' : '') + '" onclick="switchTab(\'summary\')">Summary</button>';
+        if (activeTab === 'summary') {
+            tabsHtml += buildSummaryToolbar();
+        }
     }
     tabsHtml += '</div>';
-    
+
     // Build tab panels
     var panelsHtml = '<div class="tab-panel" id="tab-statblock" style="' + (activeTab === 'statblock' ? '' : 'display:none') + '">' + statblockContent + '</div>';
-    
+
     if (currentMonster && currentMonster.summary) {
         panelsHtml += '<div class="tab-panel" id="tab-summary" style="' + (activeTab === 'summary' ? '' : 'display:none') + '">';
-        panelsHtml += buildSummaryToolbar();
         panelsHtml += buildSummaryHtml(currentMonster.summary);
         panelsHtml += '</div>';
     }
@@ -1447,11 +1449,8 @@ function renderTabs() {
 
 function toggleSummaryPagination() {
     summaryPaginated = !summaryPaginated;
-    if (currentMonster && currentMonster.summary) {
-        var panel = document.getElementById('tab-summary');
-        if (panel) {
-            panel.innerHTML = buildSummaryToolbar() + buildSummaryHtml(currentMonster.summary);
-        }
+    if (currentMonster) {
+        renderStatBlock(currentMonster);
     }
 }
 

@@ -915,10 +915,9 @@ body {
 }
 
 .summary-toolbar {
+    margin-left: auto;
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 6px;
-    max-width: 840px;
+    align-items: center;
 }
 
 .summary-toggle {
