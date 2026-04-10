@@ -914,6 +914,28 @@ body {
 .tab-panel {
 }
 
+.summary-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 6px;
+    max-width: 840px;
+}
+
+.summary-paginate-btn {
+    background: #184e4f;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Times New Roman', serif;
+    font-size: 13px;
+}
+
+.summary-paginate-btn:hover {
+    background: #0d3536;
+}
+
 /* ============ LORE BLOCK ============ */
 .lore-block {
     background: #f5f5f5;
