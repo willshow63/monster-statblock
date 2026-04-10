@@ -376,10 +376,53 @@ function shareMonster() {
                 showAlert('Error sharing: ' + result.error.message);
                 return;
             }
-            showModal(url, [
-                { text: 'Copy Link', className: 'modal-btn-confirm', onClick: function() { navigator.clipboard.writeText(url); } }
-            ]);
+            showSharePopup(url);
         });
+}
+
+function showSharePopup(url) {
+    var existing = document.getElementById('share-popup-overlay');
+    if (existing) existing.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'share-popup-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:1000;';
+
+    var box = document.createElement('div');
+    box.style.cssText = 'background:white;border-radius:8px;padding:24px;max-width:420px;width:90%;box-shadow:0 4px 24px rgba(0,0,0,0.2);';
+
+    var urlRow = document.createElement('div');
+    urlRow.style.cssText = 'display:flex;align-items:center;gap:8px;background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:10px 12px;margin-bottom:16px;';
+
+    var urlText = document.createElement('span');
+    urlText.textContent = url;
+    urlText.style.cssText = 'flex:1;font-size:14px;color:#333;word-break:break-all;font-family:sans-serif;';
+
+    var copyBtn = document.createElement('button');
+    copyBtn.innerHTML = '&#x2398;';
+    copyBtn.title = 'Copy link';
+    copyBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:18px;color:#888;padding:0 2px;flex-shrink:0;';
+    copyBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText(url);
+        copyBtn.innerHTML = '&#x2713;';
+        copyBtn.style.color = '#184e4f';
+        setTimeout(function() { copyBtn.innerHTML = '&#x2398;'; copyBtn.style.color = '#888'; }, 1500);
+    });
+
+    urlRow.appendChild(urlText);
+    urlRow.appendChild(copyBtn);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Done';
+    closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:#184e4f;color:white;border:none;border-radius:6px;font-size:14px;font-family:sans-serif;cursor:pointer;';
+    closeBtn.addEventListener('click', function() { overlay.remove(); });
+
+    box.appendChild(urlRow);
+    box.appendChild(closeBtn);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
 }
 
 function unshareMonster() {
