@@ -294,6 +294,7 @@ document.getElementById("export-template-btn").addEventListener("click", exportT
 
 // Auth State Listener
 sb.auth.onAuthStateChange(function(event, session) {
+    if (sharedView) return;
     if (session && session.user) {
         currentUser = session.user;
         document.getElementById("login-btn").style.display = "none";
