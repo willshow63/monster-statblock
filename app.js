@@ -14,7 +14,6 @@ var expandedGroups = new Set(); // Track which groups are expanded (all start co
 var sidebarOpen = false;
 var activeTab = 'statblock';
 var selectMode = false;
-var summaryPaginated = true;
 
 function toggleSidebar() {
     var content = document.getElementById('sidebar-content');
@@ -1409,9 +1408,6 @@ function renderTabs() {
     
     // Button row — always above tabs
     var buttonsHtml = '<div class="button-row">';
-    if (currentMonster && currentMonster.summary && activeTab === 'summary') {
-        buttonsHtml += buildSummaryToolbar();
-    }
     buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
     buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
     buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
@@ -1428,14 +1424,12 @@ function renderTabs() {
         tabsHtml += '<button class="tab-btn' + (activeTab === 'summary' ? ' active' : '') + '" onclick="switchTab(\'summary\')">Summary</button>';
     }
     tabsHtml += '</div>';
-
+    
     // Build tab panels
     var panelsHtml = '<div class="tab-panel" id="tab-statblock" style="' + (activeTab === 'statblock' ? '' : 'display:none') + '">' + statblockContent + '</div>';
-
+    
     if (currentMonster && currentMonster.summary) {
-        panelsHtml += '<div class="tab-panel" id="tab-summary" style="' + (activeTab === 'summary' ? '' : 'display:none') + '">';
-        panelsHtml += buildSummaryHtml(currentMonster.summary);
-        panelsHtml += '</div>';
+        panelsHtml += '<div class="tab-panel" id="tab-summary" style="' + (activeTab === 'summary' ? '' : 'display:none') + '">' + buildSummaryHtml(currentMonster.summary) + '</div>';
     }
     
     container.innerHTML = buttonsHtml + tabsHtml + panelsHtml;
@@ -1445,20 +1439,6 @@ function renderTabs() {
     if (restoreInput) {
         restoreInput.addEventListener("change", handleRestoreUpload);
     }
-}
-
-function toggleSummaryPagination() {
-    summaryPaginated = !summaryPaginated;
-    if (currentMonster) {
-        renderStatBlock(currentMonster);
-    }
-}
-
-function buildSummaryToolbar() {
-    return '<div class="summary-toggle" onclick="toggleSummaryPagination()">'
-        + '<span class="summary-toggle-option' + (!summaryPaginated ? ' active' : '') + '">Scroll</span>'
-        + '<span class="summary-toggle-option' + (summaryPaginated ? ' active' : '') + '">Pages</span>'
-        + '</div>';
 }
 
 function switchTab(tab) {
@@ -1606,53 +1586,7 @@ function buildSummaryHtml(summary) {
     }
     document.body.removeChild(measurer);
 
-    // Single-page mode: one lore-block with JS column split, no pagination
-    if (!summaryPaginated) {
-        var html = '<div class="lore-block">';
-        html += '<h1 class="lore-title">' + summaryName + '</h1>';
-
-        var bestSplit = -1;
-        var bestScore = Infinity;
-        for (var split = 1; split < sections.length; split++) {
-            var col1H = 0;
-            var col2H = 0;
-            for (var j = 0; j < split; j++) col1H += heights[j];
-            for (var j = split; j < sections.length; j++) col2H += heights[j];
-            if (col2H > col1H * 1.05) continue;
-            var imbalance = (col2H > col1H) ? (col2H - col1H) * 2 : col1H - col2H;
-            if (imbalance < bestScore) { bestScore = imbalance; bestSplit = split; }
-        }
-        if (bestSplit === -1 && sections.length >= 2) {
-            for (var split = 1; split < sections.length; split++) {
-                var col1H = 0;
-                var col2H = 0;
-                for (var j = 0; j < split; j++) col1H += heights[j];
-                for (var j = split; j < sections.length; j++) col2H += heights[j];
-                var imbalance = Math.abs(col1H - col2H);
-                if (imbalance < bestScore) { bestScore = imbalance; bestSplit = split; }
-            }
-        }
-
-        if (bestSplit === -1) {
-            html += '<div class="lore-columns"><div class="lore-col lore-col-1">';
-            for (var i = 0; i < sections.length; i++) html += sections[i];
-            html += '</div></div>';
-        } else {
-            html += '<div class="lore-columns">';
-            html += '<div class="lore-col lore-col-1">';
-            for (var i = 0; i < bestSplit; i++) html += sections[i];
-            html += '</div>';
-            html += '<div class="lore-col lore-col-2">';
-            for (var i = bestSplit; i < sections.length; i++) html += sections[i];
-            html += '</div>';
-            html += '</div>';
-        }
-
-        html += '</div>';
-        return html;
-    }
-
-    // Paginated mode: group sections into pages based on measured heights
+    // Paginate: group sections into pages based on measured heights
     var pages = [];
     var pageStart = 0;
 
