@@ -1409,6 +1409,9 @@ function renderTabs() {
     
     // Button row — always above tabs
     var buttonsHtml = '<div class="button-row">';
+    if (currentMonster && currentMonster.summary && activeTab === 'summary') {
+        buttonsHtml += buildSummaryToolbar();
+    }
     buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
     buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
     buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
@@ -1423,9 +1426,6 @@ function renderTabs() {
     tabsHtml += '<button class="tab-btn' + (activeTab === 'statblock' ? ' active' : '') + '" onclick="switchTab(\'statblock\')">Statblock</button>';
     if (currentMonster && currentMonster.summary) {
         tabsHtml += '<button class="tab-btn' + (activeTab === 'summary' ? ' active' : '') + '" onclick="switchTab(\'summary\')">Summary</button>';
-        if (activeTab === 'summary') {
-            tabsHtml += buildSummaryToolbar();
-        }
     }
     tabsHtml += '</div>';
 
@@ -1455,10 +1455,10 @@ function toggleSummaryPagination() {
 }
 
 function buildSummaryToolbar() {
-    return '<div class="summary-toolbar"><div class="summary-toggle" onclick="toggleSummaryPagination()" title="' + (summaryPaginated ? 'Switch to single page' : 'Switch to paginated') + '">'
-        + '<span class="summary-toggle-option' + (!summaryPaginated ? ' active' : '') + '">&#x1F4C4;</span>'
-        + '<span class="summary-toggle-option' + (summaryPaginated ? ' active' : '') + '">&#x1F4D1;</span>'
-        + '</div></div>';
+    return '<div class="summary-toggle" onclick="toggleSummaryPagination()">'
+        + '<span class="summary-toggle-option' + (!summaryPaginated ? ' active' : '') + '">Scroll</span>'
+        + '<span class="summary-toggle-option' + (summaryPaginated ? ' active' : '') + '">Pages</span>'
+        + '</div>';
 }
 
 function switchTab(tab) {

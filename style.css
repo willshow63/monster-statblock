@@ -914,31 +914,26 @@ body {
 .tab-panel {
 }
 
-.summary-toolbar {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-}
-
 .summary-toggle {
-    display: flex;
-    background: #ddd;
+    display: inline-flex;
     border-radius: 4px;
     cursor: pointer;
     overflow: hidden;
-    border: 1px solid #bbb;
+    border: 1px solid #184e4f;
 }
 
 .summary-toggle-option {
-    padding: 3px 8px;
-    font-size: 16px;
-    opacity: 0.4;
-    transition: opacity 0.15s, background 0.15s;
+    padding: 4px 10px;
+    font-family: 'Times New Roman', serif;
+    font-size: 13px;
+    color: #184e4f;
+    background: white;
+    transition: background 0.15s, color 0.15s;
 }
 
 .summary-toggle-option.active {
     background: #184e4f;
-    opacity: 1;
+    color: white;
 }
 
 /* ============ LORE BLOCK ============ */
