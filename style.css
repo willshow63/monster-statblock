@@ -959,8 +959,18 @@ body {
 .lore-columns-flow {
     column-count: 2;
     column-gap: 40px;
-    column-rule: 1px solid #184e4f;
     column-fill: auto;
+    position: relative;
+}
+
+.lore-columns-flow::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: #184e4f;
 }
 
 .lore-col {
