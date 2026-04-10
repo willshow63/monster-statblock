@@ -1667,10 +1667,11 @@ function buildSummaryHtml(summary) {
         }
 
         if (bestSplit === -1) {
-            // Only 1 section — single column
-            html += '<div class="lore-columns"><div class="lore-col lore-col-1">';
+            // Only 1 section — use CSS columns to flow content across 2 columns
+            var flowH = PAGE_CONTENT_HEIGHT - (page.isFirst ? TITLE_HEIGHT : 0);
+            html += '<div class="lore-columns-flow" style="height:' + flowH + 'px;">';
             for (var i = 0; i < pageSections.length; i++) html += pageSections[i];
-            html += '</div></div>';
+            html += '</div>';
         } else {
             html += '<div class="lore-columns">';
             html += '<div class="lore-col lore-col-1">';

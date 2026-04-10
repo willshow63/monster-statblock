@@ -933,7 +933,7 @@ body {
     margin-bottom: 20px;
 }
 
-.lore-page-last {
+.lore-page-last:first-child {
     min-height: 0;
 }
 
@@ -954,6 +954,13 @@ body {
 .lore-columns {
     display: flex;
     gap: 40px;
+}
+
+.lore-columns-flow {
+    column-count: 2;
+    column-gap: 40px;
+    column-rule: 1px solid #184e4f;
+    column-fill: auto;
 }
 
 .lore-col {
