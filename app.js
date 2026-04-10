@@ -8,6 +8,7 @@ var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 var currentUser = null;
 var currentMonster = null;
 var currentMonsterDocId = null;
+var sharedView = false;
 var groups = [];
 var monsters = [];
 var expandedGroups = new Set(); // Track which groups are expanded (all start collapsed)
@@ -334,6 +335,65 @@ document.getElementById("login-btn").addEventListener("click", function() {
 document.getElementById("logout-btn").addEventListener("click", function() {
     sb.auth.signOut();
 });
+
+// Shared View — check URL for ?view=slug on page load
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    var viewSlug = params.get('view');
+    if (viewSlug) {
+        sharedView = true;
+        document.querySelector('.controls').style.display = 'none';
+        document.getElementById('saved-monsters').style.display = 'none';
+        sb.from('monsters').select('*').eq('slug', viewSlug).eq('public', true).single()
+            .then(function(result) {
+                if (result.error || !result.data) {
+                    document.getElementById('stat-block-container').innerHTML = '<p style="padding:40px;font-family:Times New Roman,serif;font-size:18px;">Monster not found.</p>';
+                    return;
+                }
+                var monster = result.data.data;
+                monster.groupId = result.data.group_id;
+                currentMonster = monster;
+                currentMonsterDocId = result.data.id;
+                activeTab = 'statblock';
+                renderStatBlock(monster);
+            });
+    }
+})();
+
+// Share / Unshare a monster
+function generateSlug(name) {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function shareMonster() {
+    if (!currentUser || !currentMonsterDocId || !currentMonster) return;
+    var slug = generateSlug(currentMonster.name);
+    sb.from('monsters').update({ public: true, slug: slug }).eq('id', currentMonsterDocId)
+        .then(function(result) {
+            if (result.error) {
+                showAlert('Error sharing: ' + result.error.message);
+                return;
+            }
+            var url = window.location.origin + '/monster-statblock/' + slug;
+            showModal('Shareable link:', [
+                { text: 'Copy', className: 'modal-btn-confirm', onClick: function() { navigator.clipboard.writeText(url); } },
+                { text: 'Close', className: 'modal-btn-cancel' }
+            ]);
+            document.getElementById('modal-message').innerHTML = '<a href="' + url + '" target="_blank" style="word-break:break-all;">' + url + '</a>';
+        });
+}
+
+function unshareMonster() {
+    if (!currentUser || !currentMonsterDocId) return;
+    sb.from('monsters').update({ public: false, slug: null }).eq('id', currentMonsterDocId)
+        .then(function(result) {
+            if (result.error) {
+                showAlert('Error unsharing: ' + result.error.message);
+                return;
+            }
+            showAlert('Monster is no longer shared.');
+        });
+}
 
 // New Group Button
 document.getElementById("new-group-btn").addEventListener("click", function() {
@@ -1408,13 +1468,19 @@ function renderTabs() {
     
     // Button row — always above tabs
     var buttonsHtml = '<div class="button-row">';
-    buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
-    buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
-    buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
-    buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
-    buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
-    buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
-    buttonsHtml += '<button class="delete-current-btn" onclick="deleteCurrentMonster()" title="Delete this monster">Delete</button>';
+    if (sharedView) {
+        buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
+        buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+    } else {
+        buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
+        buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
+        buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
+        buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
+        buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+        buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
+        buttonsHtml += '<button class="share-btn" onclick="shareMonster()" title="Get shareable link">Share</button>';
+        buttonsHtml += '<button class="delete-current-btn" onclick="deleteCurrentMonster()" title="Delete this monster">Delete</button>';
+    }
     buttonsHtml += '</div>';
     
     // Build tab bar

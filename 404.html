@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+  var repo = '/monster-statblock';
+  var path = window.location.pathname;
+  if (path.startsWith(repo + '/')) {
+    var slug = path.substring(repo.length + 1).replace(/\/$/, '');
+    if (slug && slug !== 'index.html') {
+      window.location.replace(repo + '/?view=' + encodeURIComponent(slug));
+    }
+  }
+</script>
+</head>
+<body></body>
+</html>

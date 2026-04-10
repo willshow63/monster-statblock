@@ -603,6 +603,21 @@ body {
     background: #a93226;
 }
 
+.share-btn {
+    background: #184e4f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Times New Roman', serif;
+}
+
+.share-btn:hover {
+    background: #0d3536;
+}
+
 /* Ungrouped section */
 .ungrouped-section { margin-top: 10px; }
 
