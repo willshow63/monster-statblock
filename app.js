@@ -399,14 +399,13 @@ function showSharePopup(url) {
     urlText.style.cssText = 'flex:1;font-size:14px;color:#333;word-break:break-all;font-family:sans-serif;';
 
     var copyBtn = document.createElement('button');
-    copyBtn.innerHTML = '&#x2398;';
+    copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#888" stroke-width="1.5"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.5a1.5 1.5 0 00-1.5-1.5H3.5A1.5 1.5 0 002 3.5V9a1.5 1.5 0 001.5 1.5h2"/></svg>';
     copyBtn.title = 'Copy link';
-    copyBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:18px;color:#888;padding:0 2px;flex-shrink:0;';
+    copyBtn.style.cssText = 'background:none;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:4px 6px;flex-shrink:0;display:flex;align-items:center;';
     copyBtn.addEventListener('click', function() {
         navigator.clipboard.writeText(url);
-        copyBtn.innerHTML = '&#x2713;';
-        copyBtn.style.color = '#184e4f';
-        setTimeout(function() { copyBtn.innerHTML = '&#x2398;'; copyBtn.style.color = '#888'; }, 1500);
+        copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#184e4f" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>';
+        setTimeout(function() { copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#888" stroke-width="1.5"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.5a1.5 1.5 0 00-1.5-1.5H3.5A1.5 1.5 0 002 3.5V9a1.5 1.5 0 001.5 1.5h2"/></svg>'; }, 1500);
     });
 
     urlRow.appendChild(urlText);
@@ -414,7 +413,7 @@ function showSharePopup(url) {
 
     var closeBtn = document.createElement('button');
     closeBtn.textContent = 'Done';
-    closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:#184e4f;color:white;border:none;border-radius:6px;font-size:14px;font-family:sans-serif;cursor:pointer;';
+    closeBtn.style.cssText = 'display:block;margin-left:auto;padding:6px 20px;background:#184e4f;color:white;border:none;border-radius:6px;font-size:13px;font-family:sans-serif;cursor:pointer;';
     closeBtn.addEventListener('click', function() { overlay.remove(); });
 
     box.appendChild(urlRow);
