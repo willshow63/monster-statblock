@@ -921,19 +921,25 @@ body {
     max-width: 840px;
 }
 
-.summary-paginate-btn {
-    background: #184e4f;
-    color: white;
-    border: none;
-    padding: 4px 12px;
+.summary-toggle {
+    display: flex;
+    background: #ddd;
     border-radius: 4px;
     cursor: pointer;
-    font-family: 'Times New Roman', serif;
-    font-size: 13px;
+    overflow: hidden;
+    border: 1px solid #bbb;
 }
 
-.summary-paginate-btn:hover {
-    background: #0d3536;
+.summary-toggle-option {
+    padding: 3px 8px;
+    font-size: 16px;
+    opacity: 0.4;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.summary-toggle-option.active {
+    background: #184e4f;
+    opacity: 1;
 }
 
 /* ============ LORE BLOCK ============ */

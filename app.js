@@ -1431,7 +1431,7 @@ function renderTabs() {
     
     if (currentMonster && currentMonster.summary) {
         panelsHtml += '<div class="tab-panel" id="tab-summary" style="' + (activeTab === 'summary' ? '' : 'display:none') + '">';
-        panelsHtml += '<div class="summary-toolbar"><button class="summary-paginate-btn" onclick="toggleSummaryPagination()">' + (summaryPaginated ? 'Single Page' : 'Paginated') + '</button></div>';
+        panelsHtml += buildSummaryToolbar();
         panelsHtml += buildSummaryHtml(currentMonster.summary);
         panelsHtml += '</div>';
     }
@@ -1450,9 +1450,16 @@ function toggleSummaryPagination() {
     if (currentMonster && currentMonster.summary) {
         var panel = document.getElementById('tab-summary');
         if (panel) {
-            panel.innerHTML = buildSummaryHtml(currentMonster.summary);
+            panel.innerHTML = buildSummaryToolbar() + buildSummaryHtml(currentMonster.summary);
         }
     }
+}
+
+function buildSummaryToolbar() {
+    return '<div class="summary-toolbar"><div class="summary-toggle" onclick="toggleSummaryPagination()" title="' + (summaryPaginated ? 'Switch to single page' : 'Switch to paginated') + '">'
+        + '<span class="summary-toggle-option' + (!summaryPaginated ? ' active' : '') + '">&#x1F4C4;</span>'
+        + '<span class="summary-toggle-option' + (summaryPaginated ? ' active' : '') + '">&#x1F4D1;</span>'
+        + '</div></div>';
 }
 
 function switchTab(tab) {
