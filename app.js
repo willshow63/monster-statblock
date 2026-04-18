@@ -1951,6 +1951,7 @@ function buildSummaryHtml(summary) {
             html += '<div class="lore-col lore-col-1">';
             for (var i = 0; i < bestSplit; i++) html += pageSections[i];
             html += '</div>';
+            html += '<div class="lore-col-divider"></div>';
             html += '<div class="lore-col lore-col-2">';
             for (var i = bestSplit; i < pageSections.length; i++) html += pageSections[i];
             html += '</div>';
