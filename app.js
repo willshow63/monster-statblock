@@ -1990,9 +1990,8 @@ function buildSummaryHtml(summary) {
         var pageHeights = heights.slice(page.start, page.end);
 
         html += '<div class="lore-block lore-page' + (isLast ? ' lore-page-last' : '') + '">';
-        if (page.isFirst) {
-            html += '<h1 class="lore-title">' + summaryName + '</h1>';
-        }
+        // Page-spanning vertical divider (matches statblock — top:20 to bottom:20 of the page box)
+        html += '<div class="lore-col-divider"></div>';
 
         // Find best split point: col1 >= col2, most balanced
         var bestSplit = -1;
@@ -2041,14 +2040,19 @@ function buildSummaryHtml(summary) {
             // Only 1 section — use CSS columns to flow content across 2 columns
             var flowH = PAGE_CONTENT_HEIGHT - (page.isFirst ? TITLE_HEIGHT : 0);
             html += '<div class="lore-columns-flow" style="height:' + flowH + 'px;">';
+            if (page.isFirst) {
+                html += '<h1 class="lore-title">' + summaryName + '</h1>';
+            }
             for (var i = 0; i < pageSections.length; i++) html += pageSections[i];
             html += '</div>';
         } else {
             html += '<div class="lore-columns">';
             html += '<div class="lore-col lore-col-1">';
+            if (page.isFirst) {
+                html += '<h1 class="lore-title">' + summaryName + '</h1>';
+            }
             for (var i = 0; i < bestSplit; i++) html += pageSections[i];
             html += '</div>';
-            html += '<div class="lore-col-divider"></div>';
             html += '<div class="lore-col lore-col-2">';
             for (var i = bestSplit; i < pageSections.length; i++) html += pageSections[i];
             html += '</div>';

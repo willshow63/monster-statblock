@@ -1164,6 +1164,7 @@ body.modal-open {
 
 /* ============ LORE BLOCK ============ */
 .lore-block {
+    position: relative;
     background: #f5f5f5;
     padding: 20px;
     border-top: 4px solid var(--theme-color);
@@ -1201,13 +1202,12 @@ body.modal-open {
 .lore-columns {
     display: flex;
     gap: 40px;
-    position: relative;
 }
 
 .lore-col-divider {
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: 20px;
+    bottom: 20px;
     left: 50%;
     width: 1px;
     margin-left: -0.5px;
@@ -1216,19 +1216,10 @@ body.modal-open {
 
 .lore-columns-flow {
     column-count: 2;
-    column-gap: 40px;
+    column-gap: 56px;
     column-fill: auto;
-    position: relative;
-}
-
-.lore-columns-flow::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 1px;
-    background: var(--theme-color);
+    padding-left: 8px;
+    padding-right: 16px;
 }
 
 .lore-col {
@@ -1269,7 +1260,7 @@ body.modal-open {
 }
 
 .lore-dc-entry {
-    margin: 4px 0 4px 10px;
+    margin: 4px 0;
 }
 
 .lore-encounter-group {
