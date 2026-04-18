@@ -1049,8 +1049,7 @@ function createPrintClone() {
         clone.style.cssText = 'display:block!important;width:840px!important;padding:0!important;margin:0!important;background:white!important;box-shadow:none!important;';
     } else if (element.classList.contains('two-column')) {
         width = 840;
-        var dividerGradient = 'linear-gradient(to right, transparent calc(50% - 0.5px), ' + themeColor + ' calc(50% - 0.5px), ' + themeColor + ' calc(50% + 0.5px), transparent calc(50% + 0.5px))';
-        clone.style.cssText = 'display:flex!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background-color:#f5f5f5!important;background-image:' + dividerGradient + '!important;background-repeat:no-repeat!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        clone.style.cssText = 'display:flex!important;position:relative!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
         var cols = clone.querySelectorAll('.stat-col');
         for (var i = 0; i < cols.length; i++) {
             if (cols[i].classList.contains('stat-col-1')) {
@@ -1058,6 +1057,10 @@ function createPrintClone() {
             } else {
                 cols[i].style.cssText = 'flex:1!important;min-width:0!important;';
             }
+        }
+        var divider = clone.querySelector('.stat-col-divider');
+        if (divider) {
+            divider.style.cssText = 'position:absolute!important;top:20px!important;bottom:20px!important;left:50%!important;width:1px!important;margin-left:-0.5px!important;background:' + themeColor + '!important;';
         }
     } else {
         width = 450;
@@ -1535,6 +1538,7 @@ function renderStatBlock(monster) {
     html += '<div class="stat-col stat-col-1">';
     for (var i = 0; i < bestSplit; i++) html += items[i].html;
     html += '</div>';
+    html += '<div class="stat-col-divider"></div>';
     html += '<div class="stat-col stat-col-2">';
     for (var i = bestSplit; i < items.length; i++) html += items[i].html;
     html += '</div>';
