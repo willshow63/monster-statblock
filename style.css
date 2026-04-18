@@ -14,6 +14,18 @@
     --theme-color-rgb: 147, 27, 84;
 }
 
+:root[data-theme="raspberry"] {
+    --theme-color: #84184b;
+    --theme-color-dark: #631239;
+    --theme-color-rgb: 132, 24, 75;
+}
+
+:root[data-theme="mulberry"] {
+    --theme-color: #751543;
+    --theme-color-dark: #590f33;
+    --theme-color-rgb: 117, 21, 67;
+}
+
 :root[data-theme="burgundy"] {
     --theme-color: #66123a;
     --theme-color-dark: #4d0e2c;
