@@ -1065,9 +1065,10 @@ function printStatBlock() {
             var maxColH = Math.max(col1H, col2H);
             cloneHeight = Math.max(cloneHeight, maxColH + 48);
         }
-        
+        var cloneWidth = printElements.clone.classList.contains('two-column') ? 840 : 450;
+
         // Render to canvas first, then scale to fit one page
-        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: 840, height: cloneHeight, scrollX: 0, scrollY: 0 })
+        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
         .then(function(canvas) {
             cleanupPrintClone(printElements);
             
@@ -1126,8 +1127,9 @@ function printPNG() {
             var maxColH = Math.max(col1H, col2H);
             cloneHeight = Math.max(cloneHeight, maxColH + 48);
         }
-        
-        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: 840, height: cloneHeight, scrollX: 0, scrollY: 0 })
+        var cloneWidth = printElements.clone.classList.contains('two-column') ? 840 : 450;
+
+        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
         .then(function(canvas) {
             cleanupPrintClone(printElements);
             var link = document.createElement('a');
@@ -1563,26 +1565,55 @@ function renderTabs() {
 
 // ============ SETTINGS PANEL ============
 function buildSettingsButtonHtml() {
-    var gearSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>';
-    var html = '<div class="settings-wrapper">';
-    html += '<button class="settings-btn" onclick="toggleSettingsPanel(event)" title="Settings">' + gearSvg + '</button>';
-    html += '<div class="settings-panel" id="settings-panel" style="display:none">';
-    html += '<label class="settings-row"><span>Columns</span>';
-    html += '<select onchange="setColumnMode(this.value)">';
-    html += '<option value="double"' + (columnMode === 'double' ? ' selected' : '') + '>Double</option>';
-    html += '<option value="single"' + (columnMode === 'single' ? ' selected' : '') + '>Single</option>';
-    html += '</select>';
-    html += '</label>';
-    html += '</div>';
-    html += '</div>';
-    return html;
+    var gearSvg = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/><circle cx="12" cy="12" r="3.6" fill="white"/></svg>';
+    return '<button class="settings-btn" onclick="openSettingsModal()" title="Settings" aria-label="Settings">' + gearSvg + '</button>';
 }
 
-function toggleSettingsPanel(event) {
-    if (event) event.stopPropagation();
-    var panel = document.getElementById('settings-panel');
-    if (!panel) return;
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+function openSettingsModal() {
+    if (document.getElementById('settings-modal')) return;
+
+    var overlay = document.createElement('div');
+    overlay.id = 'settings-modal';
+    overlay.className = 'settings-modal-overlay';
+
+    var box = document.createElement('div');
+    box.className = 'settings-modal-box';
+    box.innerHTML =
+        '<h3 class="settings-modal-title">Settings</h3>' +
+        '<label class="settings-row"><span>Columns</span>' +
+        '<select id="settings-columns-select">' +
+        '<option value="double"' + (columnMode === 'double' ? ' selected' : '') + '>Double</option>' +
+        '<option value="single"' + (columnMode === 'single' ? ' selected' : '') + '>Single</option>' +
+        '</select>' +
+        '</label>' +
+        '<div class="modal-btn-row">' +
+        '<button class="modal-btn modal-btn-confirm" id="settings-confirm-btn">Confirm</button>' +
+        '</div>';
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    document.body.classList.add('modal-open');
+
+    document.getElementById('settings-confirm-btn').addEventListener('click', confirmSettingsModal);
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeSettingsModal();
+    });
+}
+
+function confirmSettingsModal() {
+    var select = document.getElementById('settings-columns-select');
+    var newMode = select ? select.value : columnMode;
+    closeSettingsModal();
+    if (newMode !== columnMode) {
+        setColumnMode(newMode);
+    }
+}
+
+function closeSettingsModal() {
+    var overlay = document.getElementById('settings-modal');
+    if (!overlay) return;
+    overlay.parentNode.removeChild(overlay);
+    document.body.classList.remove('modal-open');
 }
 
 function setColumnMode(mode) {
@@ -1592,15 +1623,6 @@ function setColumnMode(mode) {
         renderStatBlock(currentMonster);
     }
 }
-
-document.addEventListener('click', function(e) {
-    var panel = document.getElementById('settings-panel');
-    if (!panel || panel.style.display === 'none') return;
-    var wrapper = panel.parentNode;
-    if (wrapper && !wrapper.contains(e.target)) {
-        panel.style.display = 'none';
-    }
-});
 
 function switchTab(tab) {
     activeTab = tab;
