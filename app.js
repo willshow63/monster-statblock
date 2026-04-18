@@ -1068,8 +1068,8 @@ function createPrintClone() {
         width = 840;
         clone.style.cssText = 'display:block!important;width:840px!important;padding:0!important;margin:0!important;background:white!important;box-shadow:none!important;';
     } else if (element.classList.contains('two-column')) {
-        width = 840;
-        clone.style.cssText = 'display:flex!important;position:relative!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        width = 848;
+        clone.style.cssText = 'display:flex!important;position:relative!important;width:848px!important;max-width:none!important;min-width:848px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
         var cols = clone.querySelectorAll('.stat-col');
         for (var i = 0; i < cols.length; i++) {
             if (cols[i].classList.contains('stat-col-1')) {
@@ -1085,8 +1085,8 @@ function createPrintClone() {
         // html2canvas mis-renders the CSS linear-gradient on .divider — swap in an SVG equivalent
         replaceDividersWithSvg(clone, themeColor);
     } else {
-        width = 450;
-        clone.style.cssText = 'display:block!important;width:450px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        width = 458;
+        clone.style.cssText = 'display:block!important;width:458px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
         replaceDividersWithSvg(clone, themeColor);
     }
 
