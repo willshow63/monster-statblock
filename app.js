@@ -1007,12 +1007,18 @@ function deleteCurrentMonster() {
 
 // Create a consistent clone for printing - WORKS ON BOTH MOBILE AND DESKTOP
 function createPrintClone() {
-    var element = document.querySelector(".stat-block");
+    var isSummary = activeTab === 'summary';
+    var element = isSummary
+        ? document.getElementById('tab-summary')
+        : document.querySelector('.stat-block');
+    if (!element) return null;
     var clone = element.cloneNode(true);
-    
+    // Avoid duplicate id when appended to document body
+    if (clone.id) clone.removeAttribute('id');
+
     var viewportMeta = document.querySelector('meta[name="viewport"]');
     var originalViewport = viewportMeta ? viewportMeta.getAttribute('content') : null;
-    
+
     if (viewportMeta) {
         viewportMeta.setAttribute('content', 'width=1200');
     } else {
@@ -1021,16 +1027,21 @@ function createPrintClone() {
         viewportMeta.content = 'width=1200';
         document.head.appendChild(viewportMeta);
     }
-    
+
     var wrapper = document.createElement('div');
     wrapper.style.cssText = 'position:absolute;left:0;top:0;width:1000px;background:white;z-index:9999;overflow:visible;';
-    
-    // Preserve the actual flex-based two-column layout
-    var isTwoCol = element.classList.contains('two-column');
+
     var themeColor = getThemeColor();
-    if (isTwoCol) {
+    var width;
+
+    if (isSummary) {
+        // Summary: tab panel wrapping one or more .lore-block pages. Inner blocks
+        // already carry their own styling (including theme-colored borders via CSS vars).
+        width = 840;
+        clone.style.cssText = 'display:block!important;width:840px!important;padding:0!important;margin:0!important;background:white!important;box-shadow:none!important;';
+    } else if (element.classList.contains('two-column')) {
+        width = 840;
         clone.style.cssText = 'display:flex!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
-        // Style the columns
         var cols = clone.querySelectorAll('.stat-col');
         for (var i = 0; i < cols.length; i++) {
             if (cols[i].classList.contains('stat-col-1')) {
@@ -1040,16 +1051,17 @@ function createPrintClone() {
             }
         }
     } else {
+        width = 450;
         clone.style.cssText = 'display:block!important;width:450px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
     }
-    
+
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
-    
+
     void clone.offsetWidth;
     void clone.offsetHeight;
-    
-    return { clone: clone, container: wrapper, viewportMeta: viewportMeta, originalViewport: originalViewport };
+
+    return { clone: clone, container: wrapper, viewportMeta: viewportMeta, originalViewport: originalViewport, width: width, isSummary: isSummary };
 }
 
 function cleanupPrintClone(printElements) {
@@ -1064,8 +1076,10 @@ function printStatBlock() {
     if (!currentMonster) { showAlert("Please load a monster first."); return; }
     
     var printElements = createPrintClone();
-    var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".pdf";
-    
+    if (!printElements) { showAlert("Nothing to export."); return; }
+    var baseName = currentMonster.name.replace(/[^a-z0-9]/gi, '_');
+    var filename = baseName + (printElements.isSummary ? "_summary" : "") + ".pdf";
+
     setTimeout(function() {
         void printElements.clone.offsetWidth;
         // Measure true height - for flex layouts, check both column heights
@@ -1077,7 +1091,7 @@ function printStatBlock() {
             var maxColH = Math.max(col1H, col2H);
             cloneHeight = Math.max(cloneHeight, maxColH + 48);
         }
-        var cloneWidth = printElements.clone.classList.contains('two-column') ? 840 : 450;
+        var cloneWidth = printElements.width;
 
         // Render to canvas first, then scale to fit one page
         html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
@@ -1127,8 +1141,10 @@ function printPNG() {
     if (!currentMonster) { showAlert("Please load a monster first."); return; }
     
     var printElements = createPrintClone();
-    var filename = currentMonster.name.replace(/[^a-z0-9]/gi, '_') + ".png";
-    
+    if (!printElements) { showAlert("Nothing to export."); return; }
+    var baseName = currentMonster.name.replace(/[^a-z0-9]/gi, '_');
+    var filename = baseName + (printElements.isSummary ? "_summary" : "") + ".png";
+
     setTimeout(function() {
         void printElements.clone.offsetWidth;
         var cloneHeight = printElements.clone.scrollHeight;
@@ -1139,7 +1155,7 @@ function printPNG() {
             var maxColH = Math.max(col1H, col2H);
             cloneHeight = Math.max(cloneHeight, maxColH + 48);
         }
-        var cloneWidth = printElements.clone.classList.contains('two-column') ? 840 : 450;
+        var cloneWidth = printElements.width;
 
         html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
         .then(function(canvas) {
