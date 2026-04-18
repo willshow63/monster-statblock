@@ -1005,6 +1005,14 @@ function deleteCurrentMonster() {
     });
 }
 
+function whenFontsReady(callback) {
+    if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === 'function') {
+        document.fonts.ready.then(callback);
+    } else {
+        callback();
+    }
+}
+
 // Create a consistent clone for printing - WORKS ON BOTH MOBILE AND DESKTOP
 function createPrintClone() {
     var isSummary = activeTab === 'summary';
@@ -1041,11 +1049,12 @@ function createPrintClone() {
         clone.style.cssText = 'display:block!important;width:840px!important;padding:0!important;margin:0!important;background:white!important;box-shadow:none!important;';
     } else if (element.classList.contains('two-column')) {
         width = 840;
-        clone.style.cssText = 'display:flex!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        var dividerGradient = 'linear-gradient(to right, transparent calc(50% - 0.5px), ' + themeColor + ' calc(50% - 0.5px), ' + themeColor + ' calc(50% + 0.5px), transparent calc(50% + 0.5px))';
+        clone.style.cssText = 'display:flex!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background-color:#f5f5f5!important;background-image:' + dividerGradient + '!important;background-repeat:no-repeat!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
         var cols = clone.querySelectorAll('.stat-col');
         for (var i = 0; i < cols.length; i++) {
             if (cols[i].classList.contains('stat-col-1')) {
-                cols[i].style.cssText = 'flex:1!important;min-width:0!important;padding-right:20px!important;border-right:1px solid ' + themeColor + '!important;';
+                cols[i].style.cssText = 'flex:1!important;min-width:0!important;padding-right:20px!important;';
             } else {
                 cols[i].style.cssText = 'flex:1!important;min-width:0!important;';
             }
@@ -1080,7 +1089,7 @@ function printStatBlock() {
     var baseName = currentMonster.name.replace(/[^a-z0-9]/gi, '_');
     var filename = baseName + (printElements.isSummary ? "_summary" : "") + ".pdf";
 
-    setTimeout(function() {
+    whenFontsReady(function() { setTimeout(function() {
         void printElements.clone.offsetWidth;
         // Measure true height - for flex layouts, check both column heights
         var cloneHeight = printElements.clone.scrollHeight;
@@ -1133,7 +1142,7 @@ function printStatBlock() {
             cleanupPrintClone(printElements);
             showAlert("Error generating PDF. Please try again.");
         });
-    }, 300);
+    }, 300); });
 }
 
 // Print PNG
@@ -1145,7 +1154,7 @@ function printPNG() {
     var baseName = currentMonster.name.replace(/[^a-z0-9]/gi, '_');
     var filename = baseName + (printElements.isSummary ? "_summary" : "") + ".png";
 
-    setTimeout(function() {
+    whenFontsReady(function() { setTimeout(function() {
         void printElements.clone.offsetWidth;
         var cloneHeight = printElements.clone.scrollHeight;
         var cols = printElements.clone.querySelectorAll('.stat-col');
@@ -1169,7 +1178,7 @@ function printPNG() {
             cleanupPrintClone(printElements);
             showAlert("Error generating PNG. Please try again.");
         });
-    }, 300);
+    }, 300); });
 }
 
 // Export JSON

@@ -38,6 +38,46 @@
     --theme-color-rgb: 88, 16, 50;
 }
 
+@font-face {
+    font-family: 'Modesto Poster';
+    src: url('fonts/Modesto-Poster-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'Crimson Text';
+    src: url('fonts/CrimsonText-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'Crimson Text';
+    src: url('fonts/CrimsonText-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'Crimson Text';
+    src: url('fonts/CrimsonText-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'Crimson Text';
+    src: url('fonts/CrimsonText-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+    font-display: block;
+}
+
 /* Custom Modal */
 .modal-overlay {
     position: fixed;
@@ -788,6 +828,7 @@ body.modal-open {
     border-top: 4px solid var(--theme-color);
     border-bottom: 4px solid var(--theme-color);
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
 }
 
 /* Two-column layout via JS */
@@ -795,12 +836,13 @@ body.modal-open {
     display: flex;
     gap: 40px;
     width: 840px;
+    background-image: linear-gradient(to right, transparent calc(50% - 0.5px), var(--theme-color) calc(50% - 0.5px), var(--theme-color) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+    background-repeat: no-repeat;
 }
 
 .stat-col-1 {
     width: 380px;
     min-width: 380px;
-    border-right: 1px solid var(--theme-color);
     padding-right: 20px;
 }
 
@@ -820,15 +862,15 @@ body.modal-open {
     .stat-block.two-column {
         display: block;
         width: 450px;
+        background-image: none;
     }
-    
+
     .stat-col-1 {
         width: auto;
         min-width: auto;
-        border-right: none;
         padding-right: 0;
     }
-    
+
     .stat-col-2 {
         width: auto;
         min-width: auto;
@@ -871,10 +913,9 @@ body.modal-open {
 
 /* Header */
 .monster-name {
-    font-family: 'Times New Roman', serif;
-    font-size: 2em;
-    font-variant: small-caps;
-    font-weight: bold;
+    font-family: 'Modesto Poster', 'Times New Roman', serif;
+    font-size: 2.4em;
+    font-weight: normal;
     color: var(--theme-color);
     margin: 0 0 0 0;
     letter-spacing: 1px;
@@ -889,6 +930,7 @@ body.modal-open {
 .divider {
     height: 4px;
     background: linear-gradient(to right, var(--theme-color), var(--theme-color) 60%, transparent);
+    background-repeat: no-repeat;
     margin: 10px 0;
     border: none;
 }
@@ -921,8 +963,10 @@ body.modal-open {
 
 /* Section Headers - never orphan at bottom of column */
 .section-header {
-    font-size: 1.4em;
-    font-variant: small-caps;
+    font-family: 'Modesto Poster', 'Times New Roman', serif;
+    font-size: 1.6em;
+    font-weight: normal;
+    letter-spacing: 0.5px;
     color: var(--theme-color);
     border-bottom: 2px solid var(--theme-color);
     margin: 15px 0 5px 0;
@@ -1072,7 +1116,7 @@ body.modal-open {
     border-top: 4px solid var(--theme-color);
     border-bottom: 4px solid var(--theme-color);
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
     font-size: 14px;
     line-height: 1.4;
     color: #333;
@@ -1093,10 +1137,9 @@ body.modal-open {
 }
 
 .lore-title {
-    font-family: 'Times New Roman', serif;
-    font-size: 2em;
-    font-variant: small-caps;
-    font-weight: bold;
+    font-family: 'Modesto Poster', 'Times New Roman', serif;
+    font-size: 2.4em;
+    font-weight: normal;
     color: var(--theme-color);
     margin: 0 0 0 0;
     letter-spacing: 1px;
@@ -1135,9 +1178,10 @@ body.modal-open {
 }
 
 .lore-section-header {
-    font-family: 'Times New Roman', serif;
-    font-size: 18px;
-    font-variant: small-caps;
+    font-family: 'Modesto Poster', 'Times New Roman', serif;
+    font-size: 22px;
+    font-weight: normal;
+    letter-spacing: 0.5px;
     color: var(--theme-color);
     margin: 14px 0 6px 0;
     border-bottom: 1px solid var(--theme-color);
