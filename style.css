@@ -712,6 +712,18 @@ body {
     background: var(--theme-color-dark);
 }
 
+/* Unified action button sizing (same height/font/weight across all action buttons) */
+.upload-btn, .template-btn, .print-btn, .export-btn, .restore-btn, .share-btn, .delete-current-btn, .edit-btn {
+    font-family: 'Crimson Text', 'Times New Roman', serif;
+    font-weight: 400;
+    font-size: 14px;
+    padding: 8px 16px;
+    line-height: 1.2;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
 .settings-btn {
     background: transparent;
     color: var(--theme-color);
