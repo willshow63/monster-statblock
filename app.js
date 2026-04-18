@@ -15,6 +15,7 @@ var expandedGroups = new Set(); // Track which groups are expanded (all start co
 var sidebarOpen = false;
 var activeTab = 'statblock';
 var selectMode = false;
+var columnMode = localStorage.getItem('columnMode') || 'double';
 
 function toggleSidebar() {
     var content = document.getElementById('sidebar-content');
@@ -1388,6 +1389,16 @@ function renderStatBlock(monster) {
         return '<div class="villain-action" data-section="villainActions" data-index="' + idx + '"><span class="villain-action-round">(Round ' + a.round + ')</span> <span class="villain-action-name">' + a.name + '.</span> ' + a.text + '</div>';
     });
     
+    // User-selected single-column mode: skip measurement & splitting, render one long column
+    if (columnMode === 'single') {
+        var singleHtml = '<div class="stat-block single-column">';
+        for (var i = 0; i < items.length; i++) singleHtml += items[i].html;
+        singleHtml += '</div>';
+        container.innerHTML = singleHtml;
+        renderTabs();
+        return;
+    }
+
     // Measure all items
     var colWidth = 380;
     var heights = [];
@@ -1510,9 +1521,11 @@ function renderTabs() {
     // Button row — always above tabs
     var buttonsHtml = '<div class="button-row">';
     if (sharedView) {
+        buttonsHtml += buildSettingsButtonHtml();
         buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
         buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
     } else {
+        buttonsHtml += buildSettingsButtonHtml();
         buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
         buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
         buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
@@ -1547,6 +1560,47 @@ function renderTabs() {
         restoreInput.addEventListener("change", handleRestoreUpload);
     }
 }
+
+// ============ SETTINGS PANEL ============
+function buildSettingsButtonHtml() {
+    var gearSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>';
+    var html = '<div class="settings-wrapper">';
+    html += '<button class="settings-btn" onclick="toggleSettingsPanel(event)" title="Settings">' + gearSvg + '</button>';
+    html += '<div class="settings-panel" id="settings-panel" style="display:none">';
+    html += '<label class="settings-row"><span>Columns</span>';
+    html += '<select onchange="setColumnMode(this.value)">';
+    html += '<option value="double"' + (columnMode === 'double' ? ' selected' : '') + '>Double</option>';
+    html += '<option value="single"' + (columnMode === 'single' ? ' selected' : '') + '>Single</option>';
+    html += '</select>';
+    html += '</label>';
+    html += '</div>';
+    html += '</div>';
+    return html;
+}
+
+function toggleSettingsPanel(event) {
+    if (event) event.stopPropagation();
+    var panel = document.getElementById('settings-panel');
+    if (!panel) return;
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function setColumnMode(mode) {
+    columnMode = mode;
+    localStorage.setItem('columnMode', mode);
+    if (currentMonster) {
+        renderStatBlock(currentMonster);
+    }
+}
+
+document.addEventListener('click', function(e) {
+    var panel = document.getElementById('settings-panel');
+    if (!panel || panel.style.display === 'none') return;
+    var wrapper = panel.parentNode;
+    if (wrapper && !wrapper.contains(e.target)) {
+        panel.style.display = 'none';
+    }
+});
 
 function switchTab(tab) {
     activeTab = tab;
