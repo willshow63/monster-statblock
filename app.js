@@ -1195,9 +1195,14 @@ function printPNG() {
         html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
         .then(function(canvas) {
             cleanupPrintClone(printElements);
+            // Crop bottom 2px
+            var cropped = document.createElement('canvas');
+            cropped.width = canvas.width;
+            cropped.height = Math.max(1, canvas.height - 4);
+            cropped.getContext('2d').drawImage(canvas, 0, 0);
             var link = document.createElement('a');
             link.download = filename;
-            link.href = canvas.toDataURL('image/png');
+            link.href = cropped.toDataURL('image/png');
             link.click();
         }).catch(function(error) {
             console.error("PNG generation error:", error);
