@@ -16,6 +16,17 @@ var sidebarOpen = false;
 var activeTab = 'statblock';
 var selectMode = false;
 var columnMode = localStorage.getItem('columnMode') || 'double';
+var theme = localStorage.getItem('theme') || 'green';
+document.documentElement.setAttribute('data-theme', theme);
+
+function getThemeColor() {
+    var c = getComputedStyle(document.documentElement).getPropertyValue('--theme-color').trim();
+    return c || '#184e4f';
+}
+function getThemeColorDark() {
+    var c = getComputedStyle(document.documentElement).getPropertyValue('--theme-color-dark').trim();
+    return c || '#0d3536';
+}
 
 function toggleSidebar() {
     var content = document.getElementById('sidebar-content');
@@ -405,7 +416,7 @@ function showSharePopup(url) {
     copyBtn.style.cssText = 'background:none;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:4px 6px;flex-shrink:0;display:flex;align-items:center;';
     copyBtn.addEventListener('click', function() {
         navigator.clipboard.writeText(url);
-        copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#184e4f" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>';
+        copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="' + getThemeColor() + '" stroke-width="2"><path d="M3 8.5l3 3 7-7"/></svg>';
         setTimeout(function() { copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#888" stroke-width="1.5"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.5a1.5 1.5 0 00-1.5-1.5H3.5A1.5 1.5 0 002 3.5V9a1.5 1.5 0 001.5 1.5h2"/></svg>'; }, 1500);
     });
 
@@ -414,7 +425,7 @@ function showSharePopup(url) {
 
     var closeBtn = document.createElement('button');
     closeBtn.textContent = 'Done';
-    closeBtn.style.cssText = 'display:block;margin-left:auto;padding:6px 20px;background:#184e4f;color:white;border:none;border-radius:6px;font-size:13px;font-family:sans-serif;cursor:pointer;';
+    closeBtn.style.cssText = 'display:block;margin-left:auto;padding:6px 20px;background:' + getThemeColor() + ';color:white;border:none;border-radius:6px;font-size:13px;font-family:sans-serif;cursor:pointer;';
     closeBtn.addEventListener('click', function() { overlay.remove(); });
 
     box.appendChild(urlRow);
@@ -1016,19 +1027,20 @@ function createPrintClone() {
     
     // Preserve the actual flex-based two-column layout
     var isTwoCol = element.classList.contains('two-column');
+    var themeColor = getThemeColor();
     if (isTwoCol) {
-        clone.style.cssText = 'display:flex!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid #184e4f!important;border-bottom:4px solid #184e4f!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        clone.style.cssText = 'display:flex!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
         // Style the columns
         var cols = clone.querySelectorAll('.stat-col');
         for (var i = 0; i < cols.length; i++) {
             if (cols[i].classList.contains('stat-col-1')) {
-                cols[i].style.cssText = 'flex:1!important;min-width:0!important;padding-right:20px!important;border-right:1px solid #184e4f!important;';
+                cols[i].style.cssText = 'flex:1!important;min-width:0!important;padding-right:20px!important;border-right:1px solid ' + themeColor + '!important;';
             } else {
                 cols[i].style.cssText = 'flex:1!important;min-width:0!important;';
             }
         }
     } else {
-        clone.style.cssText = 'display:block!important;width:450px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid #184e4f!important;border-bottom:4px solid #184e4f!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        clone.style.cssText = 'display:block!important;width:450px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
     }
     
     wrapper.appendChild(clone);
@@ -1586,6 +1598,12 @@ function openSettingsModal() {
         '<option value="single"' + (columnMode === 'single' ? ' selected' : '') + '>Single</option>' +
         '</select>' +
         '</label>' +
+        '<label class="settings-row"><span>Theme:</span>' +
+        '<select id="settings-theme-select">' +
+        '<option value="green"' + (theme === 'green' ? ' selected' : '') + '>Green</option>' +
+        '<option value="crimson"' + (theme === 'crimson' ? ' selected' : '') + '>Crimson</option>' +
+        '</select>' +
+        '</label>' +
         '<div class="modal-btn-row">' +
         '<button class="modal-btn modal-btn-confirm" id="settings-confirm-btn">Confirm</button>' +
         '</div>';
@@ -1601,12 +1619,23 @@ function openSettingsModal() {
 }
 
 function confirmSettingsModal() {
-    var select = document.getElementById('settings-columns-select');
-    var newMode = select ? select.value : columnMode;
+    var colSelect = document.getElementById('settings-columns-select');
+    var newMode = colSelect ? colSelect.value : columnMode;
+    var themeSelect = document.getElementById('settings-theme-select');
+    var newTheme = themeSelect ? themeSelect.value : theme;
     closeSettingsModal();
+    if (newTheme !== theme) {
+        setTheme(newTheme);
+    }
     if (newMode !== columnMode) {
         setColumnMode(newMode);
     }
+}
+
+function setTheme(newTheme) {
+    theme = newTheme;
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
 }
 
 function closeSettingsModal() {
