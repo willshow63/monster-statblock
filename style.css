@@ -3,8 +3,8 @@
 }
 
 :root {
-    --theme-color: var(--theme-color);
-    --theme-color-dark: var(--theme-color-dark);
+    --theme-color: #184e4f;
+    --theme-color-dark: #0d3536;
     --theme-color-rgb: 24, 78, 79;
 }
 
