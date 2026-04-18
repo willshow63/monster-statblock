@@ -14,6 +14,18 @@
     --theme-color-rgb: 147, 27, 84;
 }
 
+:root[data-theme="burgundy"] {
+    --theme-color: #66123a;
+    --theme-color-dark: #4d0e2c;
+    --theme-color-rgb: 102, 18, 58;
+}
+
+:root[data-theme="wine"] {
+    --theme-color: #581032;
+    --theme-color-dark: #3f0b24;
+    --theme-color-rgb: 88, 16, 50;
+}
+
 /* Custom Modal */
 .modal-overlay {
     position: fixed;

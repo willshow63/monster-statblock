@@ -1602,6 +1602,8 @@ function openSettingsModal() {
         '<select id="settings-theme-select">' +
         '<option value="green"' + (theme === 'green' ? ' selected' : '') + '>Green</option>' +
         '<option value="crimson"' + (theme === 'crimson' ? ' selected' : '') + '>Crimson</option>' +
+        '<option value="burgundy"' + (theme === 'burgundy' ? ' selected' : '') + '>Burgundy</option>' +
+        '<option value="wine"' + (theme === 'wine' ? ' selected' : '') + '>Wine</option>' +
         '</select>' +
         '</label>' +
         '<div class="modal-btn-row">' +
