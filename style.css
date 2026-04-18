@@ -56,6 +56,22 @@
 
 @font-face {
     font-family: 'Crimson Text';
+    src: url('fonts/CrimsonText-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'Crimson Text';
+    src: url('fonts/CrimsonText-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'Crimson Text';
     src: url('fonts/CrimsonText-Bold.ttf') format('truetype');
     font-weight: bold;
     font-style: normal;
@@ -101,7 +117,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     max-width: 400px;
     width: 90%;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
     font-size: 16px;
     color: #333;
 }
@@ -122,7 +138,7 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
     font-size: 14px;
 }
 
@@ -141,7 +157,7 @@
 .modal-btn-cancel:hover { background: #444; }
 
 body {
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
     background: #ffffff;
     margin: 0;
     padding: 20px;
@@ -292,10 +308,12 @@ body {
 }
 
 .saved-monsters h2 {
+    font-family: 'Modesto Poster', 'Times New Roman', serif;
     color: var(--theme-color);
-    font-size: 1.2em;
+    font-size: 1.5em;
+    font-weight: normal;
+    letter-spacing: 0.5px;
     margin-bottom: 10px;
-    font-variant: small-caps;
 }
 
 .sidebar-toggle {
@@ -431,7 +449,7 @@ body {
     cursor: pointer;
     font-size: 12px;
     border-radius: 4px;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
 }
 
 .select-mode-toggle-btn:hover {
@@ -528,7 +546,7 @@ body {
     background: none;
     text-align: left;
     cursor: pointer;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
     font-size: 13px;
 }
 
@@ -552,7 +570,7 @@ body {
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
 }
 
 .modal-btn-danger:hover {
@@ -597,7 +615,7 @@ body {
     cursor: pointer;
     font-size: 14px;
     padding: 0;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
 }
 
 .monster-item .delete-btn {
@@ -625,7 +643,7 @@ body {
 .select-mode-count {
     color: white;
     font-size: 12px;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
     flex-grow: 1;
 }
 
@@ -637,7 +655,7 @@ body {
     border: none;
     border-radius: 3px;
     cursor: pointer;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
 }
 
 .select-all-btn {
@@ -672,7 +690,7 @@ body {
     border-radius: 4px;
     cursor: pointer;
     font-size: 13px;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
 }
 
 .delete-current-btn:hover {
@@ -687,7 +705,7 @@ body {
     border-radius: 4px;
     cursor: pointer;
     font-size: 13px;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
 }
 
 .share-btn:hover {
@@ -746,13 +764,16 @@ body.modal-open {
     padding: 22px 26px;
     max-width: 360px;
     width: 100%;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
     color: var(--theme-color);
 }
 
 .settings-modal-title {
+    font-family: 'Modesto Poster', 'Times New Roman', serif;
     margin: 0 0 18px 0;
-    font-size: 1.3em;
+    font-size: 1.6em;
+    font-weight: normal;
+    letter-spacing: 0.5px;
     color: var(--theme-color);
     border-bottom: 1px solid var(--theme-color);
     padding-bottom: 8px;
@@ -773,7 +794,7 @@ body.modal-open {
     border-radius: 4px;
     font-size: 15px;
     background: white;
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
     cursor: pointer;
     min-width: 120px;
 }
@@ -1109,7 +1130,7 @@ body.modal-open {
     border: none;
     background: #ddd;
     color: var(--theme-color);
-    font-family: 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif;
     font-variant: small-caps;
     font-size: 15px;
     font-weight: bold;
