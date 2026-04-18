@@ -1005,6 +1005,26 @@ function deleteCurrentMonster() {
     });
 }
 
+function replaceDividersWithSvg(clone, themeColor) {
+    var hrDividers = clone.querySelectorAll('.divider');
+    for (var d = 0; d < hrDividers.length; d++) {
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'height:4px;margin:10px 0;line-height:0;font-size:0;';
+        var gradId = 'dg_' + d + '_' + Math.floor(Math.random() * 100000);
+        wrapper.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="4" preserveAspectRatio="none">' +
+            '<defs>' +
+                '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="1" y2="0">' +
+                    '<stop offset="0%" stop-color="' + themeColor + '" stop-opacity="1"/>' +
+                    '<stop offset="55%" stop-color="' + themeColor + '" stop-opacity="1"/>' +
+                    '<stop offset="95%" stop-color="' + themeColor + '" stop-opacity="0"/>' +
+                '</linearGradient>' +
+            '</defs>' +
+            '<rect width="100%" height="4" fill="url(#' + gradId + ')"/>' +
+        '</svg>';
+        hrDividers[d].parentNode.replaceChild(wrapper, hrDividers[d]);
+    }
+}
+
 function whenFontsReady(callback) {
     if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === 'function') {
         document.fonts.ready.then(callback);
@@ -1053,18 +1073,21 @@ function createPrintClone() {
         var cols = clone.querySelectorAll('.stat-col');
         for (var i = 0; i < cols.length; i++) {
             if (cols[i].classList.contains('stat-col-1')) {
-                cols[i].style.cssText = 'flex:1!important;min-width:0!important;padding-right:20px!important;';
+                cols[i].style.cssText = 'flex:1!important;min-width:0!important;padding-right:20px!important;transform:translateX(8px)!important;';
             } else {
-                cols[i].style.cssText = 'flex:1!important;min-width:0!important;';
+                cols[i].style.cssText = 'flex:1!important;min-width:0!important;padding-left:4px!important;padding-right:16px!important;transform:translateX(5px)!important;';
             }
         }
         var divider = clone.querySelector('.stat-col-divider');
         if (divider) {
             divider.style.cssText = 'position:absolute!important;top:20px!important;bottom:20px!important;left:50%!important;width:1px!important;margin-left:-0.5px!important;background:' + themeColor + '!important;';
         }
+        // html2canvas mis-renders the CSS linear-gradient on .divider — swap in an SVG equivalent
+        replaceDividersWithSvg(clone, themeColor);
     } else {
         width = 450;
         clone.style.cssText = 'display:block!important;width:450px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        replaceDividersWithSvg(clone, themeColor);
     }
 
     wrapper.appendChild(clone);

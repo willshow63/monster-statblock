@@ -829,6 +829,7 @@ body.modal-open {
     border-bottom: 4px solid var(--theme-color);
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
     font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
+    color: #1E1714;
 }
 
 /* Two-column layout via JS */
@@ -853,11 +854,15 @@ body.modal-open {
     width: 380px;
     min-width: 380px;
     padding-right: 20px;
+    transform: translateX(8px);
 }
 
 .stat-col-2 {
     width: 380px;
     min-width: 380px;
+    padding-left: 4px;
+    padding-right: 16px;
+    transform: translateX(5px);
 }
 
 /* Single-column layout */
@@ -879,11 +884,13 @@ body.modal-open {
         width: auto;
         min-width: auto;
         padding-right: 0;
+        transform: none;
     }
 
     .stat-col-2 {
         width: auto;
         min-width: auto;
+        transform: none;
     }
 }
 
@@ -939,8 +946,11 @@ body.modal-open {
 /* Dividers */
 .divider {
     height: 4px;
-    background: linear-gradient(to right, var(--theme-color), var(--theme-color) 60%, transparent);
+    background-image: linear-gradient(to right, var(--theme-color) 0%, var(--theme-color) 55%, rgba(var(--theme-color-rgb), 0) 95%);
     background-repeat: no-repeat;
+    background-size: 99% 100%;
+    background-position: left center;
+    background-color: transparent;
     margin: 10px 0;
     border: none;
 }
