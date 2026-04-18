@@ -1034,7 +1034,12 @@ function whenFontsReady(callback) {
 }
 
 // Create a consistent clone for printing - WORKS ON BOTH MOBILE AND DESKTOP
-function createPrintClone() {
+function createPrintClone(opts) {
+    opts = opts || {};
+    var includeShadow = !!opts.includeShadow;
+    var SHADOW_BUFFER = 25; // px of transparent space around the box to fit the box-shadow
+    var SHADOW_CSS = '0 0 10px rgba(0,0,0,0.2)';
+
     var isSummary = activeTab === 'summary';
     var element = isSummary
         ? document.getElementById('tab-summary')
@@ -1057,19 +1062,27 @@ function createPrintClone() {
     }
 
     var wrapper = document.createElement('div');
-    wrapper.style.cssText = 'position:absolute;left:0;top:0;width:1000px;background:white;z-index:9999;overflow:visible;';
+    var wrapperBg = includeShadow ? 'transparent' : 'white';
+    wrapper.style.cssText = 'position:absolute;left:0;top:0;width:1000px;background:' + wrapperBg + ';z-index:9999;overflow:visible;';
 
     var themeColor = getThemeColor();
     var width;
+    var shadowDecl = includeShadow ? 'box-shadow:' + SHADOW_CSS + '!important;' : 'box-shadow:none!important;';
 
     if (isSummary) {
         // Summary: tab panel wrapping one or more .lore-block pages. Inner blocks
         // already carry their own styling (including theme-colored borders via CSS vars).
         width = 840;
-        clone.style.cssText = 'display:block!important;width:840px!important;padding:0!important;margin:0!important;background:white!important;box-shadow:none!important;';
+        clone.style.cssText = 'display:block!important;width:840px!important;padding:0!important;margin:0!important;background:transparent!important;box-shadow:none!important;';
+        if (includeShadow) {
+            var loreBlocks = clone.querySelectorAll('.lore-block');
+            for (var lb = 0; lb < loreBlocks.length; lb++) {
+                loreBlocks[lb].style.boxShadow = SHADOW_CSS;
+            }
+        }
     } else if (element.classList.contains('two-column')) {
-        width = 848;
-        clone.style.cssText = 'display:flex!important;position:relative!important;width:848px!important;max-width:none!important;min-width:848px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        width = 840;
+        clone.style.cssText = 'display:flex!important;position:relative!important;width:840px!important;max-width:none!important;min-width:840px!important;gap:40px!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;' + shadowDecl + 'box-sizing:border-box!important;overflow:visible!important;';
         var cols = clone.querySelectorAll('.stat-col');
         for (var i = 0; i < cols.length; i++) {
             if (cols[i].classList.contains('stat-col-1')) {
@@ -1085,18 +1098,30 @@ function createPrintClone() {
         // html2canvas mis-renders the CSS linear-gradient on .divider — swap in an SVG equivalent
         replaceDividersWithSvg(clone, themeColor);
     } else {
-        width = 458;
-        clone.style.cssText = 'display:block!important;width:458px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border:4px solid ' + themeColor + '!important;box-shadow:none!important;box-sizing:border-box!important;overflow:visible!important;';
+        width = 450;
+        clone.style.cssText = 'display:block!important;width:450px!important;max-width:none!important;font-size:14px!important;padding:20px!important;background:#f5f5f5!important;border-top:4px solid ' + themeColor + '!important;border-bottom:4px solid ' + themeColor + '!important;' + shadowDecl + 'box-sizing:border-box!important;overflow:visible!important;';
         replaceDividersWithSvg(clone, themeColor);
     }
 
-    wrapper.appendChild(clone);
+    var captureTarget = clone;
+    if (includeShadow) {
+        // Wrap the clone in an outer transparent-padded div so html2canvas captures
+        // the shadow that overflows the clone's box.
+        var shadowWrapper = document.createElement('div');
+        shadowWrapper.style.cssText = 'display:inline-block;padding:' + SHADOW_BUFFER + 'px;background:transparent;line-height:0;';
+        shadowWrapper.appendChild(clone);
+        wrapper.appendChild(shadowWrapper);
+        captureTarget = shadowWrapper;
+        width += 2 * SHADOW_BUFFER;
+    } else {
+        wrapper.appendChild(clone);
+    }
     document.body.appendChild(wrapper);
 
     void clone.offsetWidth;
     void clone.offsetHeight;
 
-    return { clone: clone, container: wrapper, viewportMeta: viewportMeta, originalViewport: originalViewport, width: width, isSummary: isSummary };
+    return { clone: captureTarget, innerClone: clone, container: wrapper, viewportMeta: viewportMeta, originalViewport: originalViewport, width: width, isSummary: isSummary, includeShadow: includeShadow };
 }
 
 function cleanupPrintClone(printElements) {
@@ -1174,8 +1199,8 @@ function printStatBlock() {
 // Print PNG
 function printPNG() {
     if (!currentMonster) { showAlert("Please load a monster first."); return; }
-    
-    var printElements = createPrintClone();
+
+    var printElements = createPrintClone({ includeShadow: true });
     if (!printElements) { showAlert("Nothing to export."); return; }
     var baseName = currentMonster.name.replace(/[^a-z0-9]/gi, '_');
     var filename = baseName + (printElements.isSummary ? "_summary" : "") + ".png";
@@ -1192,7 +1217,7 @@ function printPNG() {
         }
         var cloneWidth = printElements.width;
 
-        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
+        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
         .then(function(canvas) {
             cleanupPrintClone(printElements);
             // Crop bottom 2px
