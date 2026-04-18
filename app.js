@@ -1062,7 +1062,7 @@ function createPrintClone(opts) {
     }
 
     var wrapper = document.createElement('div');
-    var wrapperBg = includeShadow ? 'transparent' : 'white';
+    var wrapperBg = includeShadow ? '#f5f5f5' : 'white';
     wrapper.style.cssText = 'position:absolute;left:0;top:0;width:1000px;background:' + wrapperBg + ';z-index:9999;overflow:visible;';
 
     var themeColor = getThemeColor();
@@ -1108,7 +1108,7 @@ function createPrintClone(opts) {
         // Wrap the clone in an outer transparent-padded div so html2canvas captures
         // the shadow that overflows the clone's box.
         var shadowWrapper = document.createElement('div');
-        shadowWrapper.style.cssText = 'display:inline-block;padding:' + SHADOW_BUFFER + 'px;background:transparent;line-height:0;';
+        shadowWrapper.style.cssText = 'display:inline-block;padding:' + SHADOW_BUFFER + 'px;background:#f5f5f5;';
         shadowWrapper.appendChild(clone);
         wrapper.appendChild(shadowWrapper);
         captureTarget = shadowWrapper;
@@ -1196,11 +1196,11 @@ function printStatBlock() {
     }, 300); });
 }
 
-// Print PNG
+// Print PNG (plain, no shadow)
 function printPNG() {
     if (!currentMonster) { showAlert("Please load a monster first."); return; }
 
-    var printElements = createPrintClone({ includeShadow: true });
+    var printElements = createPrintClone();
     if (!printElements) { showAlert("Nothing to export."); return; }
     var baseName = currentMonster.name.replace(/[^a-z0-9]/gi, '_');
     var filename = baseName + (printElements.isSummary ? "_summary" : "") + ".png";
@@ -1217,10 +1217,9 @@ function printPNG() {
         }
         var cloneWidth = printElements.width;
 
-        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
+        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
         .then(function(canvas) {
             cleanupPrintClone(printElements);
-            // Crop bottom 2px
             var cropped = document.createElement('canvas');
             cropped.width = canvas.width;
             cropped.height = Math.max(1, canvas.height - 4);
@@ -1231,6 +1230,77 @@ function printPNG() {
             link.click();
         }).catch(function(error) {
             console.error("PNG generation error:", error);
+            cleanupPrintClone(printElements);
+            showAlert("Error generating PNG. Please try again.");
+        });
+    }, 300); });
+}
+
+// Print PNG with shadow halo flattened onto #f5f5f5.
+// We do NOT rely on html2canvas's box-shadow rendering (which is unreliable);
+// instead we capture the box plain, then paint it onto a larger output canvas
+// using canvas shadow APIs.
+function printPNGWithShadow() {
+    if (!currentMonster) { showAlert("Please load a monster first."); return; }
+
+    var printElements = createPrintClone();
+    if (!printElements) { showAlert("Nothing to export."); return; }
+    var baseName = currentMonster.name.replace(/[^a-z0-9]/gi, '_');
+    var filename = baseName + (printElements.isSummary ? "_summary" : "") + "_shadow.png";
+
+    whenFontsReady(function() { setTimeout(function() {
+        void printElements.clone.offsetWidth;
+        var cloneHeight = printElements.clone.scrollHeight;
+        var cols = printElements.clone.querySelectorAll('.stat-col');
+        if (cols.length === 2) {
+            var col1H = cols[0].scrollHeight;
+            var col2H = cols[1].scrollHeight;
+            var maxColH = Math.max(col1H, col2H);
+            cloneHeight = Math.max(cloneHeight, maxColH + 48);
+        }
+        var cloneWidth = printElements.width;
+
+        html2canvas(printElements.clone, { scale: 2, useCORS: true, logging: false, width: cloneWidth, height: cloneHeight, scrollX: 0, scrollY: 0 })
+        .then(function(canvas) {
+            cleanupPrintClone(printElements);
+
+            // Crop bottom 2 CSS px (4 canvas px at scale 2)
+            var SCALE = 2;
+            var srcH = Math.max(1, canvas.height - 2 * SCALE);
+            var srcW = canvas.width;
+
+            // Buffer in canvas pixels for the shadow halo
+            var BUFFER = 25 * SCALE; // 25 CSS px
+            var SHADOW_BLUR = 10 * SCALE; // 10 CSS px
+
+            var output = document.createElement('canvas');
+            output.width = srcW + 2 * BUFFER;
+            output.height = srcH + 2 * BUFFER;
+            var ctx = output.getContext('2d', { alpha: false });
+
+            // Page-color background (no alpha)
+            ctx.fillStyle = '#f4f4f4';
+            ctx.fillRect(0, 0, output.width, output.height);
+
+            // Paint the captured statblock with a soft shadow
+            ctx.shadowColor = 'rgba(0,0,0,0.24)';
+            ctx.shadowBlur = SHADOW_BLUR;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.drawImage(canvas, 0, 0, srcW, srcH, BUFFER, BUFFER, srcW, srcH);
+
+            // Erase shadow on the top and bottom strips (keep only left/right shadow)
+            ctx.shadowColor = 'transparent';
+            ctx.fillStyle = '#f4f4f4';
+            ctx.fillRect(0, 0, output.width, BUFFER);
+            ctx.fillRect(0, BUFFER + srcH, output.width, output.height - (BUFFER + srcH));
+
+            var link = document.createElement('a');
+            link.download = filename;
+            link.href = output.toDataURL('image/png');
+            link.click();
+        }).catch(function(error) {
+            console.error("PNG with shadow generation error:", error);
             cleanupPrintClone(printElements);
             showAlert("Error generating PNG. Please try again.");
         });
@@ -1620,6 +1690,7 @@ function renderTabs() {
         buttonsHtml += buildSettingsButtonHtml();
         buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
         buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+        buttonsHtml += '<button class="print-btn" onclick="printPNGWithShadow()">PNG with shadow</button>';
     } else {
         buttonsHtml += buildSettingsButtonHtml();
         buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
@@ -1627,6 +1698,7 @@ function renderTabs() {
         buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
         buttonsHtml += '<button class="print-btn" onclick="printStatBlock()">PDF</button>';
         buttonsHtml += '<button class="print-btn" onclick="printPNG()">PNG</button>';
+        buttonsHtml += '<button class="print-btn" onclick="printPNGWithShadow()">PNG with shadow</button>';
         buttonsHtml += '<button class="edit-btn" onclick="toggleEdit()" title="Edit statblock">&#9998;</button>';
         buttonsHtml += '<button class="share-btn" onclick="shareMonster()" title="Get shareable link">Share</button>';
         buttonsHtml += '<button class="delete-current-btn" onclick="deleteCurrentMonster()" title="Delete this monster">Delete</button>';
