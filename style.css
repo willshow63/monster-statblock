@@ -665,9 +665,7 @@ body.modal-open {
 
 .settings-modal-box {
     background: #f5f5f5;
-    border-top: 4px solid #184e4f;
-    border-bottom: 4px solid #184e4f;
-    border-radius: 4px;
+    border-radius: 14px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     padding: 22px 26px;
     max-width: 360px;

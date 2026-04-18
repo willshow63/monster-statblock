@@ -1580,7 +1580,7 @@ function openSettingsModal() {
     box.className = 'settings-modal-box';
     box.innerHTML =
         '<h3 class="settings-modal-title">Settings</h3>' +
-        '<label class="settings-row"><span>Columns</span>' +
+        '<label class="settings-row"><span># of Columns:</span>' +
         '<select id="settings-columns-select">' +
         '<option value="double"' + (columnMode === 'double' ? ' selected' : '') + '>Double</option>' +
         '<option value="single"' + (columnMode === 'single' ? ' selected' : '') + '>Single</option>' +
