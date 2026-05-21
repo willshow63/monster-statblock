@@ -1940,13 +1940,17 @@ function buildSummaryHtml(summary) {
         sections.push(s);
     }
 
-    // Lair / location — the arena as its own section. { title?, description?, features: [string, ...] }, or a flat [string, ...].
+    // Location — the arena/lair as its own section. { title?, description?, features: [string, ...] }, or a flat [string, ...].
+    // The header is always "Location"; the place name (title) leads the description in bold.
     if (summary.lair) {
         var lair = summary.lair;
         var lairFeatures = Array.isArray(lair) ? lair : (lair.features || []);
-        var lairTitle = (!Array.isArray(lair) && lair.title) || 'Lair';
-        var s = '<div class="lore-section"><h2 class="lore-section-header">' + lairTitle + '</h2>';
-        if (!Array.isArray(lair) && lair.description) s += '<p class="lore-intro">' + lair.description + '</p>';
+        var lairTitle = (!Array.isArray(lair) && lair.title) ? lair.title : '';
+        var lairDesc = (!Array.isArray(lair) && lair.description) ? lair.description : '';
+        var s = '<div class="lore-section"><h2 class="lore-section-header">Location</h2>';
+        if (lairTitle || lairDesc) {
+            s += '<p class="lore-intro">' + (lairTitle ? '<strong>' + lairTitle + '.</strong> ' : '') + lairDesc + '</p>';
+        }
         if (lairFeatures.length > 0) {
             s += '<ul class="lore-tactics-list">';
             for (var i = 0; i < lairFeatures.length; i++) {
