@@ -2038,9 +2038,9 @@ function buildSummaryHtml(summary) {
 
     // Loot
     if (summary.loot) {
-        var s = '<div class="lore-section"><h2 class="lore-section-header">' + (summary.loot.title || 'Weapons, Armor & Items') + '</h2>';
-        if (summary.loot.description) {
-            s += '<p class="lore-loot-desc">' + summary.loot.description + '</p>';
+        var s = '<div class="lore-section"><h2 class="lore-section-header">Loot</h2>';
+        if (summary.loot.title || summary.loot.description) {
+            s += '<p class="lore-loot-desc">' + (summary.loot.title ? '<strong>' + summary.loot.title + '.</strong> ' : '') + (summary.loot.description || '') + '</p>';
         }
         if (summary.loot.table && summary.loot.table.length > 0) {
             s += '<table class="lore-table lore-loot-table">';
@@ -2065,6 +2065,25 @@ function buildSummaryHtml(summary) {
         sections.push('<div class="lore-section"><div class="lore-image-frame"><img src="' + summary.image + '" alt="' + summaryName + '" class="lore-image" /></div></div>');
     }
     
+    // Order the finished sections into the canonical Summary sequence (independent of build order above).
+    function sectionRank(h) {
+        if (h.indexOf('lore-image-frame') !== -1) return 2;       // Image
+        if (h.indexOf('lore-section-header') === -1) return 0;     // Description (the headerless hook)
+        if (h.indexOf('>Physical Description<') !== -1) return 1;
+        if (h.indexOf('>Personality<') !== -1) return 3;
+        if (h.indexOf('>Legends and Lore<') !== -1) return 4;
+        if (h.indexOf('>Signs<') !== -1) return 5;
+        if (h.indexOf(' Encounters</h2>') !== -1) return 6;
+        if (h.indexOf('>Location<') !== -1) return 7;
+        if (h.indexOf('>Tactics<') !== -1) return 8;
+        if (h.indexOf('>Behavior<') !== -1) return 9;
+        if (h.indexOf('>Quotes<') !== -1) return 10;
+        if (h.indexOf('>Names<') !== -1) return 11;
+        if (h.indexOf('>Loot<') !== -1) return 13;                 // Loot always last
+        return 12;
+    }
+    sections.sort(function(a, b) { return sectionRank(a) - sectionRank(b); });
+
     // Mobile: single column
     if (isMobile) {
         var html = '<div class="lore-block">';
