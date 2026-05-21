@@ -1556,7 +1556,9 @@ function renderStatBlock(monster) {
 
     // Telegraphed Actions (conditional). At most one per creature: a short overview line, then Tell / Strikes / Avoid as separate blocks.
     addSection('telegraphedActions', 'Telegraphed Actions', monster.telegraphedActions, function(t, idx) {
-        var h = '<div class="telegraph-action" data-section="telegraphedActions" data-index="' + idx + '">';
+        var h = '';
+        if (idx === 0) h += '<div class="telegraph-howto">How to run it: the <strong>Tell</strong> is the monster spending an action to wind up — nothing is hit yet, so mark the area on the map. The party gets at least one turn to react; then on the stated beat the strike auto-hits everyone still inside — no attack roll, no save.</div>';
+        h += '<div class="telegraph-action" data-section="telegraphedActions" data-index="' + idx + '">';
         h += '<div class="telegraph-overview"><span class="telegraph-action-name">' + t.name + '.</span>' + (t.overview ? ' ' + t.overview : '') + '</div>';
         if (t.tell) h += '<div class="telegraph-beat"><span class="telegraph-label">Tell.</span> ' + t.tell + '</div>';
         if (t.effect) h += '<div class="telegraph-beat"><span class="telegraph-label">Strikes.</span> ' + t.effect + '</div>';
