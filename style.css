@@ -1049,6 +1049,11 @@ body.modal-open {
 .villain-action-round { font-weight: bold; font-style: italic; }
 .villain-action-name { font-weight: bold; font-style: italic; }
 
+/* Telegraphed Actions */
+.telegraph-action { margin: 5px 0; }
+.telegraph-action-name { font-weight: bold; font-style: italic; }
+.telegraph-label { font-weight: bold; font-variant: small-caps; letter-spacing: 0.03em; }
+
 /* Responsive */
 @media (max-width: 900px) {
     .header-row {
@@ -1261,6 +1266,93 @@ body.modal-open {
 
 .lore-dc-entry {
     margin: 4px 0;
+}
+
+/* Boxed read-aloud text (Physical Description) */
+.lore-boxed {
+    background: #fff;
+    border: 1px solid #c8b98a;
+    border-left: 4px solid var(--theme-color);
+    padding: 10px 14px;
+    margin: 6px 0;
+    font-style: italic;
+    line-height: 1.5;
+}
+.lore-boxed p {
+    margin: 6px 0;
+}
+.lore-boxed p:first-child { margin-top: 0; }
+.lore-boxed p:last-child { margin-bottom: 0; }
+
+/* Personality */
+.lore-personality {
+    margin: 4px 0;
+}
+.lore-personality p { margin: 6px 0; }
+.lore-personality-group { margin: 8px 0; }
+.lore-personality-list {
+    margin: 4px 0 8px 18px;
+    padding: 0;
+}
+.lore-personality-list li { margin: 2px 0; }
+
+/* Entity-type dropdown in the action button row */
+.entity-type-select {
+    font-family: 'Crimson Text', 'Times New Roman', serif;
+    font-size: 14px;
+    padding: 7px 10px;
+    border: 1px solid var(--theme-color);
+    border-radius: 4px;
+    background: white;
+    color: var(--theme-color);
+    cursor: pointer;
+}
+
+/* Tactics */
+.lore-tactics-phase {
+    margin: 8px 0;
+}
+.lore-tactics-list {
+    margin: 4px 0 8px 18px;
+    padding: 0;
+}
+.lore-tactics-list li {
+    margin: 2px 0;
+}
+
+/* Quotes */
+.lore-quotes-category {
+    margin: 10px 0;
+}
+.lore-quotes-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4px 0;
+}
+.lore-quotes-table th,
+.lore-quotes-table td {
+    text-align: left;
+    padding: 3px 6px;
+    border-bottom: 1px solid #ddd;
+    font-size: 13px;
+    vertical-align: top;
+}
+.lore-quotes-table th {
+    color: var(--theme-color);
+}
+.lore-quotes-table .lore-table-roll {
+    width: 30px;
+    text-align: center;
+}
+
+/* Reusable subheader for sections that have phases/categories (Tactics, Quotes) */
+.lore-subheader {
+    font-family: 'Modesto Poster', 'Times New Roman', serif;
+    font-size: 16px;
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    color: var(--theme-color);
+    margin: 8px 0 4px 0;
 }
 
 .lore-encounter-group {

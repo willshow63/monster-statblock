@@ -1553,6 +1553,15 @@ function renderStatBlock(monster) {
     addSection('villainActions', 'Villain Actions', monster.villainActions, function(a, idx) {
         return '<div class="villain-action" data-section="villainActions" data-index="' + idx + '"><span class="villain-action-round">(Round ' + a.round + ')</span> <span class="villain-action-name">' + a.name + '.</span> ' + a.text + '</div>';
     });
+
+    // Telegraphed Actions (conditional — a wind-up the party can read and dodge: Tell / Strikes / Avoid)
+    addSection('telegraphedActions', 'Telegraphed Actions', monster.telegraphedActions, function(t, idx) {
+        var h = '<div class="telegraph-action" data-section="telegraphedActions" data-index="' + idx + '"><span class="telegraph-action-name">' + t.name + '.</span>';
+        if (t.tell) h += ' <span class="telegraph-label">Tell:</span> ' + t.tell;
+        if (t.effect) h += ' <span class="telegraph-label">Strikes:</span> ' + t.effect;
+        if (t.counter) h += ' <span class="telegraph-label">Avoid:</span> ' + t.counter;
+        return h + '</div>';
+    });
     
     // User-selected single-column mode: skip measurement & splitting, render one long column
     if (columnMode === 'single') {
@@ -1693,6 +1702,11 @@ function renderTabs() {
         buttonsHtml += '<button class="print-btn" onclick="printPNGWithShadow()">PNG with shadow</button>';
     } else {
         buttonsHtml += buildSettingsButtonHtml();
+        var et = (currentMonster && currentMonster.entityType) || 'Monster';
+        buttonsHtml += '<select class="entity-type-select" onchange="setEntityType(this.value)" title="Entity type">';
+        buttonsHtml += '<option value="Monster"' + (et === 'Monster' ? ' selected' : '') + '>Monster</option>';
+        buttonsHtml += '<option value="NPC"' + (et === 'NPC' ? ' selected' : '') + '>NPC</option>';
+        buttonsHtml += '</select>';
         buttonsHtml += '<label for="restore-upload" class="restore-btn">Overwrite</label>';
         buttonsHtml += '<input type="file" id="restore-upload" accept=".json" style="display:none" />';
         buttonsHtml += '<button class="export-btn" onclick="exportJSON()">Export</button>';
@@ -1811,6 +1825,22 @@ function setColumnMode(mode) {
     }
 }
 
+function setEntityType(newType) {
+    if (!currentMonster) return;
+    currentMonster.entityType = newType;
+    // Persist to Supabase if signed in and have a doc id
+    if (currentUser && currentMonsterDocId) {
+        var saveData = Object.assign({}, currentMonster);
+        delete saveData.groupId;
+        sb.from('monsters').update({ data: saveData }).eq('id', currentMonsterDocId)
+            .then(function(result) {
+                if (result.error) showAlert("Error saving type: " + result.error.message);
+            });
+    }
+    // Re-render so summary section visibility updates
+    renderStatBlock(currentMonster);
+}
+
 function switchTab(tab) {
     activeTab = tab;
     // Hide all panels
@@ -1844,7 +1874,63 @@ function buildSummaryHtml(summary) {
     if (summary.description) {
         sections.push('<div class="lore-section"><div class="lore-description">' + summary.description + '</div></div>');
     }
-    
+
+    // Physical Description (boxed read-aloud style)
+    if (summary.physicalDescription) {
+        sections.push('<div class="lore-section"><h2 class="lore-section-header">Physical Description</h2><div class="lore-boxed">' + summary.physicalDescription + '</div></div>');
+    }
+
+    // Personality (NPC only). Accepts string OR { text, groups: [{ name, items }] }
+    var entityType = (currentMonster && currentMonster.entityType) || 'Monster';
+    var isNPC = entityType === 'NPC';
+
+    if (isNPC && summary.personality) {
+        var p = summary.personality;
+        var s = '<div class="lore-section"><h2 class="lore-section-header">Personality</h2><div class="lore-personality">';
+        if (typeof p === 'string') {
+            s += p;
+        } else {
+            if (p.text) s += '<p>' + p.text + '</p>';
+            if (p.groups && p.groups.length > 0) {
+                for (var i = 0; i < p.groups.length; i++) {
+                    var g = p.groups[i];
+                    s += '<div class="lore-personality-group">';
+                    if (g.name) s += '<h3 class="lore-subheader">' + g.name + '</h3>';
+                    if (g.items && g.items.length > 0) {
+                        s += '<ul class="lore-personality-list">';
+                        for (var j = 0; j < g.items.length; j++) {
+                            s += '<li>' + g.items[j] + '</li>';
+                        }
+                        s += '</ul>';
+                    }
+                    s += '</div>';
+                }
+            }
+        }
+        s += '</div></div>';
+        sections.push(s);
+    }
+
+    // Tactics — array of phases: [{ name, items: [string, ...] }]
+    if (summary.tactics && summary.tactics.length > 0) {
+        var s = '<div class="lore-section"><h2 class="lore-section-header">Tactics</h2>';
+        for (var i = 0; i < summary.tactics.length; i++) {
+            var phase = summary.tactics[i];
+            s += '<div class="lore-tactics-phase">';
+            if (phase.name) s += '<h3 class="lore-subheader">' + phase.name + '</h3>';
+            if (phase.items && phase.items.length > 0) {
+                s += '<ul class="lore-tactics-list">';
+                for (var j = 0; j < phase.items.length; j++) {
+                    s += '<li>' + phase.items[j] + '</li>';
+                }
+                s += '</ul>';
+            }
+            s += '</div>';
+        }
+        s += '</div>';
+        sections.push(s);
+    }
+
     // Legends and Lore
     if (summary.legendsAndLore && summary.legendsAndLore.length > 0) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">Legends and Lore</h2>';
@@ -1899,7 +1985,28 @@ function buildSummaryHtml(summary) {
         s += '</tbody></table></div>';
         sections.push(s);
     }
-    
+
+    // Quotes — array of categories: [{ category, die, lines: [string, ...] }]. Any creature that can vocalize (the skill omits it for mindless beasts).
+    if (summary.quotes && summary.quotes.length > 0) {
+        var s = '<div class="lore-section"><h2 class="lore-section-header">Quotes</h2>';
+        for (var i = 0; i < summary.quotes.length; i++) {
+            var cat = summary.quotes[i];
+            s += '<div class="lore-quotes-category">';
+            if (cat.category) s += '<h3 class="lore-subheader">' + cat.category + '</h3>';
+            if (cat.lines && cat.lines.length > 0) {
+                var dieLabel = cat.die || ('d' + cat.lines.length);
+                s += '<table class="lore-table lore-quotes-table"><thead><tr><th>' + dieLabel + '</th><th>Line</th></tr></thead><tbody>';
+                for (var j = 0; j < cat.lines.length; j++) {
+                    s += '<tr><td class="lore-table-roll">' + (j + 1) + '</td><td>' + cat.lines[j] + '</td></tr>';
+                }
+                s += '</tbody></table>';
+            }
+            s += '</div>';
+        }
+        s += '</div>';
+        sections.push(s);
+    }
+
     // Loot
     if (summary.loot) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">' + (summary.loot.title || 'Weapons, Armor & Items') + '</h2>';
