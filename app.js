@@ -2013,18 +2013,20 @@ function buildSummaryHtml(summary) {
         sections.push(s);
     }
 
-    // Quotes — a short array of plain lines (3-4): ["…","…"]. Rendered as simple italic quotes; for any creature that can vocalize (omitted for mindless beasts). Old [{category,lines}] objects are flattened for back-compat.
+    // Quotes — a d6 roll table (same format as Signs): [{ roll, text }]. For any creature that can vocalize (omitted for mindless beasts). Plain strings and old [{category,lines}] objects are coerced for back-compat.
     if (summary.quotes && summary.quotes.length > 0) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">Quotes</h2>';
+        s += '<table class="lore-table"><tbody>';
         for (var i = 0; i < summary.quotes.length; i++) {
             var q = summary.quotes[i];
-            if (typeof q === 'string') {
-                s += '<p class="lore-quote">' + q + '</p>';
-            } else if (q && q.lines) {
-                for (var j = 0; j < q.lines.length; j++) s += '<p class="lore-quote">' + q.lines[j] + '</p>';
-            }
+            var qRoll, qText;
+            if (typeof q === 'string') { qRoll = (i + 1); qText = q; }
+            else if (q && q.text != null) { qRoll = (q.roll != null ? q.roll : (i + 1)); qText = q.text; }
+            else if (q && q.lines) { qRoll = (i + 1); qText = q.lines.join(' / '); }
+            else { qRoll = (i + 1); qText = ''; }
+            s += '<tr><td class="lore-table-roll">' + qRoll + '</td><td>' + qText + '</td></tr>';
         }
-        s += '</div>';
+        s += '</tbody></table></div>';
         sections.push(s);
     }
 
@@ -2084,23 +2086,34 @@ function buildSummaryHtml(summary) {
     }
     document.body.removeChild(measurer);
 
-    // Paginate: group sections into pages based on measured heights
+    // Paginate: distribute sections across pages by measured height.
+    // Decide the page count up front, then fill each page toward an even target so the
+    // last page isn't left nearly empty — never exceeding the two-column hard cap.
+    var totalAllH = 0;
+    for (var i = 0; i < heights.length; i++) totalAllH += heights[i];
+    var firstCap = (PAGE_CONTENT_HEIGHT - TITLE_HEIGHT) * 2;
+    var fullCap = PAGE_CONTENT_HEIGHT * 2;
+    var pageCount = (totalAllH <= firstCap) ? 1 : 1 + Math.ceil((totalAllH - firstCap) / fullCap);
+
     var pages = [];
     var pageStart = 0;
 
     while (pageStart < sections.length) {
         var isFirstPage = (pages.length === 0);
-        var availH = PAGE_CONTENT_HEIGHT - (isFirstPage ? TITLE_HEIGHT : 0);
+        var hardCap = isFirstPage ? firstCap : fullCap;
+        var remH = 0;
+        for (var k = pageStart; k < sections.length; k++) remH += heights[k];
+        var remainingPages = pageCount - pages.length;
+        var targetH = (remainingPages > 1) ? (remH / remainingPages) : hardCap;
+        if (targetH > hardCap) targetH = hardCap;
+
         var pageEnd = pageStart;
         var totalH = 0;
-
         while (pageEnd < sections.length) {
-            totalH += heights[pageEnd];
-            // Content fills two columns, so page overflows when totalH/2 > availH
-            if (totalH > availH * 2 && pageEnd > pageStart) {
-                totalH -= heights[pageEnd];
-                break;
-            }
+            var nextH = heights[pageEnd];
+            if (pageEnd > pageStart && totalH + nextH > hardCap) break;   // never overflow a physical page
+            if (pageEnd > pageStart && totalH >= targetH) break;          // reached the even target
+            totalH += nextH;
             pageEnd++;
         }
         if (pageEnd === pageStart) pageEnd = pageStart + 1;
