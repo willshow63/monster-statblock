@@ -1912,10 +1912,12 @@ function buildSummaryHtml(summary) {
         sections.push(s);
     }
 
-    // Tactics — the combat flow. Flat array of strings ["…","…"] → one bullet list (Tactics === Combat Flow). Legacy [{ name, items }] phases still render grouped.
+    // Tactics — general flow of the fight. A prose string → a paragraph; an array of strings → loose bullets; legacy [{ name, items }] → grouped.
     if (summary.tactics && summary.tactics.length > 0) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">Tactics</h2>';
-        if (typeof summary.tactics[0] === 'string') {
+        if (typeof summary.tactics === 'string') {
+            s += '<p class="lore-description">' + summary.tactics + '</p>';
+        } else if (typeof summary.tactics[0] === 'string') {
             s += '<ul class="lore-tactics-list">';
             for (var i = 0; i < summary.tactics.length; i++) {
                 s += '<li>' + summary.tactics[i] + '</li>';
