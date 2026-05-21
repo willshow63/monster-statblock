@@ -1554,12 +1554,13 @@ function renderStatBlock(monster) {
         return '<div class="villain-action" data-section="villainActions" data-index="' + idx + '"><span class="villain-action-round">(Round ' + a.round + ')</span> <span class="villain-action-name">' + a.name + '.</span> ' + a.text + '</div>';
     });
 
-    // Telegraphed Actions (conditional — a wind-up the party can read and dodge: Tell / Strikes / Avoid)
+    // Telegraphed Actions (conditional). At most one per creature: a short overview line, then Tell / Strikes / Avoid as separate blocks.
     addSection('telegraphedActions', 'Telegraphed Actions', monster.telegraphedActions, function(t, idx) {
-        var h = '<div class="telegraph-action" data-section="telegraphedActions" data-index="' + idx + '"><span class="telegraph-action-name">' + t.name + '.</span>';
-        if (t.tell) h += ' <span class="telegraph-label">Tell:</span> ' + t.tell;
-        if (t.effect) h += ' <span class="telegraph-label">Strikes:</span> ' + t.effect;
-        if (t.counter) h += ' <span class="telegraph-label">Avoid:</span> ' + t.counter;
+        var h = '<div class="telegraph-action" data-section="telegraphedActions" data-index="' + idx + '">';
+        h += '<div class="telegraph-overview"><span class="telegraph-action-name">' + t.name + '.</span>' + (t.overview ? ' ' + t.overview : '') + '</div>';
+        if (t.tell) h += '<div class="telegraph-beat"><span class="telegraph-label">Tell.</span> ' + t.tell + '</div>';
+        if (t.effect) h += '<div class="telegraph-beat"><span class="telegraph-label">Strikes.</span> ' + t.effect + '</div>';
+        if (t.counter) h += '<div class="telegraph-beat"><span class="telegraph-label">Avoid.</span> ' + t.counter + '</div>';
         return h + '</div>';
     });
     

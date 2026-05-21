@@ -1051,8 +1051,10 @@ body.modal-open {
 
 /* Telegraphed Actions */
 .telegraph-action { margin: 5px 0; }
+.telegraph-overview { margin: 5px 0; }
 .telegraph-action-name { font-weight: bold; font-style: italic; }
-.telegraph-label { font-weight: bold; font-variant: small-caps; letter-spacing: 0.03em; }
+.telegraph-beat { margin: 4px 0; }
+.telegraph-label { font-weight: bold; font-style: italic; }
 
 /* Responsive */
 @media (max-width: 900px) {
