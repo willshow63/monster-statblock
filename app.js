@@ -1557,11 +1557,11 @@ function renderStatBlock(monster) {
     // Telegraphed Actions (conditional). At most one per creature: a short overview line, then Tell / Strikes / Avoid as separate blocks.
     addSection('telegraphedActions', 'Telegraphed Actions', monster.telegraphedActions, function(t, idx) {
         var h = '';
-        if (idx === 0) h += '<div class="telegraph-howto">How to run it: the <strong>Tell</strong> is the monster spending an action to wind up — nothing is hit yet, so mark the area on the map. The party gets at least one turn to react; then on the stated beat the strike auto-hits everyone still inside — no attack roll, no save.</div>';
+        if (idx === 0) h += '<div class="telegraph-howto">Telegraphed Actions are devastating abilities that take place over multiple rounds in exchange for an automatic hit. The <strong>Tell</strong> is the wind-up (costs an Action) and hints at what\'s coming. The <strong>Strike</strong> is the result of the action: an automatic hit on everyone still in the marked area — no attack roll, no save. <strong>Avoid</strong> is the party\'s window in between to clear out, take cover, or disrupt it.</div>';
         h += '<div class="telegraph-action" data-section="telegraphedActions" data-index="' + idx + '">';
-        h += '<div class="telegraph-overview"><span class="telegraph-action-name">' + t.name + '.</span>' + (t.overview ? ' ' + t.overview : '') + '</div>';
+        h += '<div class="telegraph-overview"><span class="telegraph-action-name">' + t.name + (t.rounds ? ' (' + t.rounds + ' rounds)' : '') + ':</span>' + (t.overview ? ' ' + t.overview : '') + '</div>';
         if (t.tell) h += '<div class="telegraph-beat"><span class="telegraph-label">Tell.</span> ' + t.tell + '</div>';
-        if (t.effect) h += '<div class="telegraph-beat"><span class="telegraph-label">Strikes.</span> ' + t.effect + '</div>';
+        if (t.effect) h += '<div class="telegraph-beat"><span class="telegraph-label">Strike.</span> ' + t.effect + '</div>';
         if (t.counter) h += '<div class="telegraph-beat"><span class="telegraph-label">Avoid.</span> ' + t.counter + '</div>';
         return h + '</div>';
     });
