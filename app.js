@@ -1912,21 +1912,47 @@ function buildSummaryHtml(summary) {
         sections.push(s);
     }
 
-    // Tactics — array of phases: [{ name, items: [string, ...] }]
+    // Tactics — the combat flow. Flat array of strings ["…","…"] → one bullet list (Tactics === Combat Flow). Legacy [{ name, items }] phases still render grouped.
     if (summary.tactics && summary.tactics.length > 0) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">Tactics</h2>';
-        for (var i = 0; i < summary.tactics.length; i++) {
-            var phase = summary.tactics[i];
-            s += '<div class="lore-tactics-phase">';
-            if (phase.name) s += '<h3 class="lore-subheader">' + phase.name + '</h3>';
-            if (phase.items && phase.items.length > 0) {
-                s += '<ul class="lore-tactics-list">';
-                for (var j = 0; j < phase.items.length; j++) {
-                    s += '<li>' + phase.items[j] + '</li>';
-                }
-                s += '</ul>';
+        if (typeof summary.tactics[0] === 'string') {
+            s += '<ul class="lore-tactics-list">';
+            for (var i = 0; i < summary.tactics.length; i++) {
+                s += '<li>' + summary.tactics[i] + '</li>';
             }
-            s += '</div>';
+            s += '</ul>';
+        } else {
+            for (var i = 0; i < summary.tactics.length; i++) {
+                var phase = summary.tactics[i];
+                s += '<div class="lore-tactics-phase">';
+                if (phase.name) s += '<h3 class="lore-subheader">' + phase.name + '</h3>';
+                if (phase.items && phase.items.length > 0) {
+                    s += '<ul class="lore-tactics-list">';
+                    for (var j = 0; j < phase.items.length; j++) {
+                        s += '<li>' + phase.items[j] + '</li>';
+                    }
+                    s += '</ul>';
+                }
+                s += '</div>';
+            }
+        }
+        s += '</div>';
+        sections.push(s);
+    }
+
+    // Lair / location — the arena as its own section. { title?, description?, features: [string, ...] }, or a flat [string, ...].
+    if (summary.lair) {
+        var lair = summary.lair;
+        var lairFeatures = Array.isArray(lair) ? lair : (lair.features || []);
+        var lairTitle = (!Array.isArray(lair) && lair.title) || 'Lair';
+        var s = '<div class="lore-section"><h2 class="lore-section-header">' + lairTitle + '</h2>';
+        if (!Array.isArray(lair) && lair.description) s += '<p class="lore-intro">' + lair.description + '</p>';
+        if (lairFeatures.length > 0) {
+            s += '<ul class="lore-tactics-list">';
+            for (var i = 0; i < lairFeatures.length; i++) {
+                s += '<li>' + lairFeatures[i] + '</li>';
+            }
+            s += '</ul>';
         }
         s += '</div>';
         sections.push(s);
@@ -1987,22 +2013,16 @@ function buildSummaryHtml(summary) {
         sections.push(s);
     }
 
-    // Quotes — array of categories: [{ category, die, lines: [string, ...] }]. Any creature that can vocalize (the skill omits it for mindless beasts).
+    // Quotes — a short array of plain lines (3-4): ["…","…"]. Rendered as simple italic quotes; for any creature that can vocalize (omitted for mindless beasts). Old [{category,lines}] objects are flattened for back-compat.
     if (summary.quotes && summary.quotes.length > 0) {
         var s = '<div class="lore-section"><h2 class="lore-section-header">Quotes</h2>';
         for (var i = 0; i < summary.quotes.length; i++) {
-            var cat = summary.quotes[i];
-            s += '<div class="lore-quotes-category">';
-            if (cat.category) s += '<h3 class="lore-subheader">' + cat.category + '</h3>';
-            if (cat.lines && cat.lines.length > 0) {
-                var dieLabel = cat.die || ('d' + cat.lines.length);
-                s += '<table class="lore-table lore-quotes-table"><thead><tr><th>' + dieLabel + '</th><th>Line</th></tr></thead><tbody>';
-                for (var j = 0; j < cat.lines.length; j++) {
-                    s += '<tr><td class="lore-table-roll">' + (j + 1) + '</td><td>' + cat.lines[j] + '</td></tr>';
-                }
-                s += '</tbody></table>';
+            var q = summary.quotes[i];
+            if (typeof q === 'string') {
+                s += '<p class="lore-quote">' + q + '</p>';
+            } else if (q && q.lines) {
+                for (var j = 0; j < q.lines.length; j++) s += '<p class="lore-quote">' + q.lines[j] + '</p>';
             }
-            s += '</div>';
         }
         s += '</div>';
         sections.push(s);

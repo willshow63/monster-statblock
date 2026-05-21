@@ -1326,6 +1326,10 @@ body.modal-open {
 .lore-quotes-category {
     margin: 10px 0;
 }
+.lore-quote {
+    font-style: italic;
+    margin: 5px 0;
+}
 .lore-quotes-table {
     width: 100%;
     border-collapse: collapse;
