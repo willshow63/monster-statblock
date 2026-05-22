@@ -329,12 +329,15 @@ body {
 }
 
 .saved-monsters h2 {
-    font-family: 'Crimson Text', 'Times New Roman', serif !important;
-    color: var(--theme-color);
-    font-size: 1.5em;
+    flex-grow: 1;
+    font-family: 'Modesto Poster', 'Times New Roman', serif !important;
+    font-size: 1.6em;
     font-weight: normal;
     letter-spacing: 0.5px;
-    margin-bottom: 10px;
+    color: var(--theme-color);
+    border-bottom: 2px solid var(--theme-color);
+    margin: 15px 0 5px 0;
+    padding-bottom: 2px;
 }
 
 .sidebar-toggle {
