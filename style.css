@@ -606,6 +606,8 @@ body {
 
 .monster-item:hover { background: #e8e8e8; }
 .monster-item.dragging { opacity: 0.5; }
+.monster-item.nest-over { outline: 2px solid var(--theme-color); outline-offset: 1px; background: #dfeae8; }
+.monster-item.nested { border-left-color: rgba(0,0,0,0.25); }
 
 .monster-item .monster-name-btn {
     flex-grow: 1;
