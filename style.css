@@ -1,3 +1,21 @@
+@font-face {
+    font-family: 'Rubik';
+    src: url('fonts/Rubik-VariableFont_wght.ttf') format('truetype');
+    font-weight: 300 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* App UI font: Rubik on buttons, tabs, and the saved-monsters sidebar.
+   !important overrides the per-element Crimson Text rules in those areas. The
+   statblock and summary content keep their own fonts. */
+button,
+.tab-btn,
+.saved-monsters,
+.saved-monsters * {
+    font-family: 'Rubik', sans-serif !important;
+}
+
 * {
     box-sizing: border-box;
 }
