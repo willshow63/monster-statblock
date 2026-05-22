@@ -2057,11 +2057,8 @@ function buildSummaryHtml(summary) {
         sections.push(s);
     }
     
-    // Names (after loot)
-    if (summary.names) {
-        sections.push('<div class="lore-section"><h2 class="lore-section-header">Names</h2><p class="lore-names">' + summary.names + '</p></div>');
-    }
-    
+    // (Names is intentionally not a section; any names belong in the description.)
+
     // Image
     if (summary.image) {
         sections.push('<div class="lore-section"><div class="lore-image-frame"><img src="' + summary.image + '" alt="' + summaryName + '" class="lore-image" /></div></div>');
@@ -2080,7 +2077,6 @@ function buildSummaryHtml(summary) {
         if (h.indexOf('>Tactics<') !== -1) return 8;
         if (h.indexOf('>Behavior<') !== -1) return 9;
         if (h.indexOf('>Quotes<') !== -1) return 10;
-        if (h.indexOf('>Names<') !== -1) return 11;
         if (h.indexOf('>Loot<') !== -1) return 13;                 // Loot always last
         return 12;
     }
@@ -2161,46 +2157,19 @@ function buildSummaryHtml(summary) {
         // Page-spanning vertical divider (matches statblock — top:20 to bottom:20 of the page box)
         html += '<div class="lore-col-divider"></div>';
 
-        // Find best split point: col1 >= col2, most balanced
+        // Find the split point that most evenly balances the two columns (smallest height gap),
+        // regardless of which column ends up taller. Minimizes the trailing whitespace.
         var bestSplit = -1;
         var bestScore = Infinity;
-        var totalPageH = 0;
-        for (var i = 0; i < pageHeights.length; i++) totalPageH += pageHeights[i];
-
         for (var split = 1; split < pageSections.length; split++) {
             var col1H = 0;
             var col2H = 0;
             for (var j = 0; j < split; j++) col1H += pageHeights[j];
             for (var j = split; j < pageSections.length; j++) col2H += pageHeights[j];
-
-            // Col2 must never be longer than col1
-            if (col2H > col1H * 1.05) continue;
-
-            // Score: prefer balanced, penalize col2 > col1 heavily
-            var imbalance;
-            if (col2H > col1H) {
-                imbalance = (col2H - col1H) * 2;
-            } else {
-                imbalance = col1H - col2H;
-            }
+            var imbalance = Math.abs(col1H - col2H);
             if (imbalance < bestScore) {
                 bestScore = imbalance;
                 bestSplit = split;
-            }
-        }
-
-        // If strict col1>=col2 found no split, fall back to most balanced split
-        if (bestSplit === -1 && pageSections.length >= 2) {
-            for (var split = 1; split < pageSections.length; split++) {
-                var col1H = 0;
-                var col2H = 0;
-                for (var j = 0; j < split; j++) col1H += pageHeights[j];
-                for (var j = split; j < pageSections.length; j++) col2H += pageHeights[j];
-                var imbalance = Math.abs(col1H - col2H);
-                if (imbalance < bestScore) {
-                    bestScore = imbalance;
-                    bestSplit = split;
-                }
             }
         }
 
