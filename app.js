@@ -500,9 +500,14 @@ function showGroupMenu(groupId, groupName, btnEl) {
     menu.appendChild(renameBtn);
     menu.appendChild(deleteBtn);
     
-    // Position next to the button
-    btnEl.parentElement.style.position = 'relative';
-    btnEl.parentElement.appendChild(menu);
+    // Position next to the button, attached to <body> so the group box's overflow:hidden can't clip it.
+    var rect = btnEl.getBoundingClientRect();
+    menu.style.position = 'fixed';
+    menu.style.top = (rect.bottom + 4) + 'px';
+    menu.style.left = 'auto';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+    menu.style.zIndex = '1000';
+    document.body.appendChild(menu);
     
     // Close on outside click
     setTimeout(function() {

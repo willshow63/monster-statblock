@@ -1065,7 +1065,7 @@ body.modal-open {
 .action-continuation { margin-top: 8px; }
 
 /* Legendary Actions */
-.legendary-description { margin: 10px 0; }
+.legendary-description { margin: 4px 0 8px; font-size: 0.88em; font-style: italic; opacity: 0.8; }
 .legendary-action { margin: 5px 0; }
 .legendary-action-name { font-weight: bold; }
 
