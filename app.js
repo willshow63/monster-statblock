@@ -1500,7 +1500,7 @@ function buildLairActionsSection(monster) {
     if (!monster.lairActions || monster.lairActions.length === 0) return '';
     var headerHtml = '<h2 class="section-header">Lair Actions</h2>';
     if (monster.lairActionsDescription) {
-        headerHtml += '<p data-field="lairActionsDescription">' + monster.lairActionsDescription + '</p>';
+        headerHtml += '<p class="lair-description" data-field="lairActionsDescription">' + monster.lairActionsDescription + '</p>';
     }
     var items = [];
     for (var i = 0; i < monster.lairActions.length; i++) {
@@ -1601,7 +1601,7 @@ function renderStatBlock(monster) {
     // Lair Actions (keep as one block since they're a list)
     if (monster.lairActions && monster.lairActions.length > 0) {
         var lairHtml = '<h2 class="section-header">Lair Actions</h2>';
-        if (monster.lairActionsDescription) lairHtml += '<p data-field="lairActionsDescription">' + monster.lairActionsDescription + '</p>';
+        if (monster.lairActionsDescription) lairHtml += '<p class="lair-description" data-field="lairActionsDescription">' + monster.lairActionsDescription + '</p>';
         lairHtml += '<ul>';
         for (var i = 0; i < monster.lairActions.length; i++) {
             lairHtml += '<li data-section="lairActions" data-index="' + i + '">' + monster.lairActions[i] + '</li>';
