@@ -10,7 +10,10 @@
    !important overrides the per-element Crimson Text rules in those areas. The
    statblock and summary content keep their own fonts. */
 button,
+select,
 .tab-btn,
+.upload-btn,
+.restore-btn,
 .saved-monsters,
 .saved-monsters * {
     font-family: 'Rubik', sans-serif !important;
@@ -326,7 +329,7 @@ body {
 }
 
 .saved-monsters h2 {
-    font-family: 'Modesto Poster', 'Times New Roman', serif;
+    font-family: 'Crimson Text', 'Times New Roman', serif !important;
     color: var(--theme-color);
     font-size: 1.5em;
     font-weight: normal;
