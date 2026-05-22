@@ -1878,9 +1878,12 @@ function buildSummaryHtml(summary) {
         sections.push('<div class="lore-section"><div class="lore-description">' + summary.description + '</div></div>');
     }
 
-    // Physical Description (boxed read-aloud style)
+    // Physical Description. Boxed read-aloud by default; physicalDescriptionBoxed:false renders a plain DM-facing look (used by minions/lieutenants).
     if (summary.physicalDescription) {
-        sections.push('<div class="lore-section"><h2 class="lore-section-header">Physical Description</h2><div class="lore-boxed">' + summary.physicalDescription + '</div></div>');
+        var pdInner = (summary.physicalDescriptionBoxed === false)
+            ? '<div class="lore-description">' + summary.physicalDescription + '</div>'
+            : '<div class="lore-boxed">' + summary.physicalDescription + '</div>';
+        sections.push('<div class="lore-section"><h2 class="lore-section-header">Physical Description</h2>' + pdInner + '</div>');
     }
 
     // Personality (NPC only). Accepts string OR { text, groups: [{ name, items }] }
