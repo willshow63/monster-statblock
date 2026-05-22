@@ -694,12 +694,12 @@ function loadGroupsAndMonsters() {
             if (result.error) throw result.error;
             groups = result.data;
 
-            return sb.from('monsters').select('id, name, monster_id, group_id').order('name');
+            return sb.from('monsters').select('id, name, monster_id, group_id, parent_id').order('name');
         })
         .then(function(result) {
             if (result.error) throw result.error;
             monsters = result.data.map(function(row) {
-                return { id: row.id, name: row.name, monsterId: row.monster_id, groupId: row.group_id };
+                return { id: row.id, name: row.name, monsterId: row.monster_id, groupId: row.group_id, parentId: row.parent_id };
             });
 
             renderMonsterList();
@@ -707,6 +707,21 @@ function loadGroupsAndMonsters() {
         .catch(function(error) {
             console.error("Error loading data:", error);
         });
+}
+
+// Helpers for nested (parent/child) monsters in the saved list
+function findMonsterById(id) {
+    for (var i = 0; i < monsters.length; i++) { if (monsters[i].id === id) return monsters[i]; }
+    return null;
+}
+function isTopLevel(m) {
+    return !m.parentId || !findMonsterById(m.parentId);
+}
+function renderMonsterTree(monster, depth) {
+    var html = renderMonsterItem(monster, depth);
+    var children = monsters.filter(function(c) { return c.parentId === monster.id; });
+    children.forEach(function(child) { html += renderMonsterTree(child, depth + 1); });
+    return html;
 }
 
 // Render Monster List - groups start collapsed, respects expandedGroups state
@@ -725,7 +740,7 @@ function renderMonsterList() {
     }
     
     groups.forEach(function(group) {
-        var groupMonsters = monsters.filter(function(m) { return m.groupId === group.id; });
+        var groupMonsters = monsters.filter(function(m) { return m.groupId === group.id && isTopLevel(m); });
         var isExpanded = expandedGroups.has(group.id);
         
         html += '<div class="monster-group" data-group-id="' + group.id + '">';
@@ -737,20 +752,20 @@ function renderMonsterList() {
         html += '<div class="group-monsters' + (isExpanded ? '' : ' collapsed') + '" data-group-id="' + group.id + '">';
         
         groupMonsters.forEach(function(monster) {
-            html += renderMonsterItem(monster);
+            html += renderMonsterTree(monster, 0);
         });
         
         html += '</div></div>';
     });
     
-    var ungroupedMonsters = monsters.filter(function(m) { return !m.groupId; });
+    var ungroupedMonsters = monsters.filter(function(m) { return !m.groupId && isTopLevel(m); });
     
     html += '<div class="ungrouped-section">';
     html += '<div class="ungrouped-header">Ungrouped</div>';
     html += '<div class="ungrouped-monsters" data-group-id="ungrouped">';
     
     ungroupedMonsters.forEach(function(monster) {
-        html += renderMonsterItem(monster);
+        html += renderMonsterTree(monster, 0);
     });
     
     html += '</div></div>';
@@ -761,8 +776,9 @@ function renderMonsterList() {
 }
 
 // Render Monster Item
-function renderMonsterItem(monster) {
-    var html = '<div class="monster-item" draggable="true" data-monster-id="' + monster.id + '">';
+function renderMonsterItem(monster, depth) {
+    depth = depth || 0;
+    var html = '<div class="monster-item' + (depth > 0 ? ' nested' : '') + '" draggable="true" data-monster-id="' + monster.id + '"' + (depth > 0 ? ' style="margin-left:' + (depth * 18) + 'px"' : '') + '>';
     html += '<input type="checkbox" class="monster-select-cb" data-monster-id="' + monster.id + '" data-monster-name="' + monster.name.replace(/"/g, '&quot;') + '" style="' + (selectMode ? '' : 'display:none') + '" onclick="event.stopPropagation(); updateDeleteCount()" />';
     html += '<button class="monster-name-btn" onclick="loadMonster(\'' + monster.id + '\')">' + monster.name + '</button>';
     html += '</div>';
@@ -852,6 +868,24 @@ function setupDragAndDrop() {
             groupHeaders.forEach(function(header) {
                 header.classList.remove('drag-over');
             });
+            monsterItems.forEach(function(it) { it.classList.remove('nest-over'); });
+        });
+
+        // Drop a monster onto another monster to nest it as that monster's child.
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!item.classList.contains('dragging')) item.classList.add('nest-over');
+        });
+        item.addEventListener('dragleave', function(e) {
+            item.classList.remove('nest-over');
+        });
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            item.classList.remove('nest-over');
+            var childId = e.dataTransfer.getData('text/plain');
+            nestMonsterUnder(childId, item.dataset.monsterId);
         });
     });
     
@@ -904,15 +938,37 @@ function setupDragAndDrop() {
     });
 }
 
-// Move Monster to Group
+// Move Monster to Group (also un-nests it: dropping into a group makes it top-level)
 function moveMonsterToGroup(monsterId, groupId) {
-    sb.from('monsters').update({ group_id: groupId }).eq('id', monsterId)
+    sb.from('monsters').update({ group_id: groupId, parent_id: null }).eq('id', monsterId)
         .then(function(result) {
             if (result.error) throw result.error;
             loadGroupsAndMonsters();
         })
         .catch(function(error) {
             console.error("Error moving monster:", error);
+        });
+}
+
+// Nest one monster under another (parent-child). Guards against self-nesting and cycles.
+function nestMonsterUnder(childId, parentId) {
+    if (!childId || !parentId || childId === parentId) return;
+    var p = findMonsterById(parentId);
+    var guard = 0;
+    while (p && guard < 200) {
+        if (p.id === childId) return; // parentId is a descendant of childId: would create a cycle
+        p = p.parentId ? findMonsterById(p.parentId) : null;
+        guard++;
+    }
+    var parent = findMonsterById(parentId);
+    var newGroupId = parent ? parent.groupId : null;
+    sb.from('monsters').update({ parent_id: parentId, group_id: newGroupId }).eq('id', childId)
+        .then(function(result) {
+            if (result.error) throw result.error;
+            loadGroupsAndMonsters();
+        })
+        .catch(function(error) {
+            console.error("Error nesting monster:", error);
         });
 }
 
