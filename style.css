@@ -967,7 +967,8 @@ body.modal-open {
     font-size: 2.4em;
     font-weight: normal;
     color: var(--theme-color);
-    margin: 0 0 0 0;
+    margin: 0 0 5px 0;
+    line-height: 1.1;
     letter-spacing: 1px;
 }
 
@@ -1040,7 +1041,7 @@ body.modal-open {
 .action-continuation { margin-top: 8px; }
 
 /* Legendary Actions */
-.legendary-description { margin-bottom: 10px; }
+.legendary-description { margin: 10px 0; }
 .legendary-action { margin: 5px 0; }
 .legendary-action-name { font-weight: bold; }
 
@@ -1203,7 +1204,8 @@ body.modal-open {
     font-size: 2.4em;
     font-weight: normal;
     color: var(--theme-color);
-    margin: 0 0 0 0;
+    margin: 0 0 5px 0;
+    line-height: 1.1;
     letter-spacing: 1px;
 }
 
