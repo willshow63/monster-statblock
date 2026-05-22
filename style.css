@@ -902,6 +902,7 @@ body.modal-open {
 .stat-block.single-column {
     display: block;
     width: 450px;
+    padding: 20px 28px;
 }
 
 /* Responsive: collapse to single column on narrow screens */
