@@ -1732,9 +1732,9 @@ body {
    ============================================================ */
 :root {
     /* accent -> tabletroll emerald green */
-    --theme-color: #0fa87c;
-    --theme-color-dark: #0d9068;
-    --theme-color-rgb: 15, 168, 124;
+    --theme-color: #087a58;
+    --theme-color-dark: #065c42;
+    --theme-color-rgb: 8, 122, 88;
     /* shell surfaces -> tabletroll dark slate + cool light content panels */
     --stage: #12151b;
     --rail: #eef0f4;
