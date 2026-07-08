@@ -1,9 +1,6 @@
-// Supabase Configuration
-var SUPABASE_URL = 'https://cvtddvfglskmfkzjuepn.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2dGRkdmZnbHNrbWZremp1ZXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3Mzk4ODYsImV4cCI6MjA5MTMxNTg4Nn0.z1Fn809NV5gBkLwYzH0AbqgskpID_nBmTyCyBVHcqWo';
-
-// Initialize Supabase
-var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Backend: PocketBase on Gorgak (migrated off Supabase). pb-compat.js exposes createPBClient,
+// an sb-like shim over the PocketBase SDK so the query call sites below stay unchanged.
+var sb = createPBClient('https://pb.tabletroll.com');
 
 var currentUser = null;
 var currentMonster = null;
@@ -329,19 +326,35 @@ sb.auth.onAuthStateChange(function(event, session) {
     }
 });
 
-// Login
-document.getElementById("login-btn").addEventListener("click", function() {
-    sb.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-            redirectTo: window.location.origin + window.location.pathname
-        }
-    }).then(function(result) {
+// Login (username + password)
+function showLogin() {
+    document.getElementById("login-username").value = "";
+    document.getElementById("login-password").value = "";
+    document.getElementById("login-error").textContent = "";
+    document.getElementById("login-modal").style.display = "flex";
+    document.getElementById("login-username").focus();
+}
+function doLogin() {
+    var u = document.getElementById("login-username").value.trim();
+    var p = document.getElementById("login-password").value;
+    var err = document.getElementById("login-error");
+    if (!u || !p) { err.textContent = "Enter your username and password."; return; }
+    err.textContent = "Signing in…";
+    sb.auth.signInWithPassword(u, p).then(function(result) {
         if (result.error) {
-            console.error("Login error:", result.error);
-            showAlert("Login failed: " + result.error.message);
+            err.textContent = "Sign in failed. Check your username and password.";
+            return;
         }
+        document.getElementById("login-modal").style.display = "none";
     });
+}
+document.getElementById("login-btn").addEventListener("click", showLogin);
+document.getElementById("login-submit").addEventListener("click", doLogin);
+document.getElementById("login-cancel").addEventListener("click", function() {
+    document.getElementById("login-modal").style.display = "none";
+});
+document.getElementById("login-password").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") doLogin();
 });
 
 // Logout
