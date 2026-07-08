@@ -310,6 +310,8 @@ sb.auth.onAuthStateChange(function(event, session) {
         document.getElementById("user-info").style.display = "flex";
         document.getElementById("user-name").textContent = session.user.user_metadata.full_name || session.user.email;
         document.getElementById("saved-monsters").style.display = "block";
+        document.getElementById("empty-state").style.display = "none";
+        document.getElementById("stat-block-container").style.display = "flex";
         loadGroupsAndMonsters();
 
         // Auto-load last opened monster
@@ -323,6 +325,8 @@ sb.auth.onAuthStateChange(function(event, session) {
         document.getElementById("user-info").style.display = "none";
         document.getElementById("saved-monsters").style.display = "none";
         document.getElementById("monster-list").innerHTML = "";
+        document.getElementById("empty-state").style.display = "flex";
+        document.getElementById("stat-block-container").style.display = "none";
     }
 });
 
@@ -349,6 +353,7 @@ function doLogin() {
     });
 }
 document.getElementById("login-btn").addEventListener("click", showLogin);
+document.getElementById("empty-signin").addEventListener("click", showLogin);
 document.getElementById("login-submit").addEventListener("click", doLogin);
 document.getElementById("login-cancel").addEventListener("click", function() {
     document.getElementById("login-modal").style.display = "none";
@@ -370,6 +375,7 @@ document.getElementById("logout-btn").addEventListener("click", function() {
         sharedView = true;
         document.querySelector('.controls').style.display = 'none';
         document.getElementById('saved-monsters').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'none';
         sb.from('monsters').select('*').eq('slug', viewSlug).eq('public', true).single()
             .then(function(result) {
                 if (result.error || !result.data) {
