@@ -1724,17 +1724,17 @@ body {
 #empty-state { min-height: 66vh; }
 
 /* ============================================================
-   TABLETROLL THEME — dark slate shell + purple accent, mirroring
-   tabletroll (dark purple chrome, LIGHT content). Accent recolours
+   TABLETROLL THEME — dark slate shell + green accent, mirroring
+   tabletroll (dark slate chrome + emerald accent, LIGHT content). Accent recolours
    the shell AND the card's accent; the card stays light-background.
    Fonts + font-sizes unchanged. Redefines tokens only, so the
    theme-picker variants (which have higher specificity) still win.
    ============================================================ */
 :root {
-    /* accent -> tabletroll purple */
-    --theme-color: #7c3aed;
-    --theme-color-dark: #6d28d9;
-    --theme-color-rgb: 124, 58, 237;
+    /* accent -> tabletroll emerald green */
+    --theme-color: #0fa87c;
+    --theme-color-dark: #0d9068;
+    --theme-color-rgb: 15, 168, 124;
     /* shell surfaces -> tabletroll dark slate + cool light content panels */
     --stage: #12151b;
     --rail: #eef0f4;
@@ -1744,7 +1744,7 @@ body {
     --tt-text-dim: #94a3b8;
 }
 
-/* Top bar must be dark slate, NOT the (now purple) --theme-color-dark */
+/* Top bar must be dark slate, NOT the (now green) --theme-color-dark */
 .controls {
     background: var(--tt-bar);
     border-bottom: 3px solid var(--theme-color);
