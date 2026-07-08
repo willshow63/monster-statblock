@@ -1722,3 +1722,44 @@ body {
 
 /* ---- Empty state on the stage ---- */
 #empty-state { min-height: 66vh; }
+
+/* ============================================================
+   TABLETROLL THEME — dark slate shell + purple accent, mirroring
+   tabletroll (dark purple chrome, LIGHT content). Accent recolours
+   the shell AND the card's accent; the card stays light-background.
+   Fonts + font-sizes unchanged. Redefines tokens only, so the
+   theme-picker variants (which have higher specificity) still win.
+   ============================================================ */
+:root {
+    /* accent -> tabletroll purple */
+    --theme-color: #7c3aed;
+    --theme-color-dark: #6d28d9;
+    --theme-color-rgb: 124, 58, 237;
+    /* shell surfaces -> tabletroll dark slate + cool light content panels */
+    --stage: #12151b;
+    --rail: #eef0f4;
+    --parchment: #f1f5f9;
+    --ink-line: rgba(241, 245, 249, 0.25);
+    --tt-bar: #0b0d12;
+    --tt-text-dim: #94a3b8;
+}
+
+/* Top bar must be dark slate, NOT the (now purple) --theme-color-dark */
+.controls {
+    background: var(--tt-bar);
+    border-bottom: 3px solid var(--theme-color);
+    box-shadow: 0 3px 16px rgba(0, 0, 0, 0.5);
+}
+.app-title span { color: var(--tt-text-dim); }
+#login-btn:hover, .upload-btn:hover, .template-btn:hover, #logout-btn:hover {
+    background: rgba(241, 245, 249, 0.1);
+}
+#login-btn:hover { filter: none; background: var(--theme-color-dark); }
+
+/* light content panels lift off the dark stage with a deeper shadow */
+.saved-monsters { box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45); }
+.button-row { box-shadow: 0 2px 14px rgba(0, 0, 0, 0.4); }
+
+/* empty-state hero reads on the dark stage */
+.empty-wordmark { color: var(--parchment); }
+.empty-wordmark span { color: var(--tt-text-dim); }
