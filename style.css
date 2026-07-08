@@ -1596,3 +1596,129 @@ body.modal-open {
 .empty-cta:hover {
     background: var(--theme-color-dark);
 }
+
+/* ============================================================
+   SHELL REDESIGN — "The Bestiary"
+   Deep-teal book-cover chrome (top bar + rail) framing a warm
+   parchment stage and the UNCHANGED statblock card. Modesto
+   Poster (the display face) carries the chrome typography.
+   All colour keys off --theme-color* so the theme picker works.
+   ============================================================ */
+:root {
+    --parchment: #e9deca;   /* aged cream — marks/text on the dark chrome */
+    --stage: #e5e1d7;       /* warm stone paper — the main stage */
+    --rail: #f4f1e9;        /* lighter warm paper — the bestiary rail */
+    --ink-line: rgba(233, 222, 202, 0.45);
+}
+
+body {
+    background: var(--stage);
+    padding: 0;
+}
+
+/* ---- Top bar: the book cover ---- */
+.controls {
+    max-width: none;
+    margin: 0 0 26px 0;
+    padding: 15px 0;
+    background: var(--theme-color-dark);
+    border-bottom: 3px solid var(--theme-color);
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.28);
+}
+.header-row {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 28px;
+}
+.app-title { color: var(--parchment); font-size: 2em; }
+.app-title span { color: rgba(233, 222, 202, 0.55); }
+#user-name { color: var(--parchment); font-family: 'Modesto Poster', serif !important; font-size: 1.15em; letter-spacing: 0.5px; }
+
+/* Header actions: ghost/cream buttons on the dark cover */
+#login-btn, .upload-btn, .template-btn, #logout-btn {
+    background: transparent;
+    color: var(--parchment);
+    border: 1px solid var(--ink-line);
+    border-radius: 5px;
+    transition: background 0.15s, color 0.15s;
+}
+#login-btn:hover, .upload-btn:hover, .template-btn:hover, #logout-btn:hover {
+    background: rgba(233, 222, 202, 0.12);
+    color: #fff;
+}
+/* the one filled CTA */
+#login-btn { background: var(--theme-color); border-color: var(--theme-color); }
+#login-btn:hover { background: var(--theme-color); filter: brightness(1.15); }
+
+/* ---- Body shell ---- */
+.main-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 28px 48px;
+    gap: 28px;
+    align-items: flex-start;
+}
+
+/* ---- Bestiary rail ---- */
+.saved-monsters {
+    width: 300px;
+    background: var(--rail);
+    border: 1px solid rgba(var(--theme-color-rgb), 0.18);
+    border-radius: 10px;
+    padding: 6px 16px 18px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+}
+.saved-monsters h2 { font-size: 1.7em; }
+
+/* ---- Tabs in the display face ---- */
+.tab-btn {
+    font-family: 'Modesto Poster', 'Times New Roman', serif !important;
+    font-size: 1.2em;
+    letter-spacing: 0.6px;
+}
+
+/* ---- Toolbar: one tidy tool-bar chip, not a wall of buttons ---- */
+.button-row {
+    background: var(--rail);
+    border: 1px solid rgba(var(--theme-color-rgb), 0.16);
+    border-radius: 999px;
+    padding: 6px 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    gap: 6px;
+    margin-bottom: 14px;
+}
+/* tools become quiet ghost buttons; the shared row groups them */
+.button-row .print-btn,
+.button-row .export-btn,
+.button-row .restore-btn,
+.button-row .share-btn {
+    background: transparent;
+    color: var(--theme-color);
+    border: 1px solid transparent;
+}
+.button-row .print-btn:hover,
+.button-row .export-btn:hover,
+.button-row .restore-btn:hover,
+.button-row .share-btn:hover {
+    background: rgba(var(--theme-color-rgb), 0.1);
+    color: var(--theme-color-dark);
+}
+.button-row .edit-btn {
+    background: var(--theme-color);
+    color: #fff;
+}
+.button-row .delete-current-btn {
+    background: transparent;
+    color: #a3342b;
+    border: 1px solid transparent;
+}
+.button-row .delete-current-btn:hover { background: rgba(163, 52, 43, 0.12); }
+.button-row .entity-type-select {
+    border: 1px solid rgba(var(--theme-color-rgb), 0.25);
+    border-radius: 5px;
+    background: #fff;
+    padding: 5px 8px;
+}
+
+/* ---- Empty state on the stage ---- */
+#empty-state { min-height: 66vh; }
