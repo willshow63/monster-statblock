@@ -1763,3 +1763,86 @@ body {
 /* empty-state hero reads on the dark stage */
 .empty-wordmark { color: var(--parchment); }
 .empty-wordmark span { color: var(--tt-text-dim); }
+
+/* ============================================================
+   REFINEMENT PASS — one consistent button system, a clean grouped
+   toolbar (styled select, uniform quiet tools), tidier tabs + rail,
+   unified radii (6px controls / 8-10px panels) and softer shadows.
+   ============================================================ */
+
+/* consistent header action buttons */
+#login-btn, .upload-btn, .template-btn, #logout-btn {
+    font-size: 13px; font-weight: 500; line-height: 1.1;
+    padding: 7px 14px; border-radius: 6px;
+}
+
+/* ---- Toolbar: a clean bar, not a toy pill ---- */
+.button-row {
+    border-radius: 10px;
+    padding: 6px 8px;
+    gap: 2px;
+    background: #fff;
+    border: 1px solid rgba(var(--theme-color-rgb), 0.14);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+.button-row .print-btn,
+.button-row .export-btn,
+.button-row .restore-btn,
+.button-row .share-btn {
+    font-size: 13px; font-weight: 500;
+    padding: 6px 11px; border-radius: 6px;
+    color: var(--theme-color); background: transparent; border: none;
+    transition: background 0.12s;
+}
+.button-row .print-btn:hover,
+.button-row .export-btn:hover,
+.button-row .restore-btn:hover,
+.button-row .share-btn:hover { background: rgba(var(--theme-color-rgb), 0.1); }
+.button-row .edit-btn {
+    padding: 6px 11px; border-radius: 6px; font-size: 14px; line-height: 1;
+    background: var(--theme-color); color: #fff; margin-left: 6px;
+}
+.button-row .delete-current-btn {
+    font-size: 13px; font-weight: 500; padding: 6px 11px; border-radius: 6px;
+    color: #b23b30; background: transparent; border: none;
+}
+.button-row .delete-current-btn:hover { background: rgba(178, 59, 48, 0.12); }
+.button-row .settings-btn { padding: 6px; }
+.button-row .settings-btn svg { width: 18px; height: 18px; }
+/* native select -> styled to match */
+.button-row .entity-type-select {
+    height: 30px; font-size: 13px; font-weight: 500;
+    padding: 0 26px 0 10px; margin: 0 2px;
+    border-radius: 6px; border: 1px solid rgba(var(--theme-color-rgb), 0.28);
+    color: var(--theme-color); cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23184e4f' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 9px center;
+}
+
+/* ---- Tabs: cleaner folder tabs ---- */
+.tab-bar { gap: 3px; padding-left: 4px; }
+.tab-btn {
+    padding: 7px 22px; border-radius: 8px 8px 0 0;
+    background: rgba(255, 255, 255, 0.5);
+    color: rgba(var(--theme-color-rgb), 0.6);
+    box-shadow: none;
+}
+.tab-btn.active { background: #f5f5f5; color: var(--theme-color); }
+
+/* ---- Rail: tighter, more considered ---- */
+.saved-monsters { padding: 10px 14px 16px; box-shadow: 0 6px 22px rgba(0, 0, 0, 0.32); }
+.saved-monsters h2 { margin: 6px 0 12px; }
+.sidebar-top-row { gap: 8px; margin-bottom: 12px; }
+.new-group-btn, .select-mode-toggle-btn {
+    height: 32px; font-size: 12.5px; font-weight: 500;
+    padding: 0 12px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.group-header { border-radius: 6px; padding: 9px 12px; }
+.group-name { font-size: 12px; letter-spacing: 0.3px; }
+.monster-item {
+    padding: 6px 12px; border-radius: 6px; margin-bottom: 4px;
+    transition: background 0.12s;
+}
+.monster-item .monster-name-btn { font-size: 13.5px; }
+.ungrouped-header { font-size: 11px; letter-spacing: 1px; opacity: 0.65; margin-bottom: 6px; }
