@@ -1731,10 +1731,10 @@ body {
    theme-picker variants (which have higher specificity) still win.
    ============================================================ */
 :root {
-    /* accent -> tabletroll emerald green */
-    --theme-color: #087a58;
-    --theme-color-dark: #065c42;
-    --theme-color-rgb: 8, 122, 88;
+    /* accent -> the original Monster Statblock green (#184e4f) */
+    --theme-color: #184e4f;
+    --theme-color-dark: #0d3536;
+    --theme-color-rgb: 24, 78, 79;
     /* shell surfaces -> tabletroll dark slate + cool light content panels */
     --stage: #12151b;
     --rail: #eef0f4;
