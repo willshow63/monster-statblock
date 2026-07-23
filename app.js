@@ -2,7 +2,9 @@
 // an sb-like shim over the PocketBase SDK so the query call sites below stay unchanged.
 var sb = createPBClient('https://pb.tabletroll.com');
 
-var currentUser = null;
+// Single-user app: everything is tied to wgoley (PocketBase users id below). No login.
+var WGOLEY_ID = 'dqq8bvm40jym3qf';
+var currentUser = { id: WGOLEY_ID, email: 'wgoley', user_metadata: { full_name: 'wgoley' } };
 var currentMonster = null;
 var currentMonsterDocId = null;
 var sharedView = false;
@@ -301,34 +303,24 @@ document.getElementById("json-upload").addEventListener("change", handleFileUplo
 // Export Template - downloads a zip-like pair of files
 document.getElementById("export-template-btn").addEventListener("click", exportTemplate);
 
-// Auth State Listener
-sb.auth.onAuthStateChange(function(event, session) {
+// Single-user init: no auth. currentUser is hardcoded to wgoley above; just show the app and load.
+// Deferred so the ?view=slug shared-view check (below) sets sharedView first.
+setTimeout(function initSingleUser() {
     if (sharedView) return;
-    if (session && session.user) {
-        currentUser = session.user;
-        document.getElementById("login-btn").style.display = "none";
-        document.getElementById("user-info").style.display = "flex";
-        document.getElementById("user-name").textContent = session.user.user_metadata.full_name || session.user.email;
-        document.getElementById("saved-monsters").style.display = "block";
-        document.getElementById("empty-state").style.display = "none";
-        document.getElementById("stat-block-container").style.display = "flex";
-        loadGroupsAndMonsters();
+    var set = function (id, prop, val) { var el = document.getElementById(id); if (el) el.style[prop] = val; };
+    set("login-btn", "display", "none");
+    set("user-info", "display", "none");
+    set("saved-monsters", "display", "block");
+    set("empty-state", "display", "none");
+    set("stat-block-container", "display", "flex");
+    loadGroupsAndMonsters();
 
-        // Auto-load last opened monster
-        var lastDocId = localStorage.getItem('lastMonsterDocId');
-        if (lastDocId) {
-            loadMonster(lastDocId);
-        }
-    } else {
-        currentUser = null;
-        document.getElementById("login-btn").style.display = "inline-block";
-        document.getElementById("user-info").style.display = "none";
-        document.getElementById("saved-monsters").style.display = "none";
-        document.getElementById("monster-list").innerHTML = "";
-        document.getElementById("empty-state").style.display = "flex";
-        document.getElementById("stat-block-container").style.display = "none";
+    // Auto-load last opened monster
+    var lastDocId = localStorage.getItem('lastMonsterDocId');
+    if (lastDocId) {
+        loadMonster(lastDocId);
     }
-});
+}, 0);
 
 // Login (username + password)
 function showLogin() {
